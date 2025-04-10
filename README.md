@@ -50,15 +50,17 @@
 
 ### Backend
 
-<img src="https://img.shields.io/badge/SpringBoot-%2335495e?style=&logo=SpringBoot&logoColor=%234FC08D">&nbsp;
-<img src="https://img.shields.io/badge/Java-purple">&nbsp;
-<img src="https://img.shields.io/badge/Tomcat-%23009639?style=flat&logo=tomcat&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/Java-%23ED8B00?style=flat&logo=java&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/Spring%20Boot-%236DB33F?style=flat&logo=spring-boot&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/Tomcat-%23009639?style=flat&logo=apache-tomcat&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/Kubernetes-%231572B6?style=flat&logo=kubernetes&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/Docker-002260?style=flat&logo=docker&logoColor=white">&nbsp;
+
 
 ### CI/CD
 
-<img src="https://img.shields.io/badge/Kubernetes-%231572B6?style=flat&logo=kubernetes&logoColor=white">&nbsp;
-<img src="https://img.shields.io/badge/Docker-002260?style=flat&logo=docker&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Jenkins-CF4045?style=flat&logo=jenkins&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/Github Webhook-%23181717?style=flat&logo=github&logoColor=white">&nbsp;
 
 ### Monotoring
 
@@ -69,7 +71,6 @@
 
 <img src="https://img.shields.io/badge/JMeter-D22128?style=flat&logo=apachejmeter&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Locust-%23009639?style=flat&logo=locust&logoColor=white">&nbsp;
-<img src="https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white">&nbsp;
 
 ### Cooperation
 
