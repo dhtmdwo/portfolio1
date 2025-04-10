@@ -16,3 +16,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MariaDBDialect
+jwt:
+  secret: ${SECRETKEY}
+  expiration: 3600000 # 1 hour in ms
