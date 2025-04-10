@@ -50,11 +50,9 @@
 
 ### Backend
 
-<img src="https://img.shields.io/badge/Vue.js-%2335495e?style=&logo=vuedotjs&logoColor=%234FC08D">&nbsp;
-<img src="https://img.shields.io/badge/Vuetify-purple">&nbsp;
-<img src="https://img.shields.io/badge/Nginx-%23009639?style=flat&logo=nginx&logoColor=white">&nbsp;
-<img src="https://img.shields.io/badge/Pinia-%23FFF000?style=flat&logo=pinia&logoColor=white">&nbsp;
-<img src="https://img.shields.io/badge/axios-%236361db?style=flat&logo=axios&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/SpringBoot-%2335495e?style=&logo=SpringBoot&logoColor=%234FC08D">&nbsp;
+<img src="https://img.shields.io/badge/Java-purple">&nbsp;
+<img src="https://img.shields.io/badge/Tomcat-%23009639?style=flat&logo=tomcat&logoColor=white">&nbsp;
 
 ### CI/CD
 
