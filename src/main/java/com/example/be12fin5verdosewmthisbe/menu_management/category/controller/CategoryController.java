@@ -7,7 +7,6 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.service.Cate
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +45,12 @@ public class CategoryController {
                 .collect(Collectors.toList());
 
         return BaseResponse.success(responseDtoList);
+    }
+    @GetMapping("/detail")
+    public BaseResponse<CategoryDto.responseDto> getCategoryDetail(@RequestParam String name) {
+        Category category = categoryService.findByName(name);
+        CategoryDto.responseDto responseDto = CategoryDto.responseDto.from(category);
+        return BaseResponse.success(responseDto);
     }
 
 
