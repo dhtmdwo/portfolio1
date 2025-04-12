@@ -32,5 +32,8 @@ public class Menu {
     @Schema(description = "메뉴가 속한 카테고리 정보")
     private Category category;
 
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Recipe> recipes = new ArrayList<>();
+
 
 }
