@@ -99,4 +99,24 @@ public class CategoryController {
         Category category = categoryService.findByName(name);
         return BaseResponse.success(CategoryDto.responseDto.from(category));
     }
+
+    @Operation(summary = "카테고리 이름 검색", description = "이름 일부에 해당하는 카테고리를 검색합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "카테고리 검색 성공"),
+            @ApiResponse(responseCode = "5001", description = "카테고리 타입에 맞지 않는 잘못된 요청입니다."),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @GetMapping("/search")
+    public BaseResponse<List<CategoryDto.responseDto>> searchCategory(@RequestParam String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return BaseResponse.error(ErrorCode.INVAILD_REQUEST);
+        }
+
+        List<Category> result = categoryService.searchByName(keyword);
+        List<CategoryDto.responseDto> response = result.stream()
+                .map(CategoryDto.responseDto::from)
+                .collect(Collectors.toList());
+        return BaseResponse.success(response);
+    }
+
 }
