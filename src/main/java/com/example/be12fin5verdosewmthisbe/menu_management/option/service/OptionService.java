@@ -10,6 +10,8 @@ import com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto.Opti
 import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionValueRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,31 +36,10 @@ public class OptionService {
         optionValueRepository.saveAll(optionValues);
     }
 
-    public Option findById(Long optionId) {
-        return optionRepository.findById(optionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.OPTION_NOT_FOUND));
-    }
-
-    public Category findCategoryById(Long categoryId) {
-        return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
-    }
-
     public List<OptionValue> findOptionValuesByOptionId(Long optionId) {
         return optionValueRepository.findByOptionId(optionId);
     }
 
-    public void updateOption(Option option) {
-        optionRepository.save(option);
-    }
-
-    public void updateOptionValues(List<OptionValue> optionValues) {
-        optionValueRepository.saveAll(optionValues);
-    }
-
-    public void deleteOptionValuesByOptionIdAndInventoryIdIn(Long optionId, List<Long> inventoryIdsToDelete) {
-        optionValueRepository.deleteByOptionIdAndInventoryIdIn(optionId, inventoryIdsToDelete);
-    }
 
     public void updateOptionWithValues(Long optionId, OptionUpdateDto.RequestDto updateDto) {
         Option existingOption = optionRepository.findById(optionId)
@@ -78,6 +59,7 @@ public class OptionService {
         optionRepository.save(existingOption);
 
         if (updateDto.getInventoryQuantities() != null && !updateDto.getInventoryQuantities().isEmpty()) {
+            // 기존 OptionValue들을 Map으로 관리 (inventoryId -> OptionValue)
             Map<Long, OptionValue> existingOptionValueMap = findOptionValuesByOptionId(optionId).stream()
                     .collect(Collectors.toMap(OptionValue::getInventoryId, ov -> ov));
 
@@ -99,6 +81,7 @@ public class OptionService {
 
             optionValueRepository.saveAll(toSave);
 
+            // 삭제된 OptionValue 처리 (요청에 없는 기존 inventoryId)
             List<Long> updatedInventoryIds = updateDto.getInventoryQuantities().stream()
                     .map(OptionUpdateDto.InventoryQuantityUpdateDto::getInventoryId)
                     .collect(Collectors.toList());
@@ -111,5 +94,15 @@ public class OptionService {
                 optionValueRepository.deleteByOptionIdAndInventoryIdIn(optionId, inventoryIdsToDelete);
             }
         }
+    }
+
+    public void deleteOption(Long optionId) {
+        Option existingOption = optionRepository.findById(optionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.OPTION_NOT_FOUND));
+        optionRepository.delete(existingOption);
+    }
+
+    public Page<Option> findAllOptions(Pageable pageable) {
+        return optionRepository.findAll(pageable);
     }
 }
