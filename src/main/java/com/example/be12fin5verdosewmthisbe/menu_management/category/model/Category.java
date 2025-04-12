@@ -19,8 +19,5 @@ public class Category {
     @Schema(description = "카테고리 이름", example = "메인 요리")
     private String name;
 
-    @Schema(description = "카테고리 활성화 여부", example = "true")
-    private boolean enabled = true;
-
 
 }
