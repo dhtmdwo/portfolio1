@@ -2,12 +2,14 @@ package com.example.be12fin5verdosewmthisbe.menu_management.category.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "메뉴 카테고리 정보")
 public class Category {
     @Id
