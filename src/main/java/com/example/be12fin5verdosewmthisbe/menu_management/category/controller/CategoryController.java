@@ -5,10 +5,11 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Catego
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.dto.CategoryDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController("/api/category")
 @RequiredArgsConstructor
@@ -37,6 +38,16 @@ public class CategoryController {
         categoryService.delete(category);
         return BaseResponse.success("Category deleted successfully");
     }
+    @GetMapping("/getList")
+    public BaseResponse<List<CategoryDto.responseDto>> getCategoryList() {
+        List<Category> categoryList = categoryService.findAll();
+        List<CategoryDto.responseDto> responseDtoList = categoryList.stream()
+                .map(CategoryDto.responseDto::from)
+                .collect(Collectors.toList());
+
+        return BaseResponse.success(responseDtoList);
+    }
+
 
 
 }
