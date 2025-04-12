@@ -14,7 +14,12 @@ public enum ErrorCode {
     CATEGORY_ALREADY_EXISTS(5004,"이미 존재하는 카테고리입니다."),
     
     // 옵션 관련 에러코드
-    OPTION_NOT_FOUND(4001,"옵션을 찾을 수 없습니다." );
+    OPTION_NOT_FOUND(4001,"옵션을 찾을 수 없습니다." ),
+
+    // 메뉴 관련 에러코드
+    MENU_NOT_FOUND(3001, "메뉴를 찾을 수 없습니다." ),
+    RECIPE_DUPLICATED_INVENTORY(3002, "중복된 재료를 추가할 수 없습니다."),
+    RECIPE_QUANTITY_INVALID(3003, "재료의 수량은 0보다 같거나 작을 수 없습니다." );
 
 
 
