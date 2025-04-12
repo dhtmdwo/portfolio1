@@ -16,14 +16,17 @@ import java.math.BigDecimal;
 public class Recipe {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Schema(description = "레시피 ID (자동 생성)", example = "1")
     private Long id;
 
+    @Schema(description = "재고 ID", example = "inventory-123")
     private String inventoryId;
 
+    @Schema(description = "레시피 가격", example = "2500.00")
     private BigDecimal price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id")
-    @Schema(description = "레시피가 속한 카테고리 정보")
+    @Schema(description = "레시피가 속한 메뉴 정보")
     private Menu menu;
 }
