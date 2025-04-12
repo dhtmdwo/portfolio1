@@ -1,10 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const baseDir = 'src/main/java/com/example/be12fin5verdosewmthisbe/user';
+const baseDir = 'src/main/java/com/example/be12fin5verdosewmthisbe/menu_management/category';
 const packagePath = baseDir.replace('src/main/java/', '');
 const packageName = packagePath.replace(/\//g, '.');
-const className = 'User';
+const className = 'Category';
 
 const packages = [
     {
