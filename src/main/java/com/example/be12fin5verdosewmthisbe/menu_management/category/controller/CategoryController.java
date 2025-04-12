@@ -7,6 +7,7 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.service.Cate
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController("/api/category")
@@ -22,7 +23,7 @@ public class CategoryController {
         categoryService.register(category);
         return BaseResponse.success("Category registered successfully");
     }
-    @PostMapping("/update")
+    @PutMapping("/update")
     public BaseResponse<String> updateCategory(CategoryDto.updateDto dto) {
         Category oldcategory = categoryService.findByName(dto.getOldName());
 
@@ -36,6 +37,7 @@ public class CategoryController {
         categoryService.delete(category);
         return BaseResponse.success("Category deleted successfully");
     }
+
 
 }
         
