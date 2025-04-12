@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -45,7 +46,7 @@ public class MenuService {
                 .map(recipeDto -> Recipe.builder()
                         .menu(savedMenu)
                         .inventoryId(recipeDto.getInventoryId())
-                        .price(recipeDto.getQuantity()) // 사용량을 price 필드에 저장 (요청대로)
+                        .price(recipeDto.getQuantity())
                         .build())
                 .collect(Collectors.toList());
 
@@ -86,7 +87,20 @@ public class MenuService {
         menuRepository.save(existingMenu);
 
         if (updateDto.getRecipes() != null && !updateDto.getRecipes().isEmpty()) {
-            // 기존 레시피들을 Map으로 관리 (inventoryId -> Recipe)
+            List<String> inventoryIdList = updateDto.getRecipes().stream()
+                    .map(MenuUpdateDto.RecipeUpdateInfoDto::getInventoryId)
+                    .collect(Collectors.toList());
+
+            if (inventoryIdList.size() != inventoryIdList.stream().distinct().count()) {
+                throw new CustomException(ErrorCode.RECIPE_DUPLICATED_INVENTORY);
+            }
+
+            updateDto.getRecipes().forEach(recipeDto -> {
+                if (recipeDto.getQuantity() == null || recipeDto.getQuantity().compareTo(BigDecimal.ZERO) < 0) {
+                    throw new CustomException(ErrorCode.RECIPE_QUANTITY_INVALID);
+                }
+            });
+
             Map<String, Recipe> existingRecipeMap = existingMenu.getRecipes().stream()
                     .collect(Collectors.toMap(Recipe::getInventoryId, r -> r));
 
@@ -94,13 +108,13 @@ public class MenuService {
                     .map(recipeDto -> {
                         Recipe existingRecipe = existingRecipeMap.get(recipeDto.getInventoryId());
                         if (existingRecipe != null) {
-                            existingRecipe.setPrice(recipeDto.getQuantity()); // 사용량 업데이트
+                            existingRecipe.setPrice(recipeDto.getQuantity());
                             return existingRecipe;
                         } else {
                             return Recipe.builder()
                                     .menu(existingMenu)
                                     .inventoryId(recipeDto.getInventoryId())
-                                    .price(recipeDto.getQuantity()) // 새로운 레시피 추가
+                                    .price(recipeDto.getQuantity())
                                     .build();
                         }
                     })
@@ -108,11 +122,7 @@ public class MenuService {
 
             recipeRepository.saveAll(toSave);
 
-            // 삭제된 레시피 처리 (요청에 없는 기존 inventoryId)
-            List<String> updatedInventoryIds = updateDto.getRecipes().stream()
-                    .map(MenuUpdateDto.RecipeUpdateInfoDto::getInventoryId)
-                    .collect(Collectors.toList());
-
+            List<String> updatedInventoryIds = inventoryIdList;
             List<Recipe> recipesToDelete = existingMenu.getRecipes().stream()
                     .filter(recipe -> !updatedInventoryIds.contains(recipe.getInventoryId()))
                     .collect(Collectors.toList());
