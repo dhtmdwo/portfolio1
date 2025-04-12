@@ -4,9 +4,11 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Catego
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     // Your code here
-    public Category findByName(String name);
+    public Optional<Category> findByName(String name);
 }
         
