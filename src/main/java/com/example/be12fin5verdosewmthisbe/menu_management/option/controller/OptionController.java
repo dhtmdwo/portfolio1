@@ -96,11 +96,11 @@ public class OptionController {
     }
 
 
-    @Operation(summary = "옵션 삭제", description = "주어진 ID의 메뉴 옵션을 삭제합니다.")
+    @Operation(summary = "옵션 삭제", description = "주어진 ID의 옵션을 삭제합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "옵션 삭제 성공",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": true, \"message\": \"Option deleted successfully\", \"data\": null}"))),
-            @ApiResponse(responseCode = "404", description = "옵션 정보 없음",
+            @ApiResponse(responseCode = "4001", description = "옵션 정보 없음",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 옵션을 찾을 수 없습니다.\", \"data\": null}"))),
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
@@ -113,19 +113,37 @@ public class OptionController {
         return BaseResponse.success("Option deleted successfully");
     }
 
-    @Operation(summary = "옵션 목록 조회 (페이지네이션)", description = "등록된 메뉴 옵션 목록을 페이지별로 조회합니다.")
+    @Operation(summary = "옵션 목록 조회 (페이지네이션)", description = "등록된 옵션 목록을 페이지별로 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "옵션 목록 조회 성공"),
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
-
     @GetMapping("/list")
     public BaseResponse<Page<Option>> getOptionList(
             @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
             @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
             Pageable pageable) {
         Page<Option> optionPage = optionService.findAllOptions(pageable);
+        return BaseResponse.success(optionPage);
+    }
+
+
+    @Operation(summary = "이름으로 옵션 검색 (페이지네이션)", description = "주어진 이름으로 메뉴 옵션을 검색하여 페이지별로 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "옵션 검색 성공",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
+    })
+    @GetMapping("/search/name")
+    public BaseResponse<Page<Option>> searchOptionsByName(
+            @Parameter(description = "검색할 옵션 이름 키워드", required = true, example = "사이즈")
+            @RequestParam String keyword,
+            @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
+            @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
+            Pageable pageable) {
+        Page<Option> optionPage = optionService.searchOptionsByName(keyword, pageable);
         return BaseResponse.success(optionPage);
     }
 }

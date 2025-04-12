@@ -105,4 +105,7 @@ public class OptionService {
     public Page<Option> findAllOptions(Pageable pageable) {
         return optionRepository.findAll(pageable);
     }
+    public Page<Option> searchOptionsByName(String keyword, Pageable pageable) {
+        return optionRepository.findByNameContaining(keyword, pageable);
+    }
 }
