@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/category")
 @RequiredArgsConstructor
+// TODO: 가게 ID 추가하면 가게 ID에 해당 하는 목록에서만 조회해야함
 public class CategoryController {
     private final CategoryService categoryService;
 

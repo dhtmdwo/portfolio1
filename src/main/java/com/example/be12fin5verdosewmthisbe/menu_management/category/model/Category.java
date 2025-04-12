@@ -11,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "메뉴 카테고리 정보")
+// TODO: 가게 ID 추가해야함
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
