@@ -117,4 +117,23 @@ public class MenuController {
         menuService.deleteMenu(menuId);
         return BaseResponse.success("Menu deleted successfully");
     }
+
+    @Operation(summary = "이름으로 메뉴 검색 (페이지네이션)", description = "주어진 이름으로 메뉴를 검색하여 페이지별로 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "메뉴 검색 성공"),
+            @ApiResponse(responseCode = "3001", description = "메뉴 정보 없음",
+            content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 메뉴를 찾을 수 없습니다.\", \"data\": null}"))),
+            @ApiResponse(responseCode = "500", description = "서버 오류",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
+    })
+    @GetMapping("/search/name")
+    public BaseResponse<Page<Menu>> searchMenusByName(
+            @Parameter(description = "검색할 메뉴 이름 키워드", required = true, example = "김치")
+            @RequestParam String keyword,
+            @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
+            @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
+            Pageable pageable) {
+        Page<Menu> menuPage = menuService.searchMenusByName(keyword, pageable);
+        return BaseResponse.success(menuPage);
+    }
 }

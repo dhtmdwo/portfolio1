@@ -59,9 +59,24 @@ public class MenuService {
         return menuRepository.findById(menuId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
     }
+    public Page<Menu> searchMenusByName(String keyword, Pageable pageable) {
+        Page<Menu> result = menuRepository.findByNameContaining(keyword, pageable);
+
+        if (result.isEmpty()) {
+            throw new CustomException(ErrorCode.MENU_NOT_FOUND);
+        }
+
+        return result;
+    }
 
     public Page<Menu> findAllMenus(Pageable pageable) {
-        return menuRepository.findAll(pageable);
+        Page<Menu> result = menuRepository.findAll(pageable);
+
+        if (result.isEmpty()) {
+            throw new CustomException(ErrorCode.MENU_NOT_FOUND);
+        }
+
+        return result;
     }
     public void deleteMenu(Long menuId) {
         Menu existingMenu = menuRepository.findById(menuId)
