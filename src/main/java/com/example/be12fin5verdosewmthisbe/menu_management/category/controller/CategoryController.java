@@ -21,6 +21,14 @@ public class CategoryController {
         categoryService.register(category);
         return BaseResponse.success("Category registered successfully");
     }
+    @PostMapping("/update")
+    public BaseResponse<String> updateCategory(CategoryDto.updateDto dto) {
+        Category oldcategory = categoryService.findByName(dto.getOldName());
+
+        oldcategory.setName(dto.getNewName());
+        categoryService.update(oldcategory);
+        return BaseResponse.success("Category update successfully");
+    }
 
 
 }
