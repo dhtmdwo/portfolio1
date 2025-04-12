@@ -1,9 +1,12 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.category.service;
 
+import com.example.be12fin5verdosewmthisbe.menu_management.category.repository.CategoryRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class CategoryService {
-    // Your code here
+    private final CategoryRepository categoryRepository;
 }
         
