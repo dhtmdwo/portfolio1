@@ -33,7 +33,7 @@ public class MenuController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": true, \"message\": \"Menu registered successfully\", \"data\": {\"id\": 1}}"))),
             @ApiResponse(responseCode = "400", description = "잘못된 요청",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"잘못된 요청 형식입니다.\", \"data\": null}"))),
-            @ApiResponse(responseCode = "404", description = "카테고리 정보 없음",
+            @ApiResponse(responseCode = "5002", description = "카테고리 정보 없음",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 카테고리를 찾을 수 없습니다.\", \"data\": null}"))),
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
@@ -53,8 +53,10 @@ public class MenuController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": true, \"message\": \"Menu updated successfully\", \"data\": null}"))),
             @ApiResponse(responseCode = "400", description = "잘못된 요청",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"잘못된 요청 형식입니다.\", \"data\": null}"))),
-            @ApiResponse(responseCode = "404", description = "메뉴 또는 카테고리 정보 없음",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 메뉴 또는 카테고리를 찾을 수 없습니다.\", \"data\": null}"))),
+            @ApiResponse(responseCode = "3001", description = "메뉴 정보 없음",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 메뉴를 찾을 수 없습니다.\", \"data\": null}"))),
+            @ApiResponse(responseCode = "5002", description = "카테고리 정보 없음",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 카테고리를 찾을 수 없습니다.\", \"data\": null}"))),
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
@@ -71,7 +73,7 @@ public class MenuController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "메뉴 조회 성공",
                     content = @Content(schema = @Schema(implementation = Menu.class))),
-            @ApiResponse(responseCode = "404", description = "메뉴 정보 없음",
+            @ApiResponse(responseCode = "3001", description = "메뉴 정보 없음",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 메뉴를 찾을 수 없습니다.\", \"data\": null}"))),
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
@@ -80,14 +82,8 @@ public class MenuController {
     public BaseResponse<Menu> getMenuById(
             @Parameter(description = "조회할 메뉴 ID", required = true, example = "1")
             @PathVariable Long menuId) {
-        try {
-            Menu menu = menuService.findById(menuId);
-            return BaseResponse.success(menu);
-        } catch (CustomException e) {
-            return BaseResponse.fail(e.getErrorCode().getStatus(), e.getErrorCode().getMessage());
-        } catch (Exception e) {
-            return BaseResponse.fail(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 오류가 발생했습니다.");
-        }
+        Menu menu = menuService.findById(menuId);
+        return BaseResponse.success(menu);
     }
 
     @Operation(summary = "전체 메뉴 목록 조회 (페이지네이션)", description = "등록된 전체 메뉴 목록을 페이지별로 조회합니다.")
@@ -101,19 +97,15 @@ public class MenuController {
             @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
             @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
             Pageable pageable) {
-        try {
-            Page<Menu> menuPage = menuService.findAllMenus(pageable);
-            return BaseResponse.success(menuPage);
-        } catch (Exception e) {
-            return BaseResponse.fail(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 오류가 발생했습니다.");
-        }
+        Page<Menu> menuPage = menuService.findAllMenus(pageable);
+        return BaseResponse.success(menuPage);
     }
 
     @Operation(summary = "특정 ID의 메뉴 삭제", description = "주어진 ID에 해당하는 메뉴 정보를 삭제합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "메뉴 삭제 성공",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": true, \"message\": \"Menu deleted successfully\", \"data\": null}"))),
-            @ApiResponse(responseCode = "404", description = "메뉴 정보 없음",
+            @ApiResponse(responseCode = "3001", description = "메뉴 정보 없음",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 메뉴를 찾을 수 없습니다.\", \"data\": null}"))),
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
@@ -122,13 +114,7 @@ public class MenuController {
     public BaseResponse<String> deleteMenu(
             @Parameter(description = "삭제할 메뉴 ID", required = true, example = "1")
             @PathVariable Long menuId) {
-        try {
-            menuService.deleteMenu(menuId);
-            return BaseResponse.success("Menu deleted successfully");
-        } catch (CustomException e) {
-            return BaseResponse.fail(e.getErrorCode().getStatus(), e.getErrorCode().getMessage());
-        } catch (Exception e) {
-            return BaseResponse.fail(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 오류가 발생했습니다.");
-        }
+        menuService.deleteMenu(menuId);
+        return BaseResponse.success("Menu deleted successfully");
     }
 }
