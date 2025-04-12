@@ -1,6 +1,5 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.menu.model;
 
-
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -20,12 +19,14 @@ public class Menu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Schema(description = "메뉴 ID (자동 생성)", example = "1")
     private Long id;
 
+    @Schema(description = "메뉴 이름", example = "김치찌개")
     private String name;
 
+    @Schema(description = "메뉴 가격", example = "8000")
     private int price;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -33,7 +34,6 @@ public class Menu {
     private Category category;
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Schema(description = "메뉴 레시피 목록")
     private List<Recipe> recipes = new ArrayList<>();
-
-
 }
