@@ -6,6 +6,7 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.service.Cate
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto.OptionDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto.OptionUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.service.OptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,10 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,5 +68,26 @@ public class OptionController {
         optionService.registerOptionValues(optionValues);
 
         return BaseResponse.success("Option registered successfully");
+    }
+    @Operation(summary = "옵션 수정", description = "기존 메뉴 옵션의 정보 (이름, 가격, 카테고리) 및 재고별 사용 수량을 수정합니다. 요청에 없는 재고 ID의 사용 수량 정보는 삭제됩니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "옵션 수정 성공",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": true, \"message\": \"Option updated successfully\", \"data\": null}"))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"잘못된 요청 형식입니다.\", \"data\": null}"))),
+            @ApiResponse(responseCode = "5002", description = "카테고리 정보 없음",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 카테고리를 찾을 수 없습니다.\", \"data\": null}"))),
+            @ApiResponse(responseCode = "4001", description = "옵션 정보 없음",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 옵션을 찾을 수 없습니다.\", \"data\": null}"))),
+            @ApiResponse(responseCode = "500", description = "서버 오류",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
+    })
+    @PutMapping("/update")
+    public BaseResponse<String> updateOption(
+            @Parameter(description = "수정할 옵션 ID와 정보 및 재고별 사용 수량 리스트", required = true,
+                    schema = @Schema(implementation = OptionUpdateDto.RequestDto.class))
+            @RequestBody OptionUpdateDto.RequestDto updateDto) {
+        optionService.updateOptionWithValues(updateDto.getOptionId(), updateDto);
+        return BaseResponse.success("Option updated successfully");
     }
 }
