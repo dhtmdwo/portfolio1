@@ -5,6 +5,7 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Catego
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.dto.CategoryDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.service.CategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,7 +30,7 @@ public class CategoryController {
         categoryService.update(oldcategory);
         return BaseResponse.success("Category update successfully");
     }
-    @PostMapping("/delete")
+    @DeleteMapping("/delete")
     public BaseResponse<String> deleteCategory(CategoryDto.requestDto dto) {
         Category category = categoryService.findByName(dto.getName());
         categoryService.delete(category);
