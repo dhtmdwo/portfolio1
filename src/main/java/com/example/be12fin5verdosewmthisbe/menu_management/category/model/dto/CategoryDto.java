@@ -10,6 +10,13 @@ public class CategoryDto {
     public static class requestDto {
         private String name;
     }
+
+    @Getter
+    public static class updateDto {
+        private String oldName;
+        private String newName;
+    }
+
     @Getter
     @Setter
     public static class responseDto {
