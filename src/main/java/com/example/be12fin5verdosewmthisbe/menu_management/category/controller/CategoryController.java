@@ -29,7 +29,12 @@ public class CategoryController {
         categoryService.update(oldcategory);
         return BaseResponse.success("Category update successfully");
     }
-
+    @PostMapping("/delete")
+    public BaseResponse<String> deleteCategory(CategoryDto.requestDto dto) {
+        Category category = categoryService.findByName(dto.getName());
+        categoryService.delete(category);
+        return BaseResponse.success("Category deleted successfully");
+    }
 
 }
         
