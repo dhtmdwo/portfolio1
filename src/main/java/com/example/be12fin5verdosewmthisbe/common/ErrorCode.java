@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
 
-    ERROR_CODE(100,"왜 실패했는지 설명 어쩌구저쩌구"),
+    ERROR_CODE(500,"예상치 못한 서버 오류;;"),
     
     // 카테고리 관련 에러코드
     INVAILD_REQUEST(5001,"카테고리 타입에 맞지 않는 잘못된 요청입니다."),
