@@ -1,8 +1,12 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.category.model;
 
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -22,5 +26,7 @@ public class Category {
     @Schema(description = "카테고리 이름", example = "메인 요리")
     private String name;
 
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Option> options = new ArrayList<>();
 
 }
