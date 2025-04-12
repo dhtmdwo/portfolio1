@@ -58,4 +58,9 @@ public class CategoryService {
         }
         return category.get();
     }
+
+    public List<Category> searchByName(String keyword) {
+        return categoryRepository.findByNameContaining(keyword);
+    }
+
 }
