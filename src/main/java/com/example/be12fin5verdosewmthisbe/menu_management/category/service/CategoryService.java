@@ -18,7 +18,12 @@ public class CategoryService {
     public Category register(Category category) {
         return categoryRepository.save(category);
     }
-
+    public Category update(Category category) {
+        return categoryRepository.save(category);
+    }
+    public void delete(Category category) {
+        categoryRepository.delete(category);
+    }
 
 
 }
