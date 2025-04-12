@@ -5,6 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Schema(description = "메뉴 옵션 정보")
 @Entity
 @Getter
@@ -30,4 +33,7 @@ public class Option {
     @Schema(description = "옵션이 속한 카테고리 정보")
     private Category category;
 
+
+    @OneToMany(mappedBy = "option", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OptionValue> optionValues = new ArrayList<>();
 }

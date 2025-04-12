@@ -1,10 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.option.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -24,4 +21,8 @@ public class OptionValue {
     private Long inventoryId;
 
     private BigDecimal quantity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "option_id")
+    private Option option;
 }
