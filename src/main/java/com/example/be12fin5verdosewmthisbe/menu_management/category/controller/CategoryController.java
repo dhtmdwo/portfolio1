@@ -6,8 +6,8 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Catego
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.dto.CategoryDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/category")
 @RequiredArgsConstructor
+// TODO: 가게 ID 추가하면 가게 ID에 해당 하는 목록에서만 조회해야함
 public class CategoryController {
     private final CategoryService categoryService;
 
@@ -66,23 +67,31 @@ public class CategoryController {
         return BaseResponse.success("Category deleted successfully");
     }
 
-    @Operation(summary = "카테고리 목록 조회", description = "등록된 모든 메뉴 카테고리 목록을 조회합니다.")
+    @GetMapping("/getList")
+    @Operation(summary = "카테고리 목록 조회", description = "등록된 모든 메뉴 카테고리 목록을 페이지네이션으로 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "카테고리 목록 조회 성공"),
             @ApiResponse(responseCode = "5003", description = "카테고리 목록이 비어있습니다."),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @GetMapping("/getList")
-    public BaseResponse<List<CategoryDto.responseDto>> getCategoryList() {
-        List<Category> categoryList = categoryService.findAll();
-        if (categoryList.isEmpty()) {
+    public BaseResponse<List<CategoryDto.responseDto>> getCategoryList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<Category> categoryPage = categoryService.findAll(PageRequest.of(page, size));
+
+        if (categoryPage.isEmpty()) {
             return BaseResponse.error(ErrorCode.EMPTY);
         }
-        List<CategoryDto.responseDto> responseDtoList = categoryList.stream()
+
+        List<CategoryDto.responseDto> responseDtoList = categoryPage.getContent()
+                .stream()
                 .map(CategoryDto.responseDto::from)
                 .collect(Collectors.toList());
+
         return BaseResponse.success(responseDtoList);
     }
+
 
     @Operation(summary = "카테고리 상세 조회", description = "특정 이름의 메뉴 카테고리 상세 정보를 조회합니다.")
     @ApiResponses(value = {
@@ -99,4 +108,24 @@ public class CategoryController {
         Category category = categoryService.findByName(name);
         return BaseResponse.success(CategoryDto.responseDto.from(category));
     }
+
+    @Operation(summary = "카테고리 이름 검색", description = "이름 일부에 해당하는 카테고리를 검색합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "카테고리 검색 성공"),
+            @ApiResponse(responseCode = "5001", description = "카테고리 타입에 맞지 않는 잘못된 요청입니다."),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @GetMapping("/search")
+    public BaseResponse<List<CategoryDto.responseDto>> searchCategory(@RequestParam String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return BaseResponse.error(ErrorCode.INVAILD_REQUEST);
+        }
+
+        List<Category> result = categoryService.searchByName(keyword);
+        List<CategoryDto.responseDto> response = result.stream()
+                .map(CategoryDto.responseDto::from)
+                .collect(Collectors.toList());
+        return BaseResponse.success(response);
+    }
+
 }

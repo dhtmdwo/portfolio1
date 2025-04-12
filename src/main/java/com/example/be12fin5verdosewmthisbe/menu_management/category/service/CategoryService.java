@@ -5,6 +5,8 @@ import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +17,10 @@ import java.util.Optional;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
 
-    public List<Category> findAll() {
-        return categoryRepository.findAll();
+    public Page<Category> findAll(Pageable pageable) {
+        return categoryRepository.findAll(pageable);
     }
+
 
     public void register(Category category) {
         if (categoryRepository.findByName(category.getName()).isPresent()) {
@@ -58,4 +61,9 @@ public class CategoryService {
         }
         return category.get();
     }
+
+    public List<Category> searchByName(String keyword) {
+        return categoryRepository.findByNameContaining(keyword);
+    }
+
 }
