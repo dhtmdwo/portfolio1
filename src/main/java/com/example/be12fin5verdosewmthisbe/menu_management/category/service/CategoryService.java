@@ -28,6 +28,10 @@ public class CategoryService {
         return categoryRepository.findById(id).orElse(null);
     }
 
+    public Category findByName(String name) {
+        return categoryRepository.findByName(name);
+    }
+
 
 }
         
