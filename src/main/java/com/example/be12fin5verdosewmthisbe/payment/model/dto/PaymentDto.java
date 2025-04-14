@@ -16,7 +16,8 @@ public class PaymentDto {
     public class PaymentVerifyRequest {
         private String impUid;
         private String merchantUid;
-        private int inventoryPurchaseId;
+        private Long orderId;
+        private Long inventoryPurchaseId;
     }
 
 }
