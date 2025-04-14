@@ -19,3 +19,7 @@ spring:
 jwt:
   secret: ${SECRETKEY}
   expiration: 3600000 # 1 hour in ms
+portone:
+  api:
+    key: ${API_KEY}
+    secret: ${SECRET_API_KEY}
