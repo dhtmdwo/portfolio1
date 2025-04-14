@@ -69,7 +69,7 @@ public class PaymentService {
         Payment payment = new Payment();
         payment.setOrderId(orderId);
         payment.setAmount(((Number) data.get("amount")).intValue());
-        payment.setTransactionId((String) data.get("pg_tid"));
+        payment.setTransactionId((String) data.get("imp_uid"));
 
         // 결제 수단 매핑
         String payMethod = (String) data.get("pay_method");
@@ -100,19 +100,20 @@ public class PaymentService {
         return paymentRepository.findById(id).orElse(null);
     }
 
-    public boolean cancelPayment(String impUid, String reason, Integer amount) {
+    public void cancelPayment(String impUid, String reason, Integer amount) {
         String accessToken = getAccessToken();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("imp_uid", impUid);
-        requestMap.put("reason", reason);              // 환불 사유
-        requestMap.put("amount", amount);              // 환불 금액 (전체 환불이면 생략 가능)
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("imp_uid", impUid);
+        body.add("reason", reason);
+        body.add("amount", String.valueOf(amount));          // 환불 금액 (전체 환불이면 생략 가능)
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestMap, headers);
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
                 "https://api.iamport.kr/payments/cancel",
@@ -120,14 +121,12 @@ public class PaymentService {
                 Map.class
         );
 
-        Map<String, Object> body = response.getBody();
-        if (body != null && body.get("code").equals(0)) {
+        Map<String, Object> responseBody = response.getBody();
+        if (responseBody != null && responseBody.get("code").equals(0)) {
             // 환불 성공
-            return true;
         } else {
             // 실패 시 로그 확인
-            System.out.println("결제 취소 실패: " + body.get("message"));
-            return false;
+            System.out.println("결제 취소 실패: " + responseBody.get("message"));
         }
     }
 
