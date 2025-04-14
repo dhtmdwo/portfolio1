@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.payment.controller;
 
+import com.example.be12fin5verdosewmthisbe.payment.model.Payment;
 import com.example.be12fin5verdosewmthisbe.payment.model.dto.PaymentDto;
 import com.example.be12fin5verdosewmthisbe.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +30,11 @@ public class PaymentController {
         // 금액 등 검증
         if (!request.getMerchantUid().equals(paymentData.getMerchantUid()) && amount == DBamount) {
             // 주문정보테이블 수정 - status = cancelled
-
+            Payment payment = paymentService.findById(paymentData.getPaymentId());
+            payment.setStatus(Payment.PaymentStatus.FAILED);
             return ResponseEntity.badRequest().body("결제 정보 불일치");
         }
 
-        // 성공 처리 (DB 저장 등)
         // 주문정보테이블 수정 - status = paid
         return ResponseEntity.ok("success");
     }

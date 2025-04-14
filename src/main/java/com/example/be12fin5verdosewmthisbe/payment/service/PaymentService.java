@@ -90,11 +90,14 @@ public class PaymentService {
         paymentRepository.save(payment);
         return new PaymentDto.PaymentData(
                 (String) data.get("merchant_uid"),
-                ((Number) data.get("amount")).intValue()
+                ((Number) data.get("amount")).intValue(),
+                payment.getId()
         );
     }
 
-    public Payment findPaymentBy
+    public Payment findById(Long id) {
+        return paymentRepository.findById(id).orElse(null);
+    }
 
 }
         

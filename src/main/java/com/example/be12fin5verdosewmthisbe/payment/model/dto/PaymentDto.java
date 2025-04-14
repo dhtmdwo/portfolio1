@@ -11,6 +11,7 @@ public class PaymentDto {
     public static class PaymentData {
         private String merchantUid;
         private int amount;
+        private Long paymentId;
     }
     @Data
     public class PaymentVerifyRequest {
