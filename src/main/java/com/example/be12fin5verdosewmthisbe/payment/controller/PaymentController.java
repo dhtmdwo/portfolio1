@@ -1,5 +1,8 @@
 package com.example.be12fin5verdosewmthisbe.payment.controller;
 
+import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
+import com.example.be12fin5verdosewmthisbe.common.CustomException;
+import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.payment.model.Payment;
 import com.example.be12fin5verdosewmthisbe.payment.model.dto.PaymentCancelDto;
 import com.example.be12fin5verdosewmthisbe.payment.model.dto.PaymentDto;
@@ -19,7 +22,7 @@ public class PaymentController {
     private final PaymentService paymentService;
     
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyPayment(@RequestBody PaymentDto.PaymentVerifyRequest request) {
+    public BaseResponse<String> verifyPayment(@RequestBody PaymentDto.PaymentVerifyRequest request) {
 
         // 주문정보테이블 생성 - status = pending
 
@@ -35,16 +38,17 @@ public class PaymentController {
             payment.setStatus(Payment.PaymentStatus.FAILED);
             // 전액 결제 취소
             paymentService.cancelPayment(payment.getTransactionId(),"결제 정보 불일치",payment.getAmount());
-            return ResponseEntity.badRequest().body("결제 정보 불일치");
+            throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED);
         }
         // 주문정보테이블 수정 - status = paid
-        return ResponseEntity.ok("success");
+        return BaseResponse.success("ok");
     }
     @PostMapping("/cancel")
-    public ResponseEntity<?> cancelPayment(@RequestBody PaymentCancelDto.RequestDto request) {
+    public BaseResponse<String> cancelPayment(@RequestBody PaymentCancelDto.RequestDto request) {
 
         paymentService.cancelPayment(request.getImpUid(), request.getReason(),request.getAmount());
-        return ResponseEntity.ok("success");
+
+        return BaseResponse.success("ok");
     }
 }
         

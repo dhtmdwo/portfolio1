@@ -1,5 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.payment.service;
 
+import com.example.be12fin5verdosewmthisbe.common.CustomException;
+import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.payment.model.Payment;
 import com.example.be12fin5verdosewmthisbe.payment.model.Payment.*;
 import com.example.be12fin5verdosewmthisbe.payment.model.dto.PaymentDto;
@@ -14,7 +16,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -40,13 +41,22 @@ public class PaymentService {
         body.add("imp_secret", apiSecret);
         System.out.println(body);
 
+        if (body == null || body.get("response") == null) {
+            throw new CustomException(ErrorCode.PAYMENT_EMPTY_BODY);
+        }
+
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
                 "https://api.iamport.kr/users/getToken", request, Map.class
         );
 
-        return ((Map<String, String>) response.getBody().get("response")).get("access_token");
+        Map<String, Object> res = (Map<String, Object>) body.get("response");
+        String token = (String) res.get("access_token");
+        if (token == null) {
+            throw new CustomException(ErrorCode.PAYMENT_AUTH_FAILED);
+        }
+        return token;
     }
 
     public PaymentDto.PaymentData savePayment(String impUid, Long orderId) {
@@ -62,8 +72,11 @@ public class PaymentService {
                 entity,
                 Map.class
         );
-
-        Map<String, Object> data = (Map<String, Object>) response.getBody().get("response");
+        Map<String, Object> body = response.getBody();
+        if (body == null || body.get("response") == null) {
+            throw new CustomException(ErrorCode.PAYMENT_EMPTY_BODY);
+        }
+        Map<String, Object> data = (Map<String, Object>) body.get("response");
 
         // 여기서 DTO가 필요하다면 임시로 만들어도 되고, 바로 엔티티에 매핑해도 OK
         Payment payment = new Payment();
@@ -127,6 +140,7 @@ public class PaymentService {
         } else {
             // 실패 시 로그 확인
             System.out.println("결제 취소 실패: " + responseBody.get("message"));
+            throw new CustomException(ErrorCode.PAYMENT_CANCEL_FAILED);
         }
     }
 
