@@ -20,7 +20,7 @@ import java.util.List;
 public class User implements UserDetails{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idx;
+    private Long id;
 
     @Column(length=200, nullable = false)
     private String name;
@@ -68,12 +68,12 @@ public class User implements UserDetails{
 
     @Override
     public String getPassword() {
-        return "";
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return "";
+        return name;
     }
 }
         
