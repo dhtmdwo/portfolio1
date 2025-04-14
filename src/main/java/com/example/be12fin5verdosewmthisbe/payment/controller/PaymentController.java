@@ -21,8 +21,11 @@ public class PaymentController {
         String accessToken = paymentService.getAccessToken();
         PaymentDto.PaymentData paymentData = paymentService.getPaymentData(request.getImpUid(), accessToken);
 
+        //TODO inventoryPurchaseId로 구매할 재고의 희망가격 알아오기
+        int amount = paymentData.getAmount();
+        int DBamount = 1000; // 여기 바뀌어야함
         // 금액 등 검증
-        if (!request.getMerchantUid().equals(paymentData.getMerchantUid())) {
+        if (!request.getMerchantUid().equals(paymentData.getMerchantUid()) && amount == DBamount) {
             return ResponseEntity.badRequest().body("결제 정보 불일치");
         }
 
