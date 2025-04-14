@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -32,7 +33,7 @@ public class PaymentService {
 
     public String getAccessToken() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED); // Content-Type 변경
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>(); // MultiValueMap 사용
         body.add("imp_key", apiKey);
@@ -97,6 +98,37 @@ public class PaymentService {
 
     public Payment findById(Long id) {
         return paymentRepository.findById(id).orElse(null);
+    }
+
+    public boolean cancelPayment(String impUid, String reason, Integer amount) {
+        String accessToken = getAccessToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("imp_uid", impUid);
+        requestMap.put("reason", reason);              // 환불 사유
+        requestMap.put("amount", amount);              // 환불 금액 (전체 환불이면 생략 가능)
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestMap, headers);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(
+                "https://api.iamport.kr/payments/cancel",
+                entity,
+                Map.class
+        );
+
+        Map<String, Object> body = response.getBody();
+        if (body != null && body.get("code").equals(0)) {
+            // 환불 성공
+            return true;
+        } else {
+            // 실패 시 로그 확인
+            System.out.println("결제 취소 실패: " + body.get("message"));
+            return false;
+        }
     }
 
 }
