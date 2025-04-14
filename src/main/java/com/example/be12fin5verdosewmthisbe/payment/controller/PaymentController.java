@@ -36,7 +36,6 @@ public class PaymentController {
     @PostMapping("/verify")
     public BaseResponse<String> verifyPayment(@Parameter(description = "결제 검증 요청 정보", required = true) @RequestBody PaymentDto.PaymentVerifyRequest request) {
 
-        // 주문정보테이블 생성 - status = pending
 
         PaymentDto.PaymentData paymentData = paymentService.savePayment(request.getImpUid(), request.getOrderId());
 
