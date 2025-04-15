@@ -32,9 +32,12 @@ public class MarketService {
                 .inventoryId(dto.getInventoryId())
                 .sellerStoreId(dto.getSellerStoreId())
                 .quantity(dto.getQuantity())
+                //.inventoryName()
+                //.sellerStoreName()
                 .price(dto.getPrice())
                 .status(InventorySale.saleStatus.valueOf(dto.getStatus()))
                 .content(dto.getContent())
+                .imageList(new ArrayList<>())
                 .createdAt(Timestamp.from(Instant.now()))
                 .build();
 
@@ -187,7 +190,7 @@ public class MarketService {
                     String buyerName = storeRepository.findById(purchase.getBuyerStoreId())
                             .map(Store::getName)
                             .orElse("알 수 없음");
-                    return new InventoryPurchaseDto.InventoryPurchaseResponseDto(purchase, buyerName);
+                    return new InventoryPurchaseDto.InventoryPurchaseResponseDto(purchase,buyerName);
                 })
                 .toList();
     }*/
