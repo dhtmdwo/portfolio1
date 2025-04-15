@@ -44,7 +44,7 @@ public class InventorySale {
     private List<InventoryPurchase> purchaseList = new ArrayList<>();
 
     @OneToMany(mappedBy = "inventorySale", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Schema(description = "구매 요청 목록")
+    @Schema(description = "등록된 이미지 목록")
     private List<Images> imageList = new ArrayList<>();
 
     public enum saleStatus {
