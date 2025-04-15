@@ -39,7 +39,7 @@ public class Inventory_Purchase {
     @Enumerated(EnumType.STRING)
     @Column(name = "method", nullable = false)
     @Schema(description = "구매 상태", example = "AVAILABLE", allowableValues = {"CREDIT_CARD", "BANK_TRANSFER", "KAKAOPAY"})
-    private Method status;
+    private Method method;
 }
 public enum Status {
     WAITING, PAYMENT, DELIVERY,END,CANCELED
