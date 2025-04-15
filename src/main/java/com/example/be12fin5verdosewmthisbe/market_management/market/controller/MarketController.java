@@ -5,10 +5,9 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.In
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.service.MarketService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/market")
@@ -26,4 +25,11 @@ public class MarketController {
         marketService.purchaseRegister(dto);
         return BaseResponse.success("ok");
     }
+    /*@GetMapping("/get/{storeId}/active")
+    public BaseResponse<List<InventorySaleDto.InventorySaleResponseDto>> getSaleList(@PathVariable Long storeId) {
+        return marketService.getAvailableOrWaitingSales(storeId);
+    }*/
+
+
+
 }

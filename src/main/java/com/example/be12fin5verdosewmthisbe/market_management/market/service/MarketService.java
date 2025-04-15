@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -63,5 +65,29 @@ public class MarketService {
 
         inventoryPurchaseRepository.save(purchase);
     }
+    /*public List<InventorySaleDto.InventorySaleResponseDto> getAvailableOrWaitingSales(Long storeId) {
+        List<InventorySale> sales = inventorySaleRepository.findBySellerStoreIdAndStatusIn(
+                storeId,
+                Arrays.asList(InventorySale.saleStatus.available, InventorySale.saleStatus.waiting)
+        );
+        return sales.stream()
+                .map(sale -> {
+                    String inventoryName = inventoryRepository.findById(sale.getInventoryId())
+                            .map(Inventory::getName)
+                            .orElse("Unknown Inventory");
+
+                    String sellerStoreName = storeRepository.findById(sale.getSellerStoreId())
+                            .map(Store::getName)
+                            .orElse("Unknown Store");
+
+                    return new InventorySaleDto.InventorySaleResponseDto(
+                            inventoryName,
+                            sellerStoreName,
+                            sale.getQuantity(),
+                            sale.getPrice()
+                    );
+                })
+                .toList();
+    }*/
 }
         
