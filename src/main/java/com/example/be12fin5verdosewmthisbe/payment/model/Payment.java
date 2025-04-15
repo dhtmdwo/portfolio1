@@ -46,7 +46,7 @@ public class Payment {
     public enum PaymentMethod {
         CREDIT_CARD,
         BANK_TRANSFER,
-        KAKAOPAY,
+        KAKAOPAY
     }
 
     public enum PaymentStatus {
