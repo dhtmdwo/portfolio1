@@ -89,5 +89,19 @@ public class MarketService {
                 })
                 .toList();
     }*/
+
+    /*public List<InventoryPurchaseDto.InventoryPurchaseResponseDto> getPurchasesBySaleId(Long saleId) {
+        InventorySale sale = inventorySaleRepository.findById(saleId)
+                .orElseThrow(() -> new RuntimeException("판매글이 존재하지 않습니다."));
+
+        return sale.getPurchaseList().stream()
+                .map(purchase -> {
+                    String buyerName = storeRepository.findById(purchase.getBuyerStoreId())
+                            .map(Store::getName)
+                            .orElse("알 수 없음");
+                    return new InventoryPurchaseDto.InventoryPurchaseResponseDto(purchase, buyerName);
+                })
+                .toList();
+    }*/
 }
         

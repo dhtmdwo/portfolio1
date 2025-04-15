@@ -29,6 +29,10 @@ public class MarketController {
     public BaseResponse<List<InventorySaleDto.InventorySaleResponseDto>> getSaleList(@PathVariable Long storeId) {
         return marketService.getAvailableOrWaitingSales(storeId);
     }*/
+    /*@GetMapping("/get/{saleId}/purchaseList")
+    public List<InventoryPurchaseDto.InventoryPurchaseResponseDto> getPurchasesBySaleId(@PathVariable Long saleId) {
+        return marketService.getPurchasesBySaleId(saleId);
+    }*/
 
 
 
