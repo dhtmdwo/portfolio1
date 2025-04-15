@@ -55,4 +55,18 @@ public class InventoryService {
                 .build();
         return inventoryRepository.save(newInventory);
     }
+    public StoreInventory updateInventory(Long StoreinventoryId, InventoryDetailRequestDto dto) {
+        // 1. 기존 재고를 가져오기
+        StoreInventory existingInventory = storeInventoryRepository.findById(StoreinventoryId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ERROR_CODE));
+
+        // 2. 받은 DTO로 기존 재고 수정
+        existingInventory.setName(dto.getName());
+        existingInventory.setMiniquantity(dto.getMiniquantity());
+        existingInventory.setUnit(dto.getUnit());
+        existingInventory.setExpiryDate(dto.getExpiryDate());
+
+        // 3. 수정된 재고 저장
+        return storeInventoryRepository.save(existingInventory);
+    }
 }
