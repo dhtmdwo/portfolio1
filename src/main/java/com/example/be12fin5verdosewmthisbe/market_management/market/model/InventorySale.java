@@ -32,6 +32,8 @@ public class InventorySale {
 
     private String sellerStoreName;
 
+    private String buyerStoreName;
+
     private BigDecimal quantity;
 
     private int price;

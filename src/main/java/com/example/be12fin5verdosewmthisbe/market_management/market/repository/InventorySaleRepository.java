@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface InventorySaleRepository extends JpaRepository<InventorySale, Long> {
     List<InventorySale> findBySellerStoreIdAndStatusIn(Long sellerStoreId, List<InventorySale.saleStatus> statuses);
+    List<InventorySale> findBySellerStoreId(Long sellerStoreId);
 }
         
