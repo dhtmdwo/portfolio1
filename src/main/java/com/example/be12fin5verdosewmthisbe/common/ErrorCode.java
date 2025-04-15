@@ -25,7 +25,12 @@ public enum ErrorCode {
     PAYMENT_VERIFICATION_FAILED(2001,"올바른 결제가 아닙니다."),
     PAYMENT_CANCEL_FAILED(2002,"결제 취소가 실패했습니다."),
     PAYMENT_EMPTY_BODY(2003,"결제 api의 Body가 비어있습니다."),
-    PAYMENT_AUTH_FAILED(2004,"Access Token 발급이 실패했습니다.");
+    PAYMENT_AUTH_FAILED(2004,"Access Token 발급이 실패했습니다."),
+
+    // 장터 관련 에러코드
+    SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
+    PURCHASE_NOT_FOUND(6002,"해당 구매 정보를 찾을 수 없습니다.");
+
 
 
 
