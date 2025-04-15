@@ -4,6 +4,7 @@ import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
+import com.example.be12fin5verdosewmthisbe.user.model.dto.UserInfoDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
 import com.example.be12fin5verdosewmthisbe.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,11 @@ public class UserService implements UserDetailsService {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
         return user;
+    }
+
+    public UserInfoDto.SearchResponse searchUserInfo(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND) );
+        return UserInfoDto.SearchResponse.from(user);
     }
 
 

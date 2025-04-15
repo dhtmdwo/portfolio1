@@ -4,16 +4,15 @@ import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserDto;
+import com.example.be12fin5verdosewmthisbe.user.model.dto.UserInfoDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
 import com.example.be12fin5verdosewmthisbe.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 
@@ -34,7 +33,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<BaseResponse<String>> login(@RequestBody UserDto.LoginRequest dto) {
         User user = userService.login(dto.getEmail(), dto.getPassword());
-        String jwtToken = jwtTokenProvider.createToken(user.getEmail());
+        String jwtToken = jwtTokenProvider.createToken(user);
 
         ResponseCookie cookie = ResponseCookie
                 .from("ATOKEN", jwtToken)
@@ -49,5 +48,12 @@ public class UserController {
                 .body(BaseResponse.success("로그인에 성공했습니다."));
     }
     // 로그인
+
+    @GetMapping("/searchinfo")
+    public BaseResponse<UserInfoDto.SearchResponse> searchInfo(@AuthenticationPrincipal User user) {
+        UserInfoDto.SearchResponse dto = userService.searchUserInfo(user.getEmail());
+        return BaseResponse.success(dto);
+    } // 유저 정보 조회
+
 }
         

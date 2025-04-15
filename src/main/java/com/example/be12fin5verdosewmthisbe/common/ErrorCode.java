@@ -34,7 +34,7 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS(1003,"이미 이메일로 등록된 계정이 존재합니다"),
     BUSINESSNUMBER_ALREADY_EXISTS(1004,"이미 사업자 번호로 등록된 계정이 존재합니다"),
     PHONENUMBER_ALREADY_EXISTS(1005,"이미 휴대폰 번호로 등록된 계정이 존재합니다"),
-    SSN_ALREADY_EXISTS(1005,"이미 주민번호로 등록된 계정이 존재합니다");
+    SSN_ALREADY_EXISTS(1005,"이미 주민번호로 등록된 계정이 존재합니다"),
 
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),

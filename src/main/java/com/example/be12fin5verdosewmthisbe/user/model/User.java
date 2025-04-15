@@ -22,7 +22,7 @@ public class User implements UserDetails{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length=200, nullable = false)
+    @Column(length=200)
     private String name;
 
     @Column(length=200, unique = true, nullable = false)
@@ -30,13 +30,13 @@ public class User implements UserDetails{
 
     private String password;
 
-    @Column(length=200, unique = true, nullable = false)
+    @Column(length=200, unique = true)
     private String businessNumber;
 
-    @Column(length=600, unique = true, nullable = false)
+    @Column(length=600, unique = true)
     private String phoneNumber;
 
-    @Column(length=600, unique = true, nullable = false)
+    @Column(length=600, unique = true)
     private String ssn; // 주민번호
 
 
@@ -72,7 +72,7 @@ public class User implements UserDetails{
 
     @Override
     public String getUsername() {
-        return name;
+        return email;
     }
 }
         
