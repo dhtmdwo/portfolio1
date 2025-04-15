@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class MarketController {
     private final MarketService marketService;
 
-    @PostMapping
+    @PostMapping("/registerSale")
     public BaseResponse<String> registerInventorySale(@RequestBody InventorySaleDto.InventorySaleRequestDto dto) {
         marketService.saleRegister(dto);
         return BaseResponse.success("ok");
     }
-    @PostMapping
-    public BaseResponse<String> register(@RequestBody InventoryPurchaseDto.InventoryPurchaseRequestDto dto) {
+    @PostMapping("/registerPurchase")
+    public BaseResponse<String> registerInventoryPurchase(@RequestBody InventoryPurchaseDto.InventoryPurchaseRequestDto dto) {
         marketService.purchaseRegister(dto);
         return BaseResponse.success("ok");
     }
