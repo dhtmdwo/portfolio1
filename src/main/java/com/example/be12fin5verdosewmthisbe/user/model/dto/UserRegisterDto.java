@@ -45,12 +45,6 @@ public class UserRegisterDto {
                     .message("회원가입 성공")
                     .build();
         }
-
-        public static SignupResponse error(String message) {
-            return SignupResponse.builder()
-                    .message(message)
-                    .build();
-        }
     }
 
 }
