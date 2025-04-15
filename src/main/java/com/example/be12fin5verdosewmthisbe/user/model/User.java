@@ -22,7 +22,7 @@ public class User implements UserDetails{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length=200, nullable = false)
+    @Column(length=200)
     private String name;
 
     @Column(length=200, unique = true, nullable = false)
@@ -30,14 +30,21 @@ public class User implements UserDetails{
 
     private String password;
 
-    @Column(length=200, unique = true, nullable = false)
+    @Column(length=200, unique = true)
     private String businessNumber;
 
-    @Column(length=600, unique = true, nullable = false)
+    @Column(length=600, unique = true)
     private String phoneNumber;
 
-    @Column(length=600, unique = true, nullable = false)
+    @Column(length=600, unique = true)
     private String ssn; // 주민번호
+
+    @Column(length=600)
+    private String emailVerify; // 이메일 인증
+    // 나중에 Redis로 만료시간 지정 가능
+
+    @Column(length=600)
+    private String phoneVerify; // 전화번호 인증
 
 
     @Override
@@ -72,7 +79,7 @@ public class User implements UserDetails{
 
     @Override
     public String getUsername() {
-        return name;
+        return email;
     }
 }
         

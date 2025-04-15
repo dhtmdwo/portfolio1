@@ -1,27 +1,37 @@
 package com.example.be12fin5verdosewmthisbe.inventory.model;
 
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "store_inventory")
 @Data
+@NoArgsConstructor  // JPA에서 필요
+@AllArgsConstructor // Builder 내부에서 사용
+@Builder
 @Schema(description = "매장별재고")
-public class Store_Inventory {
+public class StoreInventory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Store_inventory_id")
     @Schema(description = "매장별재고 ID", example = "1")
-    private Long Store_inventory_Id;
+    private Long StoreinventoryId;
 
     @Column(name = "expiry_date")
-    @Schema(description = "유통기한", example = "2026-04-01T00:00:00Z")
-    private Timestamp expiryDate;
+    @Schema(description = "입고날로부터 사용가능한 유통기한", example = "5")
+    private Integer expiryDate;
 
     @Column(name = "unit")
     @Schema(description = "사용단위", example = "kg,g,ml")
@@ -37,7 +47,11 @@ public class Store_Inventory {
 
     @Column(name = "minimum_quantity")
     @Schema(description = "최소수량", example = "12.50(kg)")
-    private BigDecimal minimum_quantity;
+    private Integer miniquantity;
+
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Schema(description = "메뉴 레시피 목록")
+    private List<Inventory> inventoryList = new ArrayList<>();
 
 }
 
