@@ -28,7 +28,8 @@ public enum ErrorCode {
     PAYMENT_AUTH_FAILED(2004,"Access Token 발급이 실패했습니다."),
 
     // 장터 관련 에러코드
-    SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다.");
+    SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
+    PURCHASE_NOT_FOUND(6002,"해당 구매 정보를 찾을 수 없습니다.");
 
 
 
