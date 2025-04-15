@@ -66,6 +66,16 @@ public class UserService implements UserDetailsService {
         return UserInfoDto.SearchResponse.from(user);
     }
 
+    public String updateUserInfo(UserInfoDto.updateRequest dto) {
+        User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 이미 다른 폰 번호 있는지 로직 검사 해야한다.
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        userRepository.save(user);
+        return "성공적으로 정보가 수정되었습니다.";
+    }
+
 
 }
         

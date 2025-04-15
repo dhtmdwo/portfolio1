@@ -55,5 +55,13 @@ public class UserController {
         return BaseResponse.success(dto);
     } // 유저 정보 조회
 
+    @PutMapping("/updateinfo")
+    public BaseResponse<String> updateInfo(@RequestBody UserInfoDto.updateRequest dto) {
+        String result = userService.updateUserInfo(dto);
+        return BaseResponse.success(result);
+    } // 유저 정보 수정
+
+
+
 }
         
