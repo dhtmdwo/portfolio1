@@ -1,11 +1,13 @@
 package com.example.be12fin5verdosewmthisbe.order.repository;
 
-import jakarta.persistence.criteria.Order;
+import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    // Your code here
+    List<Order> findByStoreId(Long storeId);
 }
         

@@ -18,23 +18,27 @@ import java.util.List;
 @NoArgsConstructor
 @Table(name = "orders")
 public class Order {
-@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    private Long storeId;
 
     private Integer tableNumber;
 
     private Integer totalPrice;
 
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     private Timestamp createdAt;
 
+    @Enumerated(EnumType.STRING)
     private OrderType orderType;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "주문에 들어온 메뉴 목록")
-    private List<OrderMenu> OrderMenuList = new ArrayList<>();
+    private List<OrderMenu> orderMenuList = new ArrayList<>();
 
 
     public enum OrderType {
@@ -47,6 +51,10 @@ public class Order {
     public enum OrderStatus {
         CANCELLED,
         PAID
+    }
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = new Timestamp(System.currentTimeMillis());
     }
 }
         
