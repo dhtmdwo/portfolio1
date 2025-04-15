@@ -26,7 +26,11 @@ public class InventorySale {
 
     private Long inventoryId;
 
+    private String inventoryName;
+
     private Long sellerStoreId;
+
+    private String sellerStoreName;
 
     private BigDecimal quantity;
 
