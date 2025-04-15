@@ -52,20 +52,14 @@ public class InventoryController {
 
     @PutMapping("/storeInventory/{id}")
     public BaseResponse<StoreInventory> updateInventory(@PathVariable Long id, @RequestBody InventoryDetailRequestDto dto) {
-        // 1. 기존 재고를 가져오기
-        StoreInventory existingInventory = inventoryService.findById(id);
-
-        // 2. 받은 DTO로 기존 재고 수정
-        existingInventory.setName(dto.getName());
-        existingInventory.setMiniquantity(dto.getMiniquantity());
-        existingInventory.setUnit(dto.getUnit());
-        existingInventory.setExpiryDate(dto.getExpiryDate());
-
-        // 3. 수정된 재고 저장
-        StoreInventory updatedInventory = inventoryService.save(existingInventory);
-
-        // 4. 성공 응답 반환
+        StoreInventory updatedInventory = inventoryService.updateInventory(id, dto);
         return BaseResponse.success(updatedInventory);
+    }
+
+    @DeleteMapping("/storeInventory/{id}")
+    public BaseResponse<String> deleteInventory(@PathVariable Long id) {
+        inventoryService.deleteById(id);
+        return BaseResponse.success("재고가 성공적으로 삭제되었습니다.");
     }
 
 }
