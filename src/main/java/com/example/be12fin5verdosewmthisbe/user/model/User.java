@@ -28,16 +28,15 @@ public class User implements UserDetails{
     @Column(length=200, unique = true, nullable = false)
     private String email;
 
-    @Column(length=15, nullable = false)
     private String password;
 
-    @Column(length=30, unique = true, nullable = false)
+    @Column(length=200, unique = true, nullable = false)
     private String businessNumber;
 
-    @Column(length=30, unique = true, nullable = false)
+    @Column(length=600, unique = true, nullable = false)
     private String phoneNumber;
 
-    @Column(length=15, unique = true, nullable = false)
+    @Column(length=600, unique = true, nullable = false)
     private String ssn; // 주민번호
 
 

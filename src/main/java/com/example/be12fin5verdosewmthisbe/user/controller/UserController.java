@@ -1,6 +1,8 @@
 package com.example.be12fin5verdosewmthisbe.user.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
+import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
+import com.example.be12fin5verdosewmthisbe.user.model.User;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
 import com.example.be12fin5verdosewmthisbe.user.service.UserService;
@@ -16,21 +18,23 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Duration;
 
 @RestController
-@RequestMapping("/api/user")
+    @RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    @PostMapping("/singUp")
-    public ResponseEntity<BaseResponse<String>> singUp(@RequestBody UserRegisterDto.SignupRequest dto) {
-
-        return ResponseEntity.ok(BaseResponse.success("회원가입에 성공하셨습니다"));
+    @PostMapping("/singup")
+    public ResponseEntity<BaseResponse<UserRegisterDto.SignupResponse>> singUp(@RequestBody UserRegisterDto.SignupRequest dto) {
+        UserRegisterDto.SignupResponse signupResponse = userService.signUp(dto);
+        return ResponseEntity.ok(BaseResponse.success(signupResponse));
     }
     //회원가입
 
     @PostMapping("/login")
     public ResponseEntity<BaseResponse<String>> login(@RequestBody UserDto.LoginRequest dto) {
-        String jwtToken = userService.login(dto.getEmail(), dto.getPassword());
+        User user = userService.login(dto.getEmail(), dto.getPassword());
+        String jwtToken = jwtTokenProvider.createToken(user.getEmail());
 
         ResponseCookie cookie = ResponseCookie
                 .from("ATOKEN", jwtToken)

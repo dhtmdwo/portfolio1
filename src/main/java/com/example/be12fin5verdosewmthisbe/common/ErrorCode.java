@@ -29,8 +29,11 @@ public enum ErrorCode {
 
     // 유저 관련 에러코드
     USER_NOT_FOUND(1001, "사용자가 존재하지 않습니다."),
-    INVALID_PASSWORD(1002,"비밀번호가 올바르지 않습니다.");
-
+    INVALID_PASSWORD(1002,"비밀번호가 올바르지 않습니다."),
+    EMAIL_ALREADY_EXISTS(1003,"이미 이메일로 등록된 계정이 존재합니다"),
+    BUSINESSNUMBER_ALREADY_EXISTS(1004,"이미 사업자 번호로 등록된 계정이 존재합니다"),
+    PHONENUMBER_ALREADY_EXISTS(1005,"이미 휴대폰 번호로 등록된 계정이 존재합니다"),
+    SSN_ALREADY_EXISTS(1005,"이미 주민번호로 등록된 계정이 존재합니다");
 
 
 
