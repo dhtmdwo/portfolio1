@@ -11,6 +11,7 @@ import com.example.be12fin5verdosewmthisbe.payment.model.Payment;
 import com.example.be12fin5verdosewmthisbe.payment.repository.PaymentRepository;
 import com.example.be12fin5verdosewmthisbe.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -55,18 +56,32 @@ public class InventoryService {
                 .build();
         return inventoryRepository.save(newInventory);
     }
-    public StoreInventory updateInventory(Long StoreinventoryId, InventoryDetailRequestDto dto) {
-        // 1. 기존 재고를 가져오기
-        StoreInventory existingInventory = storeInventoryRepository.findById(StoreinventoryId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ERROR_CODE));
+    // ID로 기존 재고 조회
+    public StoreInventory findById(Long id) {
+        return storeInventoryRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+    }
 
-        // 2. 받은 DTO로 기존 재고 수정
-        existingInventory.setName(dto.getName());
-        existingInventory.setMiniquantity(dto.getMiniquantity());
-        existingInventory.setUnit(dto.getUnit());
-        existingInventory.setExpiryDate(dto.getExpiryDate());
+    public StoreInventory updateInventory(Long id, InventoryDetailRequestDto dto) {
+        StoreInventory inventory = storeInventoryRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
 
-        // 3. 수정된 재고 저장
-        return storeInventoryRepository.save(existingInventory);
+        inventory.setName(dto.getName());
+        inventory.setMiniquantity(dto.getMiniquantity());
+        inventory.setUnit(dto.getUnit());
+        inventory.setExpiryDate(dto.getExpiryDate());
+
+        return storeInventoryRepository.save(inventory);
+    }
+
+    public void deleteById(Long id) {
+        StoreInventory inventory = storeInventoryRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+
+        try {
+            storeInventoryRepository.delete(inventory);
+        } catch (DataIntegrityViolationException e) {
+            throw new CustomException(ErrorCode.INVENTORY_DELETE_FAIL);
+        }
     }
 }
