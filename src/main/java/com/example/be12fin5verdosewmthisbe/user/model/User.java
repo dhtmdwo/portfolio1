@@ -39,6 +39,13 @@ public class User implements UserDetails{
     @Column(length=600, unique = true)
     private String ssn; // 주민번호
 
+    @Column(length=600)
+    private String emailVerify; // 이메일 인증
+    // 나중에 Redis로 만료시간 지정 가능
+
+    @Column(length=600)
+    private String phoneVerify; // 전화번호 인증
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -18,6 +18,19 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MariaDBDialect
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: {GOOGLE_ID}
+    password: {APP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+            required: true
+          auth: true
+          timeout: 5000
 jwt:
   secret: ${SECRETKEY}
   expiration: 3600000 # 1 hour in ms

@@ -8,6 +8,8 @@ import com.example.be12fin5verdosewmthisbe.user.model.dto.UserInfoDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
 import com.example.be12fin5verdosewmthisbe.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class UserService implements UserDetailsService {
     // Your code here
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender mailSender;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -76,6 +80,19 @@ public class UserService implements UserDetailsService {
         return "성공적으로 정보가 수정되었습니다.";
     }
 
+
+    public String generateCode() {
+        return UUID.randomUUID().toString().substring(0, 6); // 예: "A1B2C3"
+    }
+
+    public void sendEmail(String to, String subject, String content) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(content);
+
+        mailSender.send(message);
+    }
 
 }
         
