@@ -4,9 +4,12 @@ import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
+import com.example.be12fin5verdosewmthisbe.user.model.dto.UserInfoDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
 import com.example.be12fin5verdosewmthisbe.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +25,7 @@ public class UserService implements UserDetailsService {
     // Your code here
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender mailSender;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -60,6 +65,34 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
+    public UserInfoDto.SearchResponse searchUserInfo(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND) );
+        return UserInfoDto.SearchResponse.from(user);
+    }
+
+    public String updateUserInfo(UserInfoDto.updateRequest dto) {
+        User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 이미 다른 폰 번호 있는지 로직 검사 해야한다.
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        userRepository.save(user);
+        return "성공적으로 정보가 수정되었습니다.";
+    }
+
+
+    public String generateCode() {
+        return UUID.randomUUID().toString().substring(0, 6); // 예: "A1B2C3"
+    }
+
+    public void sendEmail(String to, String subject, String content) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(content);
+
+        mailSender.send(message);
+    }
 
 }
         
