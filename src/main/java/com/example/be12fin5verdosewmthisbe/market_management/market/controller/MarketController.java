@@ -1,0 +1,55 @@
+package com.example.be12fin5verdosewmthisbe.market_management.market.controller;
+
+import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventoryPurchaseDto;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
+import com.example.be12fin5verdosewmthisbe.market_management.market.service.MarketService;
+import com.fasterxml.jackson.databind.ser.Serializers;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/market")
+@RequiredArgsConstructor
+public class MarketController {
+    private final MarketService marketService;
+
+    @PostMapping("/registerSale")
+    public BaseResponse<String> registerInventorySale(@RequestBody InventorySaleDto.InventorySaleRequestDto dto) {
+        marketService.saleRegister(dto);
+        return BaseResponse.success("ok");
+    }
+    @PostMapping("/registerPurchase")
+    public BaseResponse<String> registerInventoryPurchase(@RequestBody InventoryPurchaseDto.InventoryPurchaseRequestDto dto) {
+        marketService.purchaseRegister(dto);
+        return BaseResponse.success("ok");
+    }
+    /*@GetMapping("/get/{storeId}/active")
+    public BaseResponse<List<InventorySaleDto.InventorySaleResponseDto>> getSaleList(@PathVariable Long storeId) {
+        return marketService.getAvailableOrWaitingSales(storeId);
+    }*/
+    /*@GetMapping("/get/{saleId}/purchaseList")
+    public List<InventoryPurchaseDto.InventoryPurchaseResponseDto> getPurchasesBySaleId(@PathVariable Long saleId) {
+        return marketService.getPurchasesBySaleId(saleId);
+    }*/
+
+    @GetMapping("/get/{saleId}/detail")
+    public BaseResponse<InventorySale> getSalesDetail(@PathVariable Long saleId) {
+        return BaseResponse.success(marketService.findInventorySaleById(saleId));
+    }
+
+    @PostMapping("/approve")
+    public BaseResponse<String> approve(
+            @RequestParam Long saleId,
+            @RequestParam Long purchaseId
+    ) {
+        marketService.approvePurchase(saleId, purchaseId);
+        return BaseResponse.success("ok");
+    }
+
+
+
+}
