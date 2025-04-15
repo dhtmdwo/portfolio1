@@ -1,9 +1,11 @@
 package com.example.be12fin5verdosewmthisbe.market_management.market.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventoryPurchaseDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.service.MarketService;
+import com.fasterxml.jackson.databind.ser.Serializers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +35,12 @@ public class MarketController {
     public List<InventoryPurchaseDto.InventoryPurchaseResponseDto> getPurchasesBySaleId(@PathVariable Long saleId) {
         return marketService.getPurchasesBySaleId(saleId);
     }*/
+
+    @GetMapping("/get/{saleId}/detail")
+    public BaseResponse<InventorySale> getSalesDetail(@PathVariable Long saleId) {
+        return BaseResponse.success(marketService.findInventorySaleById(saleId));
+    }
+
 
 
 

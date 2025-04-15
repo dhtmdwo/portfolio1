@@ -65,6 +65,12 @@ public class MarketService {
 
         inventoryPurchaseRepository.save(purchase);
     }
+
+    public InventorySale findInventorySaleById(Long id) {
+        return inventorySaleRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
+    }
+
     /*public List<InventorySaleDto.InventorySaleResponseDto> getAvailableOrWaitingSales(Long storeId) {
         List<InventorySale> sales = inventorySaleRepository.findBySellerStoreIdAndStatusIn(
                 storeId,
@@ -74,11 +80,11 @@ public class MarketService {
                 .map(sale -> {
                     String inventoryName = inventoryRepository.findById(sale.getInventoryId())
                             .map(Inventory::getName)
-                            .orElse("Unknown Inventory");
+                            .orElse("Unknown Inventory"); // 예외 처리
 
                     String sellerStoreName = storeRepository.findById(sale.getSellerStoreId())
                             .map(Store::getName)
-                            .orElse("Unknown Store");
+                            .orElse("Unknown Store"); // 예외 처리
 
                     return new InventorySaleDto.InventorySaleResponseDto(
                             inventoryName,
@@ -92,7 +98,7 @@ public class MarketService {
 
     /*public List<InventoryPurchaseDto.InventoryPurchaseResponseDto> getPurchasesBySaleId(Long saleId) {
         InventorySale sale = inventorySaleRepository.findById(saleId)
-                .orElseThrow(() -> new RuntimeException("판매글이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
 
         return sale.getPurchaseList().stream()
                 .map(purchase -> {
