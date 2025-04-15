@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.option.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
+import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,7 +34,10 @@ public class Option {
     @Schema(description = "옵션이 속한 카테고리 정보")
     private Category category;
 
+    @OneToMany(mappedBy = "option", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderOption> orderOptionList = new ArrayList<>();
+
 
     @OneToMany(mappedBy = "option", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OptionValue> optionValues = new ArrayList<>();
+    private List<OptionValue> optionValueList = new ArrayList<>();
 }
