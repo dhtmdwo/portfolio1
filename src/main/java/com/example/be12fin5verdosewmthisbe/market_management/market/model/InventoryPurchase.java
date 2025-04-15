@@ -1,9 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.market_management.market.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,6 +31,13 @@ public class InventoryPurchase {
     private purchaseMethod method;
 
     private Timestamp createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_sale_id")
+    @Schema(description = "구매요청들이 속한 판매 테이블 정보")
+    private InventorySale inventorySale;
+
+
 
     public enum purchaseStatus {
         waiting,
