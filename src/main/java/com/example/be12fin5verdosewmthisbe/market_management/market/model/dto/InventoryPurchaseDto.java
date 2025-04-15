@@ -16,6 +16,7 @@ public class InventoryPurchaseDto {
         private String status;            // 예: "waiting", "payment"
         private String method;            // 예: "credit_card", "cash"
     }
+    @Data
     public static class InventoryPurchaseResponseDto {
         private Long id;
         private String buyerStoreName;
