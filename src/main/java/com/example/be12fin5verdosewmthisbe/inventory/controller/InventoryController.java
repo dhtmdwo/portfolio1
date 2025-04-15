@@ -44,6 +44,28 @@ public class InventoryController {
       return BaseResponse.success("ok");
     }
 
+    @GetMapping("/storeInventory/{id}")
+    public BaseResponse<StoreInventory> getInventoryById(@PathVariable Long id) {
+        StoreInventory inventory = inventoryService.findById(id);
+        return BaseResponse.success(inventory);
+    }
 
+    @PutMapping("/storeInventory/{id}")
+    public BaseResponse<StoreInventory> updateInventory(@PathVariable Long id, @RequestBody InventoryDetailRequestDto dto) {
+        // 1. 기존 재고를 가져오기
+        StoreInventory existingInventory = inventoryService.findById(id);
+
+        // 2. 받은 DTO로 기존 재고 수정
+        existingInventory.setName(dto.getName());
+        existingInventory.setMiniquantity(dto.getMiniquantity());
+        existingInventory.setUnit(dto.getUnit());
+        existingInventory.setExpiryDate(dto.getExpiryDate());
+
+        // 3. 수정된 재고 저장
+        StoreInventory updatedInventory = inventoryService.save(existingInventory);
+
+        // 4. 성공 응답 반환
+        return BaseResponse.success(updatedInventory);
+    }
 
 }
