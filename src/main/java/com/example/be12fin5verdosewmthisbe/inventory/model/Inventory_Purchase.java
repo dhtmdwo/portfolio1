@@ -29,7 +29,7 @@ public class Inventory_Purchase {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    @Schema(description = "구매 상태", example = "AVAILABLE", allowableValues = {"WAITING", "PAYMENT", "DELIVERY","END","CANCELED")
+    @Schema(description = "구매 상태", example = "AVAILABLE", allowableValues = {"WAITING", "PAYMENT", "DELIVERY","END","CANCELED"})
     private Status status;
 
     @Column(name = "create_at")
@@ -38,7 +38,7 @@ public class Inventory_Purchase {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "method", nullable = false)
-    @Schema(description = "구매 상태", example = "AVAILABLE", allowableValues = {"CREDIT_CARD", "BANK_TRANSFER", "KAKAOPAY")
+    @Schema(description = "구매 상태", example = "AVAILABLE", allowableValues = {"CREDIT_CARD", "BANK_TRANSFER", "KAKAOPAY"})
     private Method status;
 }
 public enum Status {
