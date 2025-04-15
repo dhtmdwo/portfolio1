@@ -41,6 +41,14 @@ public class MarketController {
         return BaseResponse.success(marketService.findInventorySaleById(saleId));
     }
 
+    @PostMapping("/approve")
+    public BaseResponse<String> approve(
+            @RequestParam Long saleId,
+            @RequestParam Long purchaseId
+    ) {
+        marketService.approvePurchase(saleId, purchaseId);
+        return BaseResponse.success("ok");
+    }
 
 
 

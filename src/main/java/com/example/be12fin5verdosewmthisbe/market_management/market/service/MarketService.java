@@ -12,6 +12,7 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.repository.I
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventorySaleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -69,6 +70,31 @@ public class MarketService {
     public InventorySale findInventorySaleById(Long id) {
         return inventorySaleRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
+    }
+
+    @Transactional
+    public void approvePurchase(Long saleId, Long purchaseId) {
+        InventorySale sale = inventorySaleRepository.findById(saleId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
+
+        List<InventoryPurchase> purchases = sale.getPurchaseList();
+
+        boolean found = false;
+
+        for (InventoryPurchase purchase : purchases) {
+            if (purchase.getId().equals(purchaseId)) {
+                purchase.setStatus(InventoryPurchase.purchaseStatus.payment);
+                found = true;
+            } else {
+                purchase.setStatus(InventoryPurchase.purchaseStatus.cancelled);
+            }
+        }
+
+        if (!found) {
+            throw new CustomException(ErrorCode.PURCHASE_NOT_FOUND);
+        }
+
+        inventoryPurchaseRepository.saveAll(purchases);
     }
 
     /*public List<InventorySaleDto.InventorySaleResponseDto> getAvailableOrWaitingSales(Long storeId) {
