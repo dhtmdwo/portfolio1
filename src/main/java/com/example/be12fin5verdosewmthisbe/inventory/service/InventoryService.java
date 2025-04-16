@@ -34,6 +34,7 @@ public class InventoryService {
                 .name(dto.getName())
                 .miniquantity(dto.getMiniquantity())
                 .unit(dto.getUnit())
+                .quantity(BigDecimal.ZERO)
                 .expiryDate(dto.getExpiryDate())
                 .build();
         return storeInventoryRepository.save(newStoreInventory);
@@ -57,13 +58,13 @@ public class InventoryService {
         return inventoryRepository.save(newInventory);
     }
     // ID로 기존 재고 조회
-    public StoreInventory findById(Long id) {
-        return storeInventoryRepository.findById(id)
+    public StoreInventory findById(Long inventoryId) {
+        return storeInventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
     }
 
-    public StoreInventory updateInventory(Long id, InventoryDetailRequestDto dto) {
-        StoreInventory inventory = storeInventoryRepository.findById(id)
+    public StoreInventory updateInventory(Long inventoryId, InventoryDetailRequestDto dto) {
+        StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
 
         inventory.setName(dto.getName());
@@ -74,8 +75,9 @@ public class InventoryService {
         return storeInventoryRepository.save(inventory);
     }
 
-    public void deleteById(Long id) {
-        StoreInventory inventory = storeInventoryRepository.findById(id)
+
+    public void deleteById(Long inventoryId) {
+        StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
 
         try {
