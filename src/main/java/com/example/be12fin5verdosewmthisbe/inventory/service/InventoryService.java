@@ -29,20 +29,30 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
     private final StoreInventoryRepository storeInventoryRepository;
 
-    public StoreInventory registerInventory(InventoryDetailRequestDto dto){
-        StoreInventory newStoreInventory = StoreInventory.builder()
-                .name(dto.getName())
-                .miniquantity(dto.getMiniquantity())
-                .unit(dto.getUnit())
-                .expiryDate(dto.getExpiryDate())
-                .build();
-        return storeInventoryRepository.save(newStoreInventory);
+    public StoreInventory registerInventory(InventoryDetailRequestDto dto) {
+        // 이름 중복 검사
+        if (storeInventoryRepository.existsByName(dto.getName())) {
+            throw new CustomException(ErrorCode.INVENTORY_DUPLICATE_NAME);
+        }
 
+        try {
+            StoreInventory newStoreInventory = StoreInventory.builder()
+                    .name(dto.getName())
+                    .miniquantity(dto.getMiniquantity())
+                    .unit(dto.getUnit())
+                    .quantity(BigDecimal.ZERO)
+                    .expiryDate(dto.getExpiryDate())
+                    .build();
+
+            return storeInventoryRepository.save(newStoreInventory);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INVENTORY_REGISTER_FAIL);
+        }
     }
 
     public Inventory DetailInventory(InventoryDto dto) {
         StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
-                .orElseThrow(()-> new CustomException(ErrorCode.ERROR_CODE));
+                .orElseThrow(()-> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
 
         Integer unitPrice = new BigDecimal(dto.getTotalPrice()).divide(dto.getQuantity(),2, RoundingMode.CEILING).intValue();
         Timestamp purchaseDate = dto.getPurchaseDate();
@@ -57,25 +67,32 @@ public class InventoryService {
         return inventoryRepository.save(newInventory);
     }
     // ID로 기존 재고 조회
-    public StoreInventory findById(Long id) {
-        return storeInventoryRepository.findById(id)
+    public StoreInventory findById(Long inventoryId) {
+        return storeInventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
     }
 
-    public StoreInventory updateInventory(Long id, InventoryDetailRequestDto dto) {
-        StoreInventory inventory = storeInventoryRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+    public StoreInventory updateInventory(Long inventoryId, InventoryDetailRequestDto dto) {
+        try {
+            StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
 
-        inventory.setName(dto.getName());
-        inventory.setMiniquantity(dto.getMiniquantity());
-        inventory.setUnit(dto.getUnit());
-        inventory.setExpiryDate(dto.getExpiryDate());
+            inventory.setName(dto.getName());
+            inventory.setMiniquantity(dto.getMiniquantity());
+            inventory.setUnit(dto.getUnit());
+            inventory.setExpiryDate(dto.getExpiryDate());
 
-        return storeInventoryRepository.save(inventory);
+            return storeInventoryRepository.save(inventory);
+
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INVENTORY_UPDATE_FAIL);
+        }
     }
 
-    public void deleteById(Long id) {
-        StoreInventory inventory = storeInventoryRepository.findById(id)
+
+
+    public void deleteById(Long inventoryId) {
+        StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
 
         try {

@@ -24,7 +24,7 @@ import java.util.List;
 @Tag(name = "Inventory", description = "재고 관련 API")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/inventory")
+@RequestMapping("/api/inventory")
 @Tag(name = "재고관리", description = "재고 관리 API")
 public class InventoryController {
     private final InventoryService inventoryService;
@@ -44,22 +44,26 @@ public class InventoryController {
       return BaseResponse.success("ok");
     }
 
-    @GetMapping("/storeInventory/{id}")
-    public BaseResponse<StoreInventory> getInventoryById(@PathVariable Long id) {
-        StoreInventory inventory = inventoryService.findById(id);
+    @GetMapping("/storeInventory/{inventoryId}")
+    public BaseResponse<StoreInventory> getInventoryById(@PathVariable Long inventoryId) {
+        StoreInventory inventory = inventoryService.findById(inventoryId);
         return BaseResponse.success(inventory);
     }
 
-    @PutMapping("/storeInventory/{id}")
-    public BaseResponse<StoreInventory> updateInventory(@PathVariable Long id, @RequestBody InventoryDetailRequestDto dto) {
-        StoreInventory updatedInventory = inventoryService.updateInventory(id, dto);
+    @PutMapping("/storeInventory/{inventoryId}")
+    public BaseResponse<StoreInventory> updateInventory(
+            @PathVariable Long inventoryId,
+            @RequestBody InventoryDetailRequestDto dto) {
+        StoreInventory updatedInventory = inventoryService.updateInventory(inventoryId, dto);
         return BaseResponse.success(updatedInventory);
     }
 
-    @DeleteMapping("/storeInventory/{id}")
-    public BaseResponse<String> deleteInventory(@PathVariable Long id) {
-        inventoryService.deleteById(id);
+    @DeleteMapping("/storeInventory/{inventoryId}")
+    public BaseResponse<String> deleteInventory(@PathVariable Long inventoryId) {
+        inventoryService.deleteById(inventoryId);
         return BaseResponse.success("재고가 성공적으로 삭제되었습니다.");
     }
+
+
 
 }
