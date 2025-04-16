@@ -7,6 +7,8 @@ import com.example.be12fin5verdosewmthisbe.user.model.dto.UserDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserInfoDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
 import com.example.be12fin5verdosewmthisbe.user.service.UserService;
+import com.example.be12fin5verdosewmthisbe.user.model.dto.PhoneVerificationDto;
+import com.example.be12fin5verdosewmthisbe.user.service.PhoneVerificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -22,8 +24,9 @@ import java.time.Duration;
 public class UserController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PhoneVerificationService phoneVerificationService;
 
-    @PostMapping("/singup")
+    @PostMapping("/signup")
     public ResponseEntity<BaseResponse<UserRegisterDto.SignupResponse>> singUp(@RequestBody UserRegisterDto.SignupRequest dto) {
         UserRegisterDto.SignupResponse signupResponse = userService.signUp(dto);
         return ResponseEntity.ok(BaseResponse.success(signupResponse));
@@ -77,5 +80,16 @@ public class UserController {
 //        throw new CustomException(ErrorCode.INVALID_CODE);
 //    }
 
+    @PostMapping("/smssend")
+    public BaseResponse<String> sendCode(@RequestBody PhoneVerificationDto.SmsSendRequestDto dto) {
+        phoneVerificationService.sendCertificationCode(dto.getPhoneNum());
+        return BaseResponse.success("인증번호 전송 완료");
+    }
+
+    @PostMapping("/verify")
+    public BaseResponse<String> verifyCode(@RequestBody PhoneVerificationDto.VerifyRequestDto dto) {
+        phoneVerificationService.verifyCertificationCode(dto.getPhoneNum(), dto.getCertificationCode());
+        return BaseResponse.success("인증 성공");
+    }
 }
         

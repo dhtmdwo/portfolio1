@@ -36,6 +36,11 @@ public enum ErrorCode {
     PHONENUMBER_ALREADY_EXISTS(1005,"이미 휴대폰 번호로 등록된 계정이 존재합니다"),
     SSN_ALREADY_EXISTS(1005,"이미 주민번호로 등록된 계정이 존재합니다"),
     SMS_SEND_FAILED(1006,"SMS 전송에 실패했습니다."),
+    VERIFICATION_NOT_FOUND(1007, "인증 요청을 찾을 수 없습니다."),
+    ALREADY_VERIFIED(1008, "이미 인증이 완료된 전화번호입니다."),
+    INVALID_VERIFICATION_CODE(1009, "인증번호가 올바르지 않습니다."),
+    EXPIRED_VERIFICATION_CODE(1010, "인증번호가 만료되었습니다."),
+    PHONE_NOT_VERIFIED(1011, "전화번호가 인증되지 않았습니다."),
 
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
