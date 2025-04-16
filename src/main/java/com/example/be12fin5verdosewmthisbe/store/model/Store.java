@@ -18,10 +18,10 @@ public class Store {
     @Column(length=200)
     private String name;
 
-    @Column(length=200, unique = true, nullable = false)
+    //@Column(length=200, unique = true, nullable = false)
     private String address;
 
-    @Column(length=200, unique = true, nullable = false)
+    //@Column(length=200, unique = true, nullable = false)
     private String phoneNumber;
 
     @OneToOne

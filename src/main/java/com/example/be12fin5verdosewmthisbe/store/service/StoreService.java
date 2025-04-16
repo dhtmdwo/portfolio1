@@ -17,11 +17,11 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
 
-    public void registerStore(StoreDto.RegistRequest dto, String emailUrl) {
+    public String registerStore(StoreDto.RegistRequest dto, String emailUrl) {
         User user = userRepository.findByEmail(emailUrl).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND) );
-        Store store = dto.toEntity(user);
-        storeRepository.save(store);
-
+        Store registerStore = dto.toEntity(user);
+        Store store =  storeRepository.save(registerStore);
+        return  String.valueOf(store.getId());
     }
 
 }

@@ -40,9 +40,10 @@ public enum ErrorCode {
 
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
-    PURCHASE_NOT_FOUND(6002,"해당 구매 정보를 찾을 수 없습니다.");
+    PURCHASE_NOT_FOUND(6002,"해당 구매 정보를 찾을 수 없습니다."),
 
-
+    // 상점 관련 에러코드
+    STORE_NOT_EXIST(7001,"상점을 찾을 수 없습니다.");
 
 
 
