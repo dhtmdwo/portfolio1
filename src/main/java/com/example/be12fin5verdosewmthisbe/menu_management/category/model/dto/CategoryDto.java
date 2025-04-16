@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 public class CategoryDto {
 
     @Schema(description = "카테고리 등록 요청 DTO")
@@ -14,6 +16,14 @@ public class CategoryDto {
         @Schema(description = "카테고리 이름", example = "한식")
         private String name;
     }
+    @Schema(description = "카테고리 삭제 요청 DTO")
+    @Getter
+    public static class deleteDto {
+        @Schema(description = "카테고리 이름", example = "한식")
+        private List<String> names;
+    }
+
+
 
     @Schema(description = "카테고리 수정 요청 DTO")
     @Getter
@@ -29,11 +39,13 @@ public class CategoryDto {
     @Setter
     @AllArgsConstructor
     public static class responseDto {
+        @Schema(description = "카테고리 아이디", example = "1")
+        private Long id;
         @Schema(description = "카테고리 이름", example = "양식")
         private String name;
 
         public static responseDto from(Category category) {
-            return new responseDto(category.getName());
+            return new responseDto(category.getId(),category.getName());
         }
     }
 }
