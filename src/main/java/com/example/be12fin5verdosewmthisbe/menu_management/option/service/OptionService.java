@@ -51,11 +51,6 @@ public class OptionService {
         if (updateDto.getPrice() != null) {
             existingOption.setPrice(updateDto.getPrice());
         }
-        if (updateDto.getCategoryId() != null) {
-            Category category = categoryRepository.findById(updateDto.getCategoryId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
-            //existingOption.setCategoryOptions();
-        }
         optionRepository.save(existingOption);
 
         if (updateDto.getInventoryQuantities() != null && !updateDto.getInventoryQuantities().isEmpty()) {
@@ -96,10 +91,15 @@ public class OptionService {
         }
     }
 
-    public void deleteOption(Long optionId) {
-        Option existingOption = optionRepository.findById(optionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.OPTION_NOT_FOUND));
-        optionRepository.delete(existingOption);
+    public void deleteOptions(List<Long> optionIds) {
+        List<Option> options = optionRepository.findAllById(optionIds);
+
+        // 존재하지 않는 ID가 있을 경우 예외 처리 (선택사항)
+        if (options.size() != optionIds.size()) {
+            throw new CustomException(ErrorCode.OPTION_NOT_FOUND);
+        }
+
+        optionRepository.deleteAll(options);
     }
 
     public Page<Option> findAllOptions(Pageable pageable) {
@@ -108,4 +108,9 @@ public class OptionService {
     public Page<Option> searchOptionsByName(String keyword, Pageable pageable) {
         return optionRepository.findByNameContaining(keyword, pageable);
     }
+    public Option findOptionWithValuesById(Long optionId) {
+        return optionRepository.findWithOptionValuesById(optionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.OPTION_NOT_FOUND));
+    }
+
 }

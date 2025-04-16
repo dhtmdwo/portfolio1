@@ -1,11 +1,14 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto;
 
 
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OptionDto {
 
@@ -42,5 +45,41 @@ public class OptionDto {
         private String name;
     }
 
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DetailResponseDto {
+        private Long optionId;
+        private String name;
+        private int price;
+        private List<OptionValueDto> optionValues;
+
+        public static DetailResponseDto from(Option option) {
+            List<OptionValueDto> values = option.getOptionValueList().stream()
+                    .map(OptionValueDto::from)
+                    .collect(Collectors.toList());
+
+            return new DetailResponseDto(
+                    option.getId(),
+                    option.getName(),
+                    option.getPrice(),
+                    values
+            );
+        }
+    }
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class OptionValueDto {
+        private Long inventoryId;
+        private int quantity;
+
+        public static OptionValueDto from(OptionValue ov) {
+            return new OptionValueDto(
+                    ov.getInventoryId(),
+                    ov.getQuantity().toBigInteger().bitCount()
+            );
+        }
+    }
 
 }

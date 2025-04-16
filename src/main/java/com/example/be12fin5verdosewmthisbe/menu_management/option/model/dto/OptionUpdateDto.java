@@ -22,9 +22,6 @@ public class OptionUpdateDto {
         @Schema(description = "새로운 옵션 가격", example = "700")
         private Integer price;
 
-        @Schema(description = "새로운 카테고리 ID", example = "3")
-        private Long categoryId;
-
         @Schema(description = "재고별 사용 수량 업데이트 또는 추가 리스트")
         private List<InventoryQuantityUpdateDto> inventoryQuantities;
     }

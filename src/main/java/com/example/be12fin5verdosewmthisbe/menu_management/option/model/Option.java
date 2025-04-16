@@ -2,6 +2,7 @@ package com.example.be12fin5verdosewmthisbe.menu_management.option.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.CategoryOption;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
