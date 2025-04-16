@@ -9,6 +9,7 @@ import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
 import com.example.be12fin5verdosewmthisbe.user.service.UserService;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.PhoneVerificationDto;
 import com.example.be12fin5verdosewmthisbe.user.service.PhoneVerificationService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
 
 @RestController
-    @RequestMapping("/api/user")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
@@ -27,14 +28,14 @@ public class UserController {
     private final PhoneVerificationService phoneVerificationService;
 
     @PostMapping("/signup")
-    public ResponseEntity<BaseResponse<UserRegisterDto.SignupResponse>> singUp(@RequestBody UserRegisterDto.SignupRequest dto) {
+    public BaseResponse<UserRegisterDto.SignupResponse> signUp(@RequestBody UserRegisterDto.SignupRequest dto) {
         UserRegisterDto.SignupResponse signupResponse = userService.signUp(dto);
-        return ResponseEntity.ok(BaseResponse.success(signupResponse));
+        return BaseResponse.success(signupResponse);
     }
     //회원가입
 
     @PostMapping("/login")
-    public ResponseEntity<BaseResponse<String>> login(@RequestBody UserDto.LoginRequest dto) {
+    public BaseResponse<String> login(@RequestBody UserDto.LoginRequest dto, HttpServletResponse response) {
         User user = userService.login(dto.getEmail(), dto.getPassword());
         String jwtToken = jwtTokenProvider.createToken(user);
 
@@ -46,11 +47,26 @@ public class UserController {
                 .maxAge(Duration.ofHours(1L))
                 .build();
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(BaseResponse.success("로그인에 성공했습니다."));
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return BaseResponse.success("로그인에 성공했습니다.");
     }
     // 로그인
+
+    @PostMapping("/logout")
+    public BaseResponse<String> login(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie
+                .from("ATOKEN", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(Duration.ofHours(1L))
+                .build();
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return BaseResponse.success("로그아웃 되었습니다.");
+    }
+    // 로그아웃
 
     @GetMapping("/searchinfo")
     public BaseResponse<UserInfoDto.SearchResponse> searchInfo(@AuthenticationPrincipal User user) {
@@ -65,20 +81,22 @@ public class UserController {
     } // 유저 정보 수정
 
 
-//    @PostMapping("/sendemail")
-//    public BaseResponse<String> sendCode(@AuthenticationPrincipal User user) {
-//        String code = UserService.createAndSaveCode(email);
-//        UserService.sendEmail(email, "이메일 인증 코드", "인증 코드: " + code);
-//        return BaseResponse.success("인증 이메일이 발송되었습니다.");
-//    }
-//
-//    @PostMapping("/verifymail")
-//    public BaseResponse<String> verifyCode(@RequestParam String email, @RequestParam String code) {
-//        if (codeService.verify(email, code)) {
-//            return BaseResponse.success("이메일 인증이 완료되었습니다.");
-//        }
-//        throw new CustomException(ErrorCode.INVALID_CODE);
-//    }
+    @DeleteMapping("/delete")
+    public BaseResponse<String> deleteUser(@AuthenticationPrincipal User user, HttpServletResponse response) {
+        String email = user.getEmail();
+        String result = userService.deleteUser(email);
+
+        ResponseCookie cookie = ResponseCookie
+                .from("ATOKEN", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0) // 쿠키 즉시 만료
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return BaseResponse.success(result);
+    } // 유저 탈퇴
 
     @PostMapping("/smssend")
     public BaseResponse<String> sendCode(@RequestBody PhoneVerificationDto.SmsSendRequestDto dto) {
