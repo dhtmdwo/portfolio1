@@ -38,3 +38,7 @@ portone:
   api:
     key: ${API_KEY}
     secret: ${SECRET_API_KEY}
+coolsms:
+  apikey: ${api_key}
+  apisecret: ${api_secret}
+  fromnumber: ${phone_number}
