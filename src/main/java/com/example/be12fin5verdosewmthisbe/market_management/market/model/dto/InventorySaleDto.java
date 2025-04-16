@@ -11,7 +11,7 @@ import java.util.List;
 public class InventorySaleDto {
 
     @Data
-    public class InventorySaleRequestDto {
+    public static class InventorySaleRequestDto {
         private Long inventoryId;
         private Long sellerStoreId;
         private BigDecimal quantity;

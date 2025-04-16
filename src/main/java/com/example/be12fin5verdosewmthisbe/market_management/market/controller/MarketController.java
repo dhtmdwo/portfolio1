@@ -4,11 +4,13 @@ import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventoryPurchaseDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.TransactionDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.service.MarketService;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -22,6 +24,7 @@ public class MarketController {
         marketService.saleRegister(dto);
         return BaseResponse.success("ok");
     }
+
     @PostMapping("/registerPurchase")
     public BaseResponse<String> registerInventoryPurchase(@RequestBody InventoryPurchaseDto.InventoryPurchaseRequestDto dto) {
         marketService.purchaseRegister(dto);
@@ -50,6 +53,23 @@ public class MarketController {
         return BaseResponse.success("ok");
     }
 
+    @PostMapping("/transaction")
+    public BaseResponse<List<TransactionDto>> transaction(
+            @RequestParam Long storeId,
+            @RequestParam(required = false) String keyword) {
+        List<TransactionDto> transactionDtoList = marketService.getAllTransactions(storeId,keyword);
+        return BaseResponse.success(transactionDtoList.stream()
+                .sorted(Comparator.comparing(TransactionDto::getCreatedAt).reversed()) // 최신순으로 정렬
+                .toList());
+    }
+
+    @PutMapping("/confirm")
+    public BaseResponse<String> confirm(
+            @RequestParam Long purchaseId
+    ) {
+        marketService.confirmEnd(purchaseId);
+        return BaseResponse.success("ok");
+    }
 
 
 }

@@ -7,6 +7,7 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.model.Invent
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventoryPurchaseDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.TransactionDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.ImagesRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventoryPurchaseRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventorySaleRepository;
@@ -16,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,9 +32,12 @@ public class MarketService {
                 .inventoryId(dto.getInventoryId())
                 .sellerStoreId(dto.getSellerStoreId())
                 .quantity(dto.getQuantity())
+                //.inventoryName()
+                //.sellerStoreName()
                 .price(dto.getPrice())
                 .status(InventorySale.saleStatus.valueOf(dto.getStatus()))
                 .content(dto.getContent())
+                .imageList(new ArrayList<>())
                 .createdAt(Timestamp.from(Instant.now()))
                 .build();
 
@@ -70,6 +74,61 @@ public class MarketService {
     public InventorySale findInventorySaleById(Long id) {
         return inventorySaleRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
+    }
+
+    public List<InventorySale> findInventorySaleBySellerStoreId(Long sellerStoreId) {
+        return inventorySaleRepository.findBySellerStoreId(sellerStoreId);
+    }
+    public List<InventoryPurchase> findInventoryPurchaseByBuyerStoreId(Long buyerStoreId) {
+        return inventoryPurchaseRepository.findInventoryPurchaseByBuyerStoreId(buyerStoreId);
+    }
+    @Transactional
+    public List<TransactionDto> getAllTransactions(Long StoreId,String keyword) {
+        List<InventorySale> inventorySaleList = findInventorySaleBySellerStoreId(StoreId);
+        List<InventoryPurchase> inventoryPurchaseList = findInventoryPurchaseByBuyerStoreId(StoreId);
+
+        List<TransactionDto> saleTransactionDtoList = new java.util.ArrayList<>(inventorySaleList.stream()
+                .map(sale -> {
+                    return TransactionDto.builder()
+                            .inventorySaleId(sale.getId())
+                            .name(sale.getInventoryName())
+                            .price(sale.getPrice())
+                            .type(true)
+                            .quantity(sale.getQuantity())
+                            .status(String.valueOf(sale.getStatus()))
+                            .otherStoreName(sale.getBuyerStoreName())
+                            .build();
+                }).toList());
+        List<TransactionDto> purchaseTransactionDtoList = inventoryPurchaseList.stream()
+                .map(sale -> {
+                    return TransactionDto.builder()
+                            .inventoryPurchaseId(sale.getId())
+                            .name(sale.getInventorySale().getInventoryName()) // n+1예상
+                            .price(sale.getPrice())
+                            .type(false)
+                            .quantity(sale.getQuantity())
+                            .status(String.valueOf(sale.getStatus()))
+                            .otherStoreName(sale.getInventorySale().getSellerStoreName())
+                            .build();
+                }).toList();
+
+        List<TransactionDto> allTransactions = new ArrayList<>();
+        allTransactions.addAll(saleTransactionDtoList);
+        allTransactions.addAll(purchaseTransactionDtoList);
+
+        return allTransactions.stream()
+                .filter(dto -> keyword == null || dto.getName().toLowerCase().contains(keyword.toLowerCase()))
+                .toList();
+    }
+
+    public void confirmEnd(Long purchaseId) {
+        InventoryPurchase inventoryPurchase = inventoryPurchaseRepository.findById(purchaseId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PURCHASE_NOT_FOUND));
+        InventorySale inventorySale = inventoryPurchase.getInventorySale();
+        inventoryPurchase.setStatus(InventoryPurchase.purchaseStatus.end);
+        inventorySale.setStatus(InventorySale.saleStatus.sold);
+        inventorySaleRepository.save(inventorySale);
+        inventoryPurchaseRepository.save(inventoryPurchase);
     }
 
     @Transactional
@@ -131,7 +190,7 @@ public class MarketService {
                     String buyerName = storeRepository.findById(purchase.getBuyerStoreId())
                             .map(Store::getName)
                             .orElse("알 수 없음");
-                    return new InventoryPurchaseDto.InventoryPurchaseResponseDto(purchase, buyerName);
+                    return new InventoryPurchaseDto.InventoryPurchaseResponseDto(purchase,buyerName);
                 })
                 .toList();
     }*/
