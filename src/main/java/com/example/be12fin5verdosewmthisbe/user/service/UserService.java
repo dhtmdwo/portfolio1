@@ -3,6 +3,7 @@ package com.example.be12fin5verdosewmthisbe.user.service;
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserInfoDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
@@ -25,7 +26,6 @@ public class UserService implements UserDetailsService {
     // Your code here
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JavaMailSender mailSender;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -70,7 +70,7 @@ public class UserService implements UserDetailsService {
         return UserInfoDto.SearchResponse.from(user);
     }
 
-    public String updateUserInfo(UserInfoDto.updateRequest dto) {
+    public String updateUserInfo(UserInfoDto.UpdateRequest dto) {
         User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 이미 다른 폰 번호 있는지 로직 검사 해야한다.
@@ -87,6 +87,30 @@ public class UserService implements UserDetailsService {
 
         return "성공적으로 탈퇴되었습니다.";
     }
+
+    public String updatePassword(UserInfoDto.PasswordRequest dto) {
+        User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        userRepository.save(user);
+        return "새로운 비밀번호가 생성되었습니다.";
+    }
+
+    public boolean isStoreRegistered(String emailUrl) {
+        User user = userRepository.findByEmail(emailUrl).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        Store store = user.getStore();
+        if(store == null) {
+            return false;
+        }
+        return true;
+    } // 가게 등록되었는지 확인
+
+    public String getStoreId(String emailUrl) {
+        User user = userRepository.findByEmail(emailUrl).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        Store store = Optional.ofNullable(user.getStore()).orElseThrow(()-> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
+        return String.valueOf(store.getId());
+    } 
+    // 가게 번호 얻기
 
 }
         

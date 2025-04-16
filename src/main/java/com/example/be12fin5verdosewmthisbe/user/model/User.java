@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.user.model;
 
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -39,12 +40,10 @@ public class User implements UserDetails{
     @Column(length=600, unique = true)
     private String ssn; // 주민번호
 
-    @Column(length=600)
-    private String emailVerify; // 이메일 인증
-    // 나중에 Redis로 만료시간 지정 가능
+    @OneToOne(mappedBy = "user")
+    @JoinColumn(name="user_id")
+    private Store store; //상점과 연결
 
-    @Column(length=600)
-    private String phoneVerify; // 전화번호 인증
 
 
     @Override
