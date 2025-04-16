@@ -1,7 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.category.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
-import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,9 +27,13 @@ public class Category {
     private String name;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Option> options = new ArrayList<>();
+    @Builder.Default
+    private List<CategoryOption> categoryOptions = new ArrayList<>();
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Menu> menus = new ArrayList<>();
 
+    public void addCategoryOption(CategoryOption categoryOption) {
+        this.categoryOptions.add(categoryOption);
+    }
 }
