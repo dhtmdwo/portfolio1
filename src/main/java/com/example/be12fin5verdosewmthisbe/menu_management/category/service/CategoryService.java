@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,31 +40,43 @@ public class CategoryService {
         }
 
         List<Option> options = optionRepository.findAllById(dto.getOptionIds());
-        log.info("Found {} options", options.size());
-        log.info("{}",dto.getOptionIds());
         for (Option option : options) {
             CategoryOption categoryOption = CategoryOption.builder()
                     .category(category)
                     .option(option)
                     .build();
             category.addCategoryOption(categoryOption);
-            log.info("add category option");
         }
         categoryRepository.save(category);
     }
 
-    public void update(String oldName, String newName) {
-        Category existing = categoryRepository.findByName(oldName)
+    @Transactional
+    public void update(Long id, String newName, List<Long> optionIds) {
+        Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        // name이 중복되면 예외 던짐 (기존 id와 다른 경우만)
-        Optional<Category> duplicate = categoryRepository.findByName(newName);
-        if (duplicate.isPresent()) {
+        // 이름 중복 검사
+       /* Optional<Category> duplicate = categoryRepository.findByName(newName);
+        if (duplicate.isPresent() && !duplicate.get().getId().equals(category.getId())) {
             throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
+        }*/
+
+        category.setName(newName);
+
+        // 기존 옵션 관계 전부 제거
+        category.getCategoryOptions().clear();
+        log.info(optionIds.toString());
+        List<Option> options = optionRepository.findAllById(optionIds);
+        for (Option option : options) {
+            CategoryOption categoryOption = CategoryOption.builder()
+                    .category(category)
+                    .option(option)
+                    .build();
+            category.addCategoryOption(categoryOption);
         }
 
-        existing.setName(newName);
-        categoryRepository.save(existing);
+        // 저장
+        categoryRepository.save(category);
     }
 
     public void delete(Category category) {

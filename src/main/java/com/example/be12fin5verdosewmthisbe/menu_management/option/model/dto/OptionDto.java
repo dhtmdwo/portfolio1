@@ -19,9 +19,6 @@ public class OptionDto {
         @Schema(description = "옵션 가격", example = "1000")
         private int price;
 
-        @Schema(description = "카테고리 ID", example = "3")
-        private Long categoryId;
-
         @Schema(description = "재고별 사용 수량 리스트")
         private List<InventoryQuantityDto> inventoryQuantities;
     }

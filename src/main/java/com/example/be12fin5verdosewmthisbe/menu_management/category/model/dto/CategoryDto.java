@@ -31,11 +31,11 @@ public class CategoryDto {
 
     @Schema(description = "카테고리 수정 요청 DTO")
     @Getter
+    @Setter
     public static class updateDto {
-        @Schema(description = "기존 카테고리 이름", example = "중식")
-        private String oldName;
-        @Schema(description = "새로운 카테고리 이름", example = "중국음식")
+        private Long id;
         private String newName;
+        private List<Long> optionIds;
     }
 
     @Getter

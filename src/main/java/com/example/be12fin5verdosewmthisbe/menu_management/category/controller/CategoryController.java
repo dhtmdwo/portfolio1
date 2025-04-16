@@ -48,7 +48,7 @@ public class CategoryController {
     })
     @PutMapping("/update")
     public BaseResponse<String> updateCategory(@RequestBody CategoryDto.updateDto dto) {
-        categoryService.update(dto.getOldName(), dto.getNewName());
+        categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds());
         return BaseResponse.success("Category updated successfully");
     }
 

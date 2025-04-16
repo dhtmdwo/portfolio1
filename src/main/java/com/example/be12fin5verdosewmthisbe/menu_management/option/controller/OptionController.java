@@ -50,12 +50,10 @@ public class OptionController {
                     schema = @Schema(implementation = OptionDto.RequestDto.class))
             @RequestBody OptionDto.RequestDto requestDto) {
 
-        Category category = categoryService.findById(requestDto.getCategoryId());
 
         Option option = Option.builder()
                 .name(requestDto.getName())
                 .price(requestDto.getPrice())
-                //.category(category)
                 .build();
 
         Option registeredOption = optionService.register(option);
