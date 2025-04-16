@@ -80,18 +80,12 @@ public class UserService implements UserDetailsService {
         return "성공적으로 정보가 수정되었습니다.";
     }
 
+    public String deleteUser(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND) );
+        userRepository.delete(user);
 
-    public String generateCode() {
-        return UUID.randomUUID().toString().substring(0, 6); // 예: "A1B2C3"
-    }
 
-    public void sendEmail(String to, String subject, String content) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(content);
-
-        mailSender.send(message);
+        return "성공적으로 탈퇴되었습니다.";
     }
 
 }

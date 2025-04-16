@@ -7,6 +7,7 @@ import com.example.be12fin5verdosewmthisbe.user.model.dto.UserDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserInfoDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
 import com.example.be12fin5verdosewmthisbe.user.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -23,15 +24,15 @@ public class UserController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
-    @PostMapping("/singup")
-    public ResponseEntity<BaseResponse<UserRegisterDto.SignupResponse>> singUp(@RequestBody UserRegisterDto.SignupRequest dto) {
+    @PostMapping("/signup")
+    public BaseResponse<UserRegisterDto.SignupResponse> signUp(@RequestBody UserRegisterDto.SignupRequest dto) {
         UserRegisterDto.SignupResponse signupResponse = userService.signUp(dto);
-        return ResponseEntity.ok(BaseResponse.success(signupResponse));
+        return BaseResponse.success(signupResponse);
     }
     //회원가입
 
     @PostMapping("/login")
-    public ResponseEntity<BaseResponse<String>> login(@RequestBody UserDto.LoginRequest dto) {
+    public BaseResponse<String> login(@RequestBody UserDto.LoginRequest dto, HttpServletResponse response) {
         User user = userService.login(dto.getEmail(), dto.getPassword());
         String jwtToken = jwtTokenProvider.createToken(user);
 
@@ -43,11 +44,26 @@ public class UserController {
                 .maxAge(Duration.ofHours(1L))
                 .build();
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(BaseResponse.success("로그인에 성공했습니다."));
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return BaseResponse.success("로그인에 성공했습니다.");
     }
     // 로그인
+
+    @PostMapping("/logout")
+    public BaseResponse<String> login(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie
+                .from("ATOKEN", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(Duration.ofHours(1L))
+                .build();
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return BaseResponse.success("로그아웃 되었습니다.");
+    }
+    // 로그아웃
 
     @GetMapping("/searchinfo")
     public BaseResponse<UserInfoDto.SearchResponse> searchInfo(@AuthenticationPrincipal User user) {
@@ -60,6 +76,24 @@ public class UserController {
         String result = userService.updateUserInfo(dto);
         return BaseResponse.success(result);
     } // 유저 정보 수정
+
+
+    @DeleteMapping("/delete")
+    public BaseResponse<String> deleteUser(@AuthenticationPrincipal User user, HttpServletResponse response) {
+        String email = user.getEmail();
+        String result = userService.deleteUser(email);
+
+        ResponseCookie cookie = ResponseCookie
+                .from("ATOKEN", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0) // 쿠키 즉시 만료
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return BaseResponse.success(result);
+    } // 유저 탈퇴
 
 }
         
