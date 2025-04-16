@@ -32,9 +32,11 @@ public enum ErrorCode {
     USER_NOT_FOUND(1001, "사용자가 존재하지 않습니다."),
     INVALID_PASSWORD(1002,"비밀번호가 올바르지 않습니다."),
     EMAIL_ALREADY_EXISTS(1003,"이미 이메일로 등록된 계정이 존재합니다"),
-    BUSINESSNUMBER_ALREADY_EXISTS(1004,"이미 사업자 번호로 등록된 계정이 존재합니다"),
-    PHONENUMBER_ALREADY_EXISTS(1005,"이미 휴대폰 번호로 등록된 계정이 존재합니다"),
-    SSN_ALREADY_EXISTS(1005,"이미 주민번호로 등록된 계정이 존재합니다"),
+    BUSINESSNUMBER_ALREADY_EXISTS(1004,"이미 사업자 번호로 등록된 계정이 존재합니다."),
+    PHONENUMBER_ALREADY_EXISTS(1005,"이미 휴대폰 번호로 등록된 계정이 존재합니다."),
+    SSN_ALREADY_EXISTS(1005,"이미 주민번호로 등록된 계정이 존재합니다."),
+    EMAIL_ALREADY_EXPIRED(1006, "인증 가능 시간이 만료되었습니다."),
+    EMAILCODE_NOT_MATCH(1007, "이메일로 전송된 코드와 일치하지 않습니다."),
 
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
