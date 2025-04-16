@@ -69,13 +69,15 @@ public class UserController {
     public BaseResponse<UserInfoDto.SearchResponse> searchInfo(@AuthenticationPrincipal User user) {
         UserInfoDto.SearchResponse dto = userService.searchUserInfo(user.getEmail());
         return BaseResponse.success(dto);
-    } // 유저 정보 조회
+    }
+    // 유저 정보 조회
 
     @PutMapping("/updateinfo")
-    public BaseResponse<String> updateInfo(@RequestBody UserInfoDto.updateRequest dto) {
+    public BaseResponse<String> updateInfo(@RequestBody UserInfoDto.UpdateRequest dto) {
         String result = userService.updateUserInfo(dto);
         return BaseResponse.success(result);
-    } // 유저 정보 수정
+    }
+    // 유저 정보 수정
 
 
     @DeleteMapping("/delete")
@@ -93,7 +95,16 @@ public class UserController {
 
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return BaseResponse.success(result);
-    } // 유저 탈퇴
+    }
+    // 유저 탈퇴
+
+    @PutMapping("/updatepassword")
+    public BaseResponse<String> updatePassword(@RequestBody UserInfoDto.PasswordRequest dto) {
+        String result = userService.updatePassword(dto);
+        return BaseResponse.success(result);
+    }
+    // 새로운 비밀번호 만들기
+
 
 }
         

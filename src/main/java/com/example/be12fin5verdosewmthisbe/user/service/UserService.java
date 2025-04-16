@@ -70,7 +70,7 @@ public class UserService implements UserDetailsService {
         return UserInfoDto.SearchResponse.from(user);
     }
 
-    public String updateUserInfo(UserInfoDto.updateRequest dto) {
+    public String updateUserInfo(UserInfoDto.UpdateRequest dto) {
         User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 이미 다른 폰 번호 있는지 로직 검사 해야한다.
@@ -87,6 +87,15 @@ public class UserService implements UserDetailsService {
 
         return "성공적으로 탈퇴되었습니다.";
     }
+
+    public String updatePassword(UserInfoDto.PasswordRequest dto) {
+        User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        userRepository.save(user);
+        return "새로운 비밀번호가 생성되었습니다.";
+    }
+
+
 
 }
         
