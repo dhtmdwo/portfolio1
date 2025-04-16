@@ -120,12 +120,18 @@ public class OptionController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @GetMapping("/list")
-    public BaseResponse<Page<Option>> getOptionList(
+    public BaseResponse<Page<OptionDto.ResponseDto>> getOptionList(
             @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
             @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
             Pageable pageable) {
         Page<Option> optionPage = optionService.findAllOptions(pageable);
-        return BaseResponse.success(optionPage);
+        Page<OptionDto.ResponseDto> dtoPage = optionPage.map(option -> new OptionDto.ResponseDto(
+                option.getId(),
+                option.getName(),
+                option.getCategory().getName() // 또는 option.getCategoryName() 등, 실제 구조에 따라
+        ));
+
+        return BaseResponse.success(dtoPage);
     }
 
 
