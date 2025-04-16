@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.inventory.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -50,6 +51,7 @@ public class StoreInventory {
     private Integer miniquantity;
 
     @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     @Schema(description = "메뉴 레시피 목록")
     private List<Inventory> inventoryList = new ArrayList<>();
 
