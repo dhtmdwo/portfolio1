@@ -2,8 +2,7 @@ package com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -37,5 +36,15 @@ public class OptionDto {
         @Schema(description = "사용 수량", example = "1.5")
         private BigDecimal quantity;
     }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ResponseDto {
+        private Long optionId;
+        private String name;
+        private String category;
+    }
+
 
 }
