@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
 
 @RestController
-    @RequestMapping("/api/user")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
@@ -60,22 +60,6 @@ public class UserController {
         String result = userService.updateUserInfo(dto);
         return BaseResponse.success(result);
     } // 유저 정보 수정
-
-
-//    @PostMapping("/sendemail")
-//    public BaseResponse<String> sendCode(@AuthenticationPrincipal User user) {
-//        String code = UserService.createAndSaveCode(email);
-//        UserService.sendEmail(email, "이메일 인증 코드", "인증 코드: " + code);
-//        return BaseResponse.success("인증 이메일이 발송되었습니다.");
-//    }
-//
-//    @PostMapping("/verifymail")
-//    public BaseResponse<String> verifyCode(@RequestParam String email, @RequestParam String code) {
-//        if (codeService.verify(email, code)) {
-//            return BaseResponse.success("이메일 인증이 완료되었습니다.");
-//        }
-//        throw new CustomException(ErrorCode.INVALID_CODE);
-//    }
 
 }
         
