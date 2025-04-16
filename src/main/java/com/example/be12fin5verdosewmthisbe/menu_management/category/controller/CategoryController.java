@@ -6,6 +6,7 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Catego
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.dto.CategoryDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Tag(name = "Category API", description = "메뉴 카테고리 관련 API")
 @RestController
 @RequestMapping("/api/category")
@@ -33,12 +35,8 @@ public class CategoryController {
     })
     @PostMapping("/register")
     public BaseResponse<String> registerCategory(@RequestBody CategoryDto.requestDto dto) {
-        Category existing = categoryService.findByName(dto.getName());
-        if (existing != null) {
-            return BaseResponse.error(ErrorCode.CATEGORY_ALREADY_EXISTS);
-        }
-        Category category = Category.builder().name(dto.getName()).build();
-        categoryService.register(category);
+        log.info("register");
+        categoryService.register(dto);
         return BaseResponse.success("Category registered successfully");
     }
 
@@ -61,10 +59,17 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @DeleteMapping("/delete")
-    public BaseResponse<String> deleteCategory(@RequestBody CategoryDto.requestDto dto) {
-        Category category = categoryService.findByName(dto.getName());
-        categoryService.delete(category);
-        return BaseResponse.success("Category deleted successfully");
+    public BaseResponse<String> deleteCategory(@RequestBody CategoryDto.deleteDto dto) {
+        List<Long> ids = dto.getIds();
+
+        for (Long id : ids) {
+            Category category = categoryService.findById(id);
+            if (category != null) {
+                categoryService.delete(category);
+            }
+        }
+
+        return BaseResponse.success("Categories deleted successfully");
     }
 
     @GetMapping("/getList")
@@ -101,13 +106,14 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/detail")
-    public BaseResponse<CategoryDto.responseDto> getCategoryDetail(@RequestParam String name) {
-        if (name == null || name.trim().isEmpty()) {
+    public BaseResponse<CategoryDto.responseDto> getCategoryDetail(@RequestParam Long id) {
+        if (id == null) {
             return BaseResponse.error(ErrorCode.INVAILD_REQUEST);
         }
-        Category category = categoryService.findByName(name);
+        Category category = categoryService.findById(id);
         return BaseResponse.success(CategoryDto.responseDto.from(category));
     }
+
 
     @Operation(summary = "카테고리 이름 검색", description = "이름 일부에 해당하는 카테고리를 검색합니다.")
     @ApiResponses(value = {

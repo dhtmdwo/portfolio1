@@ -43,7 +43,6 @@ public class OptionDto {
     public static class ResponseDto {
         private Long optionId;
         private String name;
-        private String category;
     }
 
 

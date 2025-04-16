@@ -54,7 +54,7 @@ public class OptionService {
         if (updateDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(updateDto.getCategoryId())
                     .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
-            existingOption.setCategory(category);
+            //existingOption.setCategoryOptions();
         }
         optionRepository.save(existingOption);
 

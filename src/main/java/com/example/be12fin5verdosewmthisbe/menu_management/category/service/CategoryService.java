@@ -3,7 +3,12 @@ package com.example.be12fin5verdosewmthisbe.menu_management.category.service;
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
+import com.example.be12fin5verdosewmthisbe.menu_management.category.model.CategoryOption;
+import com.example.be12fin5verdosewmthisbe.menu_management.category.model.dto.CategoryDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.category.repository.CategoryOptionRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.repository.CategoryRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,16 +23,31 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final OptionRepository optionRepository;
+    private final CategoryOptionRepository categoryOptionRepository;
 
     public Page<Category> findAll(Pageable pageable) {
         return categoryRepository.findAll(pageable);
     }
 
 
-    public void register(Category category) {
-        log.info("Registering category: {}", category);
+    public void register(CategoryDto.requestDto dto) {
+        log.info("Registering category: {}", dto);
+        Category category = Category.builder().name(dto.getName()).build();
         if (categoryRepository.findByName(category.getName()).isPresent()) {
             throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
+        }
+
+        List<Option> options = optionRepository.findAllById(dto.getOptionIds());
+        log.info("Found {} options", options.size());
+        log.info("{}",dto.getOptionIds());
+        for (Option option : options) {
+            CategoryOption categoryOption = CategoryOption.builder()
+                    .category(category)
+                    .option(option)
+                    .build();
+            category.addCategoryOption(categoryOption);
+            log.info("add category option");
         }
         categoryRepository.save(category);
     }
@@ -53,7 +73,7 @@ public class CategoryService {
     }
 
     public Category findById(Long id) {
-        return categoryRepository.findById(id)
+        return categoryRepository.findByIdWithOptions(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 

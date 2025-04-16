@@ -55,7 +55,7 @@ public class OptionController {
         Option option = Option.builder()
                 .name(requestDto.getName())
                 .price(requestDto.getPrice())
-                .category(category)
+                //.category(category)
                 .build();
 
         Option registeredOption = optionService.register(option);
@@ -127,8 +127,7 @@ public class OptionController {
         Page<Option> optionPage = optionService.findAllOptions(pageable);
         Page<OptionDto.ResponseDto> dtoPage = optionPage.map(option -> new OptionDto.ResponseDto(
                 option.getId(),
-                option.getName(),
-                option.getCategory().getName() // 또는 option.getCategoryName() 등, 실제 구조에 따라
+                option.getName()
         ));
 
         return BaseResponse.success(dtoPage);
