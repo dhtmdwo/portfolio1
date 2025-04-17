@@ -7,11 +7,15 @@ import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
 import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderDto;
 import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderTodayDto;
+import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderTopMenuDto;
+import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +28,7 @@ import java.util.stream.Collectors;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OptionRepository optionRepository;
+    private final OrderMenuRepository orderMenuRepository;
 
 
     @Transactional
@@ -115,6 +120,47 @@ public class OrderService {
         ));
 
     }
+
+    public OrderTopMenuDto.TopWeekResponse getTopWeekSales(Long storeId) {
+        LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.with(DayOfWeek.MONDAY);
+        LocalDate endOfWeek = today.with(DayOfWeek.SUNDAY);
+
+        Timestamp startTimestamp = Timestamp.valueOf(startOfWeek.atStartOfDay());
+        Timestamp endTimestamp = Timestamp.valueOf(endOfWeek.plusDays(1).atStartOfDay());
+
+        System.out.println("storeId = " + storeId);
+        System.out.println("start = " + startTimestamp);
+        System.out.println("end = " + endTimestamp);
+
+        List<Object[]> result = orderMenuRepository.findBestSellingMenusByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
+        int temp = 0;
+        String first ="";
+        String second ="";
+        String third ="";
+        for (Object[] row : result) {
+            String menuName = (String) row[0];
+            if(temp>2){
+                break;
+            }
+            if(temp ==0){
+                first = menuName;
+            }
+            else if(temp ==1){
+                second = menuName;
+            }
+            else if(temp ==2){
+                third = menuName;
+            }
+            else{
+                break;
+            }
+            temp++;
+        }
+        return OrderTopMenuDto.TopWeekResponse.of(first, second, third);
+    }
+
+
 
 
 }

@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.store.model;
 
+import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
 import jakarta.persistence.*;
@@ -34,6 +35,10 @@ public class Store {
 
     @OneToMany(mappedBy = "store")
     private List<Order> orderList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store")
+    private List<Category> categoryList = new ArrayList<>();
+
 
 
 }

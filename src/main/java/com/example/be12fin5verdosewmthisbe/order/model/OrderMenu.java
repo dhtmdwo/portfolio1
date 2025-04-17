@@ -23,10 +23,6 @@ public class OrderMenu {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
-    private Long menuId;
-
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     @Schema(description = "메뉴 목록들이 속한 주문")
@@ -41,4 +37,8 @@ public class OrderMenu {
     
     // 메뉴의 단가
     private Integer price;
+
+    @ManyToOne
+    @JoinColumn(name = "menu_id")
+    private Menu menu;
 }
