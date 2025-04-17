@@ -10,9 +10,11 @@ import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegisterDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -85,11 +88,12 @@ public class MenuService {
 
         return result.map(this::convertToMenuListResponseDto);
     }
+
     private MenuDto.MenuListResponseDto convertToMenuListResponseDto(Menu menu) {
         List<Recipe> recipes = menu.getRecipes();
-
         if (recipes.isEmpty()) {
             return MenuDto.MenuListResponseDto.builder()
+                    .id(menu.getId())
                     .name(menu.getName())
                     .category(menu.getCategory().getName()) // Category도 name만 반환
                     .ingredients("재료 없음")
@@ -119,6 +123,7 @@ public class MenuService {
         }
 
         return MenuDto.MenuListResponseDto.builder()
+                .id(menu.getId())
                 .name(menu.getName())
                 .category(menu.getCategory().getName())
                 .ingredients(ingredientSummary)
@@ -130,4 +135,72 @@ public class MenuService {
         menuRepository.delete(existingMenu);
     }
 
+    public MenuDto.MenuDetailResponseDto getMenuDetail(Long menuId) {
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(() -> new RuntimeException("해당 메뉴를 찾을 수 없습니다."));
+
+        List<Recipe> recipes = menu.getRecipes();
+
+        List<MenuDto.IngredientInfoDto> ingredients = recipes.stream()
+                .map(recipe -> {
+                    StoreInventory inventory = recipe.getStoreInventory();
+                    return MenuDto.IngredientInfoDto.builder()
+                            .storeInventoryId(inventory.getStoreinventoryId())
+                            .name(inventory.getName())
+                            .quantity(recipe.getQuantity())
+                            .unit(inventory.getUnit())
+                            .build();
+                }).toList();
+
+        return MenuDto.MenuDetailResponseDto.builder()
+                .id(menu.getId())
+                .name(menu.getName())
+                .categoryId(menu.getCategory().getId())
+                .price(menu.getPrice())
+                .ingredients(ingredients)
+                .build();
+    }
+
+    public void deleteMenus(List<Long> menuIds) {
+        if (menuIds == null || menuIds.isEmpty()) {
+            throw new IllegalArgumentException("메뉴 ID 리스트가 비어있습니다.");
+        }
+
+        for (Long menuId : menuIds) {
+            menuRepository.deleteById(menuId);
+        }
+    }
+    @Transactional
+    public void updateMenu(Long menuId, MenuUpdateDto.RequestDto dto) {
+        // 1. 메뉴 조회
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
+
+        // 2. 카테고리 조회 및 변경
+        Category category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+        menu.setCategory(category);
+
+        // 3. 기본 정보 수정
+        menu.setName(dto.getName());
+        menu.setPrice(dto.getPrice());
+
+        // 4. 기존 레시피 삭제 (orphanRemoval=true이므로 그냥 clear로 충분)
+        menu.getRecipes().clear();
+
+        // 5. 새 레시피 추가
+        for (MenuRegisterDto.MenuCreateRequestDto.IngredientDto ingredientDto : dto.getIngredients()) {
+            StoreInventory inventory = storeInventoryRepository.findById(ingredientDto.getStoreInventoryId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+
+            Recipe recipe = Recipe.builder()
+                    .menu(menu)
+                    .storeInventory(inventory)
+                    .quantity(ingredientDto.getQuantity())
+                    .build();
+
+            menu.getRecipes().add(recipe);
+        }
+
+    }
 }
