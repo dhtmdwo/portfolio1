@@ -9,7 +9,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class MenuRegistrationDto {
+public class MenuRegisterationDto {
 
     @Data
     @Builder
