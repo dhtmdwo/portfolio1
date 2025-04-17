@@ -4,6 +4,8 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Catego
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +30,9 @@ public class Menu {
     @Schema(description = "메뉴 가격", example = "8000")
     private int price;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    @Schema(description = "메뉴가 속한 카테고리 정보")
+    @ManyToOne
+    @JoinColumn(name = "category_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @OnDelete(action = OnDeleteAction.SET_NULL) // 선택 사항: DB에서도 ON DELETE SET NULL 하고 싶다면
     private Category category;
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -38,15 +38,18 @@ public class MenuService {
 
     @Transactional
     public void registerMenu(MenuRegisterDto.MenuCreateRequestDto dto) {
-        // 1. 카테고리 조회
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+        // 1. 카테고리 조회 (nullable 허용)
+        Category category = null;
+        if (dto.getCategoryId() != null) {
+            category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+        }
 
         // 2. 메뉴 생성
         Menu menu = Menu.builder()
                 .name(dto.getName())
                 .price(dto.getPrice())
-                .category(category)
+                .category(category)  // null일 수도 있음
                 .build();
 
         menuRepository.save(menu);
@@ -65,6 +68,7 @@ public class MenuService {
 
         recipeRepository.saveAll(recipes);
     }
+
     public Menu findById(Long menuId) {
         return menuRepository.findById(menuId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
@@ -91,11 +95,16 @@ public class MenuService {
 
     private MenuDto.MenuListResponseDto convertToMenuListResponseDto(Menu menu) {
         List<Recipe> recipes = menu.getRecipes();
+
+        // 카테고리가 null일 수 있으므로 안전하게 처리
+        String categoryName = (menu.getCategory() != null) ? menu.getCategory().getName() : "카테고리 없음";
+
+        // 재료가 없을 경우
         if (recipes.isEmpty()) {
             return MenuDto.MenuListResponseDto.builder()
                     .id(menu.getId())
                     .name(menu.getName())
-                    .category(menu.getCategory().getName()) // Category도 name만 반환
+                    .category(categoryName)
                     .ingredients("재료 없음")
                     .build();
         }
@@ -119,16 +128,23 @@ public class MenuService {
                     .distinct()
                     .count() - 1;
 
-            ingredientSummary = String.format("%s %s%s 외 %d종", name, quantity.stripTrailingZeros().toPlainString(), unit, otherCount);
+            ingredientSummary = String.format(
+                    "%s %s%s%s",
+                    name,
+                    quantity.stripTrailingZeros().toPlainString(),
+                    unit,
+                    (otherCount > 0 ? String.format(" 외 %d종", otherCount) : "")
+            );
         }
 
         return MenuDto.MenuListResponseDto.builder()
                 .id(menu.getId())
                 .name(menu.getName())
-                .category(menu.getCategory().getName())
+                .category(categoryName)
                 .ingredients(ingredientSummary)
                 .build();
     }
+
     public void deleteMenu(Long menuId) {
         Menu existingMenu = menuRepository.findById(menuId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
@@ -152,14 +168,17 @@ public class MenuService {
                             .build();
                 }).toList();
 
+        Long categoryId = (menu.getCategory() != null) ? menu.getCategory().getId() : null;
+
         return MenuDto.MenuDetailResponseDto.builder()
                 .id(menu.getId())
                 .name(menu.getName())
-                .categoryId(menu.getCategory().getId())
+                .categoryId(categoryId)
                 .price(menu.getPrice())
                 .ingredients(ingredients)
                 .build();
     }
+
 
     public void deleteMenus(List<Long> menuIds) {
         if (menuIds == null || menuIds.isEmpty()) {
