@@ -1,11 +1,9 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.menu.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
-import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuDto;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegisterDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.service.MenuService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,12 +38,9 @@ public class MenuController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PostMapping("/register")
-    public BaseResponse<Menu> registerMenu(
-            @Parameter(description = "등록할 메뉴 정보", required = true,
-                    schema = @Schema(implementation = MenuRegistrationDto.RequestDto.class))
-            @RequestBody MenuRegistrationDto.RequestDto requestDto) {
-        Menu registeredMenu = menuService.registerMenu(requestDto);
-        return BaseResponse.success(registeredMenu);
+    public BaseResponse<String> createMenu(@RequestBody MenuRegisterDto.MenuCreateRequestDto requestDto) {
+        menuService.registerMenu(requestDto);
+        return BaseResponse.success("Menu registered successfully");
     }
 
     /*@Operation(summary = "메뉴 수정", description = "기존 메뉴의 이름, 가격, 카테고리 및 레시피 정보를 수정합니다. 요청에 없는 레시피는 삭제됩니다.")

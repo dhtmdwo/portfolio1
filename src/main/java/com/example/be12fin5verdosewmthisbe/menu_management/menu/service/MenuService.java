@@ -2,13 +2,14 @@ package com.example.be12fin5verdosewmthisbe.menu_management.menu.service;
 
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
+import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.repository.CategoryRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuDto;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegisterDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,31 +32,37 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final CategoryRepository categoryRepository;
     private final RecipeRepository recipeRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
 
-    public Menu registerMenu(MenuRegistrationDto.RequestDto requestDto) {
-        Category category = categoryRepository.findById(requestDto.getCategoryId())
+    @Transactional
+    public void registerMenu(MenuRegisterDto.MenuCreateRequestDto dto) {
+        // 1. 카테고리 조회
+        Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
+        // 2. 메뉴 생성
         Menu menu = Menu.builder()
-                .name(requestDto.getName())
-                .price(requestDto.getPrice())
+                .name(dto.getName())
+                .price(dto.getPrice())
                 .category(category)
                 .build();
 
-        Menu savedMenu = menuRepository.save(menu);
+        menuRepository.save(menu);
 
-        List<Recipe> recipes = requestDto.getRecipes().stream()
-                .map(recipeDto -> Recipe.builder()
-                        .menu(savedMenu)
-                        .quantity(recipeDto.getQuantity())
-                        .build())
-                .collect(Collectors.toList());
+        // 3. 재료(Recipe) 연결
+        List<Recipe> recipes = dto.getIngredients().stream().map(ingredientDto -> {
+            StoreInventory storeInventory = storeInventoryRepository.findById(ingredientDto.getStoreInventoryId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
+
+            return Recipe.builder()
+                    .menu(menu)
+                    .storeInventory(storeInventory)
+                    .quantity(ingredientDto.getQuantity())
+                    .build();
+        }).collect(Collectors.toList());
 
         recipeRepository.saveAll(recipes);
-
-        return savedMenu;
     }
-
     public Menu findById(Long menuId) {
         return menuRepository.findById(menuId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
