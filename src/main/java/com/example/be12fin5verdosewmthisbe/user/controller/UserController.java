@@ -7,13 +7,15 @@ import com.example.be12fin5verdosewmthisbe.user.model.dto.UserDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserInfoDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
 import com.example.be12fin5verdosewmthisbe.user.service.UserService;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.PhoneVerificationDto;
 import com.example.be12fin5verdosewmthisbe.user.service.PhoneVerificationService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,17 +39,35 @@ public class UserController {
     @PostMapping("/login")
     public BaseResponse<String> login(@RequestBody UserDto.LoginRequest dto, HttpServletResponse response) {
         User user = userService.login(dto.getEmail(), dto.getPassword());
-        String jwtToken = jwtTokenProvider.createToken(user);
+        String emailUrl = dto.getEmail();
+        boolean isStoreRegistered = userService.isStoreRegistered(emailUrl);
 
-        ResponseCookie cookie = ResponseCookie
-                .from("ATOKEN", jwtToken)
-                .path("/")
-                .httpOnly(true)
-                .secure(true)
-                .maxAge(Duration.ofHours(1L))
-                .build();
+        if(isStoreRegistered) {
+            String storeId = userService.getStoreId(emailUrl);
+            String jwtToken = jwtTokenProvider.createToken(emailUrl, storeId);
 
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+            ResponseCookie cookie = ResponseCookie
+                    .from("ATOKEN", jwtToken)
+                    .path("/")
+                    .httpOnly(true)
+                    .secure(true)
+                    .maxAge(Duration.ofHours(1L))
+                    .build();
+            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        }
+        else{
+            String jwtToken = jwtTokenProvider.createToken(emailUrl);
+
+            ResponseCookie cookie = ResponseCookie
+                    .from("ATOKEN", jwtToken)
+                    .path("/")
+                    .httpOnly(true)
+                    .secure(true)
+                    .maxAge(Duration.ofHours(1L))
+                    .build();
+            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        }
+
 
         return BaseResponse.success("로그인에 성공했습니다.");
     }
@@ -69,22 +89,50 @@ public class UserController {
     // 로그아웃
 
     @GetMapping("/searchinfo")
-    public BaseResponse<UserInfoDto.SearchResponse> searchInfo(@AuthenticationPrincipal User user) {
-        UserInfoDto.SearchResponse dto = userService.searchUserInfo(user.getEmail());
+    public BaseResponse<UserInfoDto.SearchResponse> searchInfo(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+
+        String emailUrl = claims.get("email", String.class);
+        UserInfoDto.SearchResponse dto = userService.searchUserInfo(emailUrl);
         return BaseResponse.success(dto);
-    } // 유저 정보 조회
+    }
+    // 유저 정보 조회
 
     @PutMapping("/updateinfo")
-    public BaseResponse<String> updateInfo(@RequestBody UserInfoDto.updateRequest dto) {
+    public BaseResponse<String> updateInfo(@RequestBody UserInfoDto.UpdateRequest dto) {
         String result = userService.updateUserInfo(dto);
         return BaseResponse.success(result);
-    } // 유저 정보 수정
+    }
+    // 유저 정보 수정
 
 
     @DeleteMapping("/delete")
-    public BaseResponse<String> deleteUser(@AuthenticationPrincipal User user, HttpServletResponse response) {
-        String email = user.getEmail();
-        String result = userService.deleteUser(email);
+    public BaseResponse<String> deleteUser(HttpServletRequest request, HttpServletResponse response) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+
+        String emailUrl = claims.get("email", String.class);
+
+        String result = userService.deleteUser(emailUrl);
 
         ResponseCookie cookie = ResponseCookie
                 .from("ATOKEN", "")
@@ -96,7 +144,16 @@ public class UserController {
 
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return BaseResponse.success(result);
-    } // 유저 탈퇴
+    }
+    // 유저 탈퇴
+
+    @PutMapping("/updatepassword")
+    public BaseResponse<String> updatePassword(@RequestBody UserInfoDto.PasswordRequest dto) {
+        String result = userService.updatePassword(dto);
+        return BaseResponse.success(result);
+    }
+    // 새로운 비밀번호 만들기
+
 
     @PostMapping("/smssend")
     public BaseResponse<String> sendCode(@RequestBody PhoneVerificationDto.SmsSendRequestDto dto) {

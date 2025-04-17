@@ -48,6 +48,10 @@ public enum ErrorCode {
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
     PURCHASE_NOT_FOUND(6002,"해당 구매 정보를 찾을 수 없습니다."),
 
+
+    // 상점 관련 에러코드
+    STORE_NOT_EXIST(8001,"상점을 찾을 수 없습니다."),
+
     // 재고 관련 에러코드
     INVENTORY_NOT_FOUND(7001,"해당 재고 정보를 찾을 수 없습니다."),
     INVENTORY_DELETE_FAIL(7002,"해당 재고 정보를 삭제를 실패했습니다."),

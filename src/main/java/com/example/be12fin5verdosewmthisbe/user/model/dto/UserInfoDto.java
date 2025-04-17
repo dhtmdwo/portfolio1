@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 public class UserInfoDto {
 
     @Getter
-    public static class updateRequest {
+    public static class UpdateRequest {
 
         private String name;
         private String email;
@@ -29,6 +29,15 @@ public class UserInfoDto {
             return user;
         }
     }
+
+
+    @Getter
+    public static class PasswordRequest {
+        private String email;
+        private String password;
+    }
+
+
 
     @AllArgsConstructor
     @NoArgsConstructor

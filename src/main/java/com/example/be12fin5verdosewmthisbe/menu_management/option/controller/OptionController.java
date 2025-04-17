@@ -50,12 +50,10 @@ public class OptionController {
                     schema = @Schema(implementation = OptionDto.RequestDto.class))
             @RequestBody OptionDto.RequestDto requestDto) {
 
-        Category category = categoryService.findById(requestDto.getCategoryId());
 
         Option option = Option.builder()
                 .name(requestDto.getName())
                 .price(requestDto.getPrice())
-                .category(category)
                 .build();
 
         Option registeredOption = optionService.register(option);
@@ -86,7 +84,7 @@ public class OptionController {
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
-    @PutMapping("/update")
+    @PostMapping("/update")
     public BaseResponse<String> updateOption(
             @Parameter(description = "수정할 옵션 ID와 정보 및 재고별 사용 수량 리스트", required = true,
                     schema = @Schema(implementation = OptionUpdateDto.RequestDto.class))
@@ -105,12 +103,10 @@ public class OptionController {
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
-    @DeleteMapping("/{optionId}")
-    public BaseResponse<String> deleteOption(
-            @Parameter(description = "삭제할 옵션 ID", required = true, example = "1")
-            @PathVariable Long optionId) {
-        optionService.deleteOption(optionId);
-        return BaseResponse.success("Option deleted successfully");
+    @PostMapping("/delete/batch")
+    public BaseResponse<String> deleteOptions(@RequestBody List<Long> optionIds) {
+        optionService.deleteOptions(optionIds); // 내부에서 반복 삭제 처리
+        return BaseResponse.success("Options deleted successfully");
     }
 
     @Operation(summary = "옵션 목록 조회 (페이지네이션)", description = "등록된 옵션 목록을 페이지별로 조회합니다.")
@@ -120,12 +116,17 @@ public class OptionController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @GetMapping("/list")
-    public BaseResponse<Page<Option>> getOptionList(
+    public BaseResponse<Page<OptionDto.ResponseDto>> getOptionList(
             @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
             @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
             Pageable pageable) {
         Page<Option> optionPage = optionService.findAllOptions(pageable);
-        return BaseResponse.success(optionPage);
+        Page<OptionDto.ResponseDto> dtoPage = optionPage.map(option -> new OptionDto.ResponseDto(
+                option.getId(),
+                option.getName()
+        ));
+
+        return BaseResponse.success(dtoPage);
     }
 
 
@@ -145,5 +146,20 @@ public class OptionController {
             Pageable pageable) {
         Page<Option> optionPage = optionService.searchOptionsByName(keyword, pageable);
         return BaseResponse.success(optionPage);
+    }
+
+    @Operation(summary = "ID로 옵션 조회", description = "옵션 ID를 통해 특정 옵션을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "옵션 조회 성공",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+            @ApiResponse(responseCode = "404", description = "옵션을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"옵션을 찾을 수 없습니다.\", \"data\": null}")))
+    })
+    @GetMapping("/{optionId}")
+    public BaseResponse<OptionDto.DetailResponseDto> getOptionById(
+            @Parameter(description = "옵션 ID", required = true, example = "1")
+            @PathVariable Long optionId) {
+        Option option = optionService.findOptionWithValuesById(optionId);
+        return BaseResponse.success(OptionDto.DetailResponseDto.from(option));
     }
 }
