@@ -4,10 +4,13 @@ import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.StoreInventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Inventory", description = "재고 관련 API")
 @RequiredArgsConstructor
@@ -52,6 +55,12 @@ public class InventoryController {
         return BaseResponse.success("재고가 성공적으로 삭제되었습니다.");
     }
 
+
+    @GetMapping("/storeInventory/getList")
+    public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories() {
+        List<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories();
+        return BaseResponse.success(result);
+    }
 
 
 }
