@@ -9,16 +9,15 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class MenuUpdateDto {
+public class MenuRegisterDto {
 
     @Data
     @Builder
-    public static class RequestDto {
-        private Long menuId;
+    public static class MenuCreateRequestDto {
         private String name;
         private Long categoryId;
         private int price;
-        private List<MenuRegisterDto.MenuCreateRequestDto.IngredientDto> ingredients;
+        private List<IngredientDto> ingredients;
 
         @Data
         @Builder
