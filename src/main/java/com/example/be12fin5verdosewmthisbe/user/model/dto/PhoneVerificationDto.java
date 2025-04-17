@@ -11,6 +11,6 @@ public class PhoneVerificationDto {
     @Getter
     public static class VerifyRequestDto{
         private String phoneNum;
-        private String certificationCode;
+        private String code;
     }
 }
