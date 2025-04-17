@@ -6,6 +6,7 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Catego
 import com.example.be12fin5verdosewmthisbe.menu_management.category.repository.CategoryRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -45,8 +47,7 @@ public class MenuService {
         List<Recipe> recipes = requestDto.getRecipes().stream()
                 .map(recipeDto -> Recipe.builder()
                         .menu(savedMenu)
-                        .inventoryId(recipeDto.getInventoryId())
-                        .price(recipeDto.getQuantity())
+                        .quantity(recipeDto.getQuantity())
                         .build())
                 .collect(Collectors.toList());
 
@@ -69,14 +70,53 @@ public class MenuService {
         return result;
     }
 
-    public Page<Menu> findAllMenus(Pageable pageable) {
+    public Page<MenuDto.MenuListResponseDto> findAllMenus(Pageable pageable) {
         Page<Menu> result = menuRepository.findAll(pageable);
 
         if (result.isEmpty()) {
             throw new CustomException(ErrorCode.MENU_NOT_FOUND);
         }
 
-        return result;
+        return result.map(this::convertToMenuListResponseDto);
+    }
+    private MenuDto.MenuListResponseDto convertToMenuListResponseDto(Menu menu) {
+        List<Recipe> recipes = menu.getRecipes();
+
+        if (recipes.isEmpty()) {
+            return MenuDto.MenuListResponseDto.builder()
+                    .name(menu.getName())
+                    .category(menu.getCategory().getName()) // Category도 name만 반환
+                    .ingredients("재료 없음")
+                    .build();
+        }
+
+        // 사용량이 가장 큰 재료 찾기
+        Recipe maxRecipe = recipes.stream()
+                .filter(r -> r.getStoreInventory() != null && r.getQuantity() != null)
+                .max(Comparator.comparing(Recipe::getQuantity))
+                .orElse(null);
+
+        String ingredientSummary = "재료 정보 없음";
+
+        if (maxRecipe != null) {
+            String name = maxRecipe.getStoreInventory().getName();
+            BigDecimal quantity = maxRecipe.getQuantity();
+            String unit = maxRecipe.getStoreInventory().getUnit();
+
+            int otherCount = (int) recipes.stream()
+                    .filter(r -> r.getStoreInventory() != null)
+                    .map(r -> r.getStoreInventory().getName())
+                    .distinct()
+                    .count() - 1;
+
+            ingredientSummary = String.format("%s %s%s 외 %d종", name, quantity.stripTrailingZeros().toPlainString(), unit, otherCount);
+        }
+
+        return MenuDto.MenuListResponseDto.builder()
+                .name(menu.getName())
+                .category(menu.getCategory().getName())
+                .ingredients(ingredientSummary)
+                .build();
     }
     public void deleteMenu(Long menuId) {
         Menu existingMenu = menuRepository.findById(menuId)
@@ -84,65 +124,4 @@ public class MenuService {
         menuRepository.delete(existingMenu);
     }
 
-    public void updateMenu(Long menuId, MenuUpdateDto.RequestDto updateDto) {
-        Menu existingMenu = menuRepository.findById(menuId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
-
-        if (updateDto.getName() != null) {
-            existingMenu.setName(updateDto.getName());
-        }
-        if (updateDto.getPrice() != null) {
-            existingMenu.setPrice(updateDto.getPrice());
-        }
-        if (updateDto.getCategoryId() != null) {
-            Category category = categoryRepository.findById(updateDto.getCategoryId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
-            existingMenu.setCategory(category);
-        }
-        menuRepository.save(existingMenu);
-
-        if (updateDto.getRecipes() != null && !updateDto.getRecipes().isEmpty()) {
-            List<String> inventoryIdList = updateDto.getRecipes().stream()
-                    .map(MenuUpdateDto.RecipeUpdateInfoDto::getInventoryId)
-                    .collect(Collectors.toList());
-
-            if (inventoryIdList.size() != inventoryIdList.stream().distinct().count()) {
-                throw new CustomException(ErrorCode.RECIPE_DUPLICATED_INVENTORY);
-            }
-
-            updateDto.getRecipes().forEach(recipeDto -> {
-                if (recipeDto.getQuantity() == null || recipeDto.getQuantity().compareTo(BigDecimal.ZERO) < 0) {
-                    throw new CustomException(ErrorCode.RECIPE_QUANTITY_INVALID);
-                }
-            });
-
-            Map<String, Recipe> existingRecipeMap = existingMenu.getRecipes().stream()
-                    .collect(Collectors.toMap(Recipe::getInventoryId, r -> r));
-
-            List<Recipe> toSave = updateDto.getRecipes().stream()
-                    .map(recipeDto -> {
-                        Recipe existingRecipe = existingRecipeMap.get(recipeDto.getInventoryId());
-                        if (existingRecipe != null) {
-                            existingRecipe.setPrice(recipeDto.getQuantity());
-                            return existingRecipe;
-                        } else {
-                            return Recipe.builder()
-                                    .menu(existingMenu)
-                                    .inventoryId(recipeDto.getInventoryId())
-                                    .price(recipeDto.getQuantity())
-                                    .build();
-                        }
-                    })
-                    .collect(Collectors.toList());
-
-            recipeRepository.saveAll(toSave);
-
-            List<String> updatedInventoryIds = inventoryIdList;
-            List<Recipe> recipesToDelete = existingMenu.getRecipes().stream()
-                    .filter(recipe -> !updatedInventoryIds.contains(recipe.getInventoryId()))
-                    .collect(Collectors.toList());
-
-            recipeRepository.deleteAll(recipesToDelete);
-        }
-    }
 }

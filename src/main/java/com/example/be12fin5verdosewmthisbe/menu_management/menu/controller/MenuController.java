@@ -3,6 +3,7 @@ package com.example.be12fin5verdosewmthisbe.menu_management.menu.controller;
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.service.MenuService;
@@ -47,7 +48,7 @@ public class MenuController {
         return BaseResponse.success(registeredMenu);
     }
 
-    @Operation(summary = "메뉴 수정", description = "기존 메뉴의 이름, 가격, 카테고리 및 레시피 정보를 수정합니다. 요청에 없는 레시피는 삭제됩니다.")
+    /*@Operation(summary = "메뉴 수정", description = "기존 메뉴의 이름, 가격, 카테고리 및 레시피 정보를 수정합니다. 요청에 없는 레시피는 삭제됩니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "메뉴 수정 성공",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": true, \"message\": \"Menu updated successfully\", \"data\": null}"))),
@@ -67,7 +68,7 @@ public class MenuController {
             @RequestBody MenuUpdateDto.RequestDto updateDto) {
         menuService.updateMenu(updateDto.getMenuId(), updateDto);
         return BaseResponse.success("Menu updated successfully");
-    }
+    }*/
 
     @Operation(summary = "특정 ID의 메뉴 조회", description = "주어진 ID에 해당하는 메뉴 정보를 조회합니다.")
     @ApiResponses(value = {
@@ -92,12 +93,12 @@ public class MenuController {
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
-    @GetMapping("/list")
-    public BaseResponse<Page<Menu>> getAllMenus(
+    @GetMapping("/getList")
+    public BaseResponse<Page<MenuDto.MenuListResponseDto>> getAllMenus(
             @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
             @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
             Pageable pageable) {
-        Page<Menu> menuPage = menuService.findAllMenus(pageable);
+        Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(pageable);
         return BaseResponse.success(menuPage);
     }
 
