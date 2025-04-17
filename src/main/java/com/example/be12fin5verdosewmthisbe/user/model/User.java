@@ -44,8 +44,6 @@ public class User implements UserDetails{
     @JoinColumn(name="user_id")
     private Store store; //상점과 연결
 
-
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

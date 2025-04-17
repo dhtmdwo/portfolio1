@@ -41,6 +41,8 @@ public enum ErrorCode {
     INVALID_VERIFICATION_CODE(1010, "인증번호가 올바르지 않습니다."),
     EXPIRED_VERIFICATION_CODE(1011, "인증번호가 만료되었습니다."),
     PHONE_NOT_VERIFIED(1012, "전화번호가 인증되지 않았습니다."),
+    EMAIL_ALREADY_EXPIRED(1013, "이미 만료된 인증입니다."),
+    EMAILCODE_NOT_MATCH(1014, "코드가 일치하지 않습니다."),
 
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
