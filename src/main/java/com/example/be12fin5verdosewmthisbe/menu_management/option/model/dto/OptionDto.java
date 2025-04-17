@@ -12,31 +12,25 @@ import java.util.stream.Collectors;
 
 public class OptionDto {
 
-    @Schema(description = "옵션 등록 요청 DTO")
     @Getter
     @Setter
-    public static class RequestDto {
-        @Schema(description = "옵션 이름", example = "라지 사이즈")
-        private String name;
-
-        @Schema(description = "옵션 가격", example = "1000")
-        private int price;
-
-        @Schema(description = "재고별 사용 수량 리스트")
-        private List<InventoryQuantityDto> inventoryQuantities;
-    }
-
-    @Schema(description = "재고 ID와 사용 수량 DTO")
-    @Getter
-    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class InventoryQuantityDto {
-        @Schema(description = "재고 ID", example = "20")
         private Long inventoryId;
-
-        @Schema(description = "사용 수량", example = "1.5")
         private BigDecimal quantity;
     }
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class RegisterRequestDto {
+        private String name;
+        private int price;
+        private List<InventoryQuantityDto> inventoryQuantities;
+    }
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -45,41 +39,51 @@ public class OptionDto {
         private String name;
     }
 
-    @Data
+    @Getter
+    @Builder
     @AllArgsConstructor
-    @NoArgsConstructor
+    public static class IngredientDto {
+        private Long storeInventoryId;
+        private String name;
+        private BigDecimal quantity;
+        private String unit;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
     public static class DetailResponseDto {
+        private Long id;
+        private String name;
+        private int price;
+        private List<IngredientDto> ingredients;
+
+        public static DetailResponseDto from(Option option) {
+            return DetailResponseDto.builder()
+                    .id(option.getId())
+                    .name(option.getName())
+                    .price(option.getPrice())
+                    .ingredients(option.getOptionValueList().stream()
+                            .map(ov -> IngredientDto.builder()
+                                    .storeInventoryId(ov.getStoreInventory().getStoreinventoryId())
+                                    .name(ov.getStoreInventory().getName())
+                                    .quantity(ov.getQuantity())
+                                    .unit(ov.getStoreInventory().getUnit())
+                                    .build())
+                            .collect(Collectors.toList()))
+                    .build();
+        }
+    }
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateRequestDto {
         private Long optionId;
         private String name;
         private int price;
-        private List<OptionValueDto> optionValues;
-
-        public static DetailResponseDto from(Option option) {
-            List<OptionValueDto> values = option.getOptionValueList().stream()
-                    .map(OptionValueDto::from)
-                    .collect(Collectors.toList());
-
-            return new DetailResponseDto(
-                    option.getId(),
-                    option.getName(),
-                    option.getPrice(),
-                    values
-            );
-        }
-    }
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class OptionValueDto {
-        private Long inventoryId;
-        private int quantity;
-
-        public static OptionValueDto from(OptionValue ov) {
-            return new OptionValueDto(
-                    ov.getInventoryId(),
-                    ov.getQuantity().toBigInteger().bitCount()
-            );
-        }
+        private List<InventoryQuantityDto> inventoryQuantities;
     }
 
 }
