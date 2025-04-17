@@ -57,7 +57,8 @@ public enum ErrorCode {
     INVENTORY_DELETE_FAIL(7002,"해당 재고 정보를 삭제를 실패했습니다."),
     INVENTORY_UPDATE_FAIL(7003,"해당 재고 수정에 실패했습니다."),
     INVENTORY_REGISTER_FAIL(7004,"해당 재고 정보를 등록하는데 실패했습니다."),
-    INVENTORY_DUPLICATE_NAME(7005, "이미 존재하는 재고 이름입니다.");
+    INVENTORY_DUPLICATE_NAME(7005, "이미 존재하는 재고 이름입니다."),
+    STORE_INVENTORY_NOT_FOUND(7006, "재고 표준 정보가 존재하지않습니다.");
 
 
     private final int status;
