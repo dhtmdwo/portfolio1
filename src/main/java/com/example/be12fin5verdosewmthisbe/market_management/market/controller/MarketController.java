@@ -7,7 +7,6 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.In
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.TransactionDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.service.MarketService;
-import com.fasterxml.jackson.databind.ser.Serializers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

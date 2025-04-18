@@ -30,12 +30,12 @@ public class CategoryService {
     private final OptionRepository optionRepository;
     private final StoreRepository storeRepository;
 
-    public Page<CategoryDto.CategoryResponseDto> getCategoryList(Pageable pageable, String keyword) {
+    public Page<CategoryDto.CategoryResponseDto> getCategoryList(Pageable pageable, String keyword, Long storeId) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            return categoryRepository.findAll(pageable)
+            return categoryRepository.findByStoreId(storeId,pageable)
                     .map(CategoryDto.CategoryResponseDto::fromEntity);
         } else {
-            return categoryRepository.findByNameContaining(keyword, pageable)
+            return categoryRepository.findByStoreIdAndNameContaining(storeId,keyword, pageable)
                     .map(CategoryDto.CategoryResponseDto::fromEntity);
         }
     }

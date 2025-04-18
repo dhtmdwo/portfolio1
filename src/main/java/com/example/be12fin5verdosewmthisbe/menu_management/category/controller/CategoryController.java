@@ -52,8 +52,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PutMapping("/update")
-    public BaseResponse<String> updateCategory(@RequestBody CategoryDto.updateDto dto, HttpServletRequest request) {
-        categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds(),getStoreId(request));
+    public BaseResponse<String> updateCategory(@RequestBody CategoryDto.updateDto dto) {
+        categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds());
         return BaseResponse.success("Category updated successfully");
     }
 
@@ -84,9 +84,10 @@ public class CategoryController {
     public BaseResponse<Page<CategoryDto.CategoryResponseDto>> getCategoryList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            HttpServletRequest request
     ) {
-        Page<CategoryDto.CategoryResponseDto> result = categoryService.getCategoryList(PageRequest.of(page, size), keyword);
+        Page<CategoryDto.CategoryResponseDto> result = categoryService.getCategoryList(PageRequest.of(page, size), keyword,getStoreId(request));
         return BaseResponse.success(result);
     }
 
@@ -119,7 +120,6 @@ public class CategoryController {
             }
         }
         Claims claims = jwtTokenProvider.getClaims(token);
-
         Long storeId = Long.valueOf(claims.get("storeId", String.class));
         return  storeId;
     }
