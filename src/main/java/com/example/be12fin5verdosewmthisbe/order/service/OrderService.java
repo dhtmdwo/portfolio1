@@ -6,17 +6,21 @@ import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
 import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderDto;
+import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderMonthDto;
 import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderTodayDto;
 import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderTopMenuDto;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -129,10 +133,6 @@ public class OrderService {
         Timestamp startTimestamp = Timestamp.valueOf(startOfWeek.atStartOfDay());
         Timestamp endTimestamp = Timestamp.valueOf(endOfWeek.plusDays(1).atStartOfDay());
 
-        System.out.println("storeId = " + storeId);
-        System.out.println("start = " + startTimestamp);
-        System.out.println("end = " + endTimestamp);
-
         List<Object[]> result = orderMenuRepository.findBestSellingMenusByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
         int temp = 0;
         String first ="";
@@ -160,6 +160,37 @@ public class OrderService {
         return OrderTopMenuDto.TopWeekResponse.of(first, second, third);
     }
 
+    public List<OrderMonthDto.TotalSaleResponse> getMonthSales(Long storeId, int year, int month) {
+
+        List<OrderMonthDto.TotalSaleResponse> monthSaleList = new ArrayList<>();
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.plusMonths(1);
+        Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
+        Timestamp endTimestamp = Timestamp.valueOf(endDate.atStartOfDay());
+
+        Map<LocalDate, Integer[] > monthSales = new HashMap<>();
+        LocalDate currentDate = startDate;
+        while(!currentDate.equals(endDate)) {
+            monthSales.put(currentDate, new Integer[]{0,0});
+            currentDate = currentDate.plusDays(1);
+        }
+
+        List<Order> orderList = orderRepository.findByCreatedAtBetween(storeId, startTimestamp, endTimestamp);
+        for (Order order : orderList) {
+            LocalDate date = order.getCreatedAt().toLocalDateTime().toLocalDate();
+            Integer price = order.getTotalPrice();
+            Integer[] stat = monthSales.get(date);
+            stat[0] += price;
+            stat[1] += 1;
+        }
+        for (Map.Entry<LocalDate, Integer[]> entry : monthSales.entrySet()) {
+            LocalDate date = entry.getKey();
+            Integer[] data = entry.getValue();
+            OrderMonthDto.TotalSaleResponse monthsale = OrderMonthDto.TotalSaleResponse.of(Date.valueOf(date), data[0], data[1]);
+            monthSaleList.add(monthsale);
+        }
+        return(monthSaleList);
+    }
 
 
 

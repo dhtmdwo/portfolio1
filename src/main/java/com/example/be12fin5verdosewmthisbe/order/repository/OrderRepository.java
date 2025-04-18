@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -22,6 +24,20 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("storeId") String storeId,
             @Param("today") LocalDate today
     );
+
+
+    @Query("""
+        SELECT o FROM Order o
+        WHERE o.store.id = :storeId
+        AND o.createdAt >= :start
+        AND o.createdAt <= :end
+    """)
+    List<Order> findByCreatedAtBetween(
+            @Param("storeId") Long storeId, @Param("start") Timestamp start
+            ,@Param("end") Timestamp end
+    );
+
+
 
 }
         

@@ -3,6 +3,7 @@ package com.example.be12fin5verdosewmthisbe.order.controller;
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderDto;
+import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderMonthDto;
 import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderTodayDto;
 import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderTopMenuDto;
 import com.example.be12fin5verdosewmthisbe.order.service.OrderService;
@@ -77,6 +78,27 @@ public class OrderController {
         return BaseResponse.success(todayResponse);
     }
 
+    @GetMapping("/monthSales")
+    public BaseResponse<List<OrderMonthDto.TotalSaleResponse>> getMonthSales(HttpServletRequest request,@RequestBody OrderMonthDto.TotalRequest totalRequest) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        int year = totalRequest.getYear();
+        int month = totalRequest.getMonth();
+        List<OrderMonthDto.TotalSaleResponse> monthSaleList = orderService.getMonthSales(storeId, year, month);
+        return BaseResponse.success(monthSaleList);
+    }
 
 
 }
