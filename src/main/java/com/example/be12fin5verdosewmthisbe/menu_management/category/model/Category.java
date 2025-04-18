@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.category.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,6 +22,11 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "카테고리 ID (자동 생성)", example = "1")
     private Long id;
+
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Store store;
 
     @Column(unique = true, nullable = false)
     @Schema(description = "카테고리 이름", example = "메인 요리")

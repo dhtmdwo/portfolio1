@@ -1,8 +1,12 @@
 package com.example.be12fin5verdosewmthisbe.store.model;
 
+import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -28,5 +32,8 @@ public class Store {
     @JoinColumn(name="user_id")
     private User user;
 
+
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Category> categories = new ArrayList<>();
 }
         
