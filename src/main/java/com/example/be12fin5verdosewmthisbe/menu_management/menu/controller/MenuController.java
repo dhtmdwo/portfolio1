@@ -6,6 +6,8 @@ import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuDt
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegisterDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.service.MenuService;
+import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,6 +15,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,6 +35,7 @@ import java.util.List;
 public class MenuController {
 
     private final MenuService menuService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "메뉴 등록", description = "새로운 메뉴를 등록하고, 사용되는 재료 및 카테고리 정보를 설정합니다.")
     @ApiResponses(value = {
@@ -138,5 +143,19 @@ public class MenuController {
             Pageable pageable) {
         Page<Menu> menuPage = menuService.searchMenusByName(keyword, pageable);
         return BaseResponse.success(menuPage);
+    }
+    private Long getStoreId(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+        return  storeId;
     }
 }
