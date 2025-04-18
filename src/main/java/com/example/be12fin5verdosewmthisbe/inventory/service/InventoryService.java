@@ -7,9 +7,6 @@ import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRe
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
-import com.example.be12fin5verdosewmthisbe.payment.model.Payment;
-import com.example.be12fin5verdosewmthisbe.payment.repository.PaymentRepository;
-import com.example.be12fin5verdosewmthisbe.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -18,10 +15,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +34,27 @@ public class InventoryService {
                     .miniquantity(dto.getMiniquantity())
                     .unit(dto.getUnit())
                     .quantity(BigDecimal.ZERO)
+                    .expiryDate(dto.getExpiryDate())
+                    .build();
+
+            return storeInventoryRepository.save(newStoreInventory);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INVENTORY_REGISTER_FAIL);
+        }
+    }
+
+    public StoreInventory totalInventory(InventoryDetailRequestDto dto) {
+        // 이름 중복 검사
+        if (storeInventoryRepository.existsByName(dto.getName())) {
+            throw new CustomException(ErrorCode.INVENTORY_DUPLICATE_NAME);
+        }
+
+        try {
+            StoreInventory newStoreInventory = StoreInventory.builder()
+                    .name(dto.getName())
+                    .miniquantity(dto.getMiniquantity())
+                    .unit(dto.getUnit())
+                    .quantity(BigDecimal.valueOf(10.2))
                     .expiryDate(dto.getExpiryDate())
                     .build();
 
