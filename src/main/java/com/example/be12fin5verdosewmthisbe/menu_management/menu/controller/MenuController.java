@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
@@ -95,10 +96,11 @@ public class MenuController {
     })
     @GetMapping("/getList")
     public BaseResponse<Page<MenuDto.MenuListResponseDto>> getAllMenus(
-            @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
-            Pageable pageable) {
-        log.info(String.valueOf(pageable.getPageSize()));
-        Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(pageable);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword
+    ) {
+        Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(PageRequest.of(page,size),keyword);
         return BaseResponse.success(menuPage);
     }
 

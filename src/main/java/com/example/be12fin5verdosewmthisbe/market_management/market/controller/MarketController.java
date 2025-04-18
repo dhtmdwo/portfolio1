@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.market_management.market.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
+import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventoryPurchaseDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
@@ -9,9 +10,16 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.service.Mark
 import com.fasterxml.jackson.databind.ser.Serializers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/market")
@@ -70,6 +78,24 @@ public class MarketController {
         marketService.confirmEnd(purchaseId);
         return BaseResponse.success("ok");
     }
+    @PostMapping("/images/upload")
+    public BaseResponse<List<String>> uploadImages(@RequestParam("files") List<MultipartFile> files) {
+        List<String> filePaths = new ArrayList<>();
+        String uploadDir = "uploads/";
 
+        for (MultipartFile file : files) {
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path path = Paths.get(uploadDir + fileName);
+            try {
+                Files.createDirectories(path.getParent());
+                Files.write(path, file.getBytes());
+                filePaths.add("/" + uploadDir + fileName); // 프론트에 보낼 경로
+            } catch (IOException e) {
+                e.printStackTrace();
+                return BaseResponse.error(ErrorCode.ERROR_CODE);
+            }
+        }
+        return BaseResponse.success(filePaths);
+    }
 
 }

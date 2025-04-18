@@ -30,7 +30,7 @@ public class MarketService {
     public void saleRegister(InventorySaleDto.InventorySaleRequestDto dto) {
         InventorySale inventorySale = InventorySale.builder()
                 .inventoryId(dto.getInventoryId())
-                .sellerStoreId(dto.getSellerStoreId())
+                //.sellerStoreId(dto.getSellerStoreId())
                 .quantity(dto.getQuantity())
                 //.inventoryName()
                 //.sellerStoreName()
