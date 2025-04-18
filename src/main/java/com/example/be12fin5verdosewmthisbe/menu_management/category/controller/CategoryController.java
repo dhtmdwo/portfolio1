@@ -70,7 +70,7 @@ public class CategoryController {
     }
 
     @GetMapping("/getList")
-    @Operation(summary = "카테고리 목록 조회", description = "등록된 모든 메뉴 카테고리 목록을 페이지네이션으로 조회합니다.")
+    @Operation(summary = "카테고리 목록 조회", description = "키워드로 검색하거나 전체 카테고리를 페이지네이션으로 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "카테고리 목록 조회 성공"),
             @ApiResponse(responseCode = "5003", description = "카테고리 목록이 비어있습니다."),
@@ -78,9 +78,10 @@ public class CategoryController {
     })
     public BaseResponse<Page<CategoryDto.CategoryResponseDto>> getCategoryList(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword
     ) {
-        Page<CategoryDto.CategoryResponseDto> result = categoryService.getCategoryList(PageRequest.of(page, size));
+        Page<CategoryDto.CategoryResponseDto> result = categoryService.getCategoryList(PageRequest.of(page, size), keyword);
         return BaseResponse.success(result);
     }
 
@@ -102,23 +103,5 @@ public class CategoryController {
     }
 
 
-    @Operation(summary = "카테고리 이름 검색", description = "이름 일부에 해당하는 카테고리를 검색합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "카테고리 검색 성공"),
-            @ApiResponse(responseCode = "5001", description = "카테고리 타입에 맞지 않는 잘못된 요청입니다."),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
-    })
-    @GetMapping("/search")
-    public BaseResponse<List<CategoryDto.responseDto>> searchCategory(@RequestParam String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return BaseResponse.error(ErrorCode.INVAILD_REQUEST);
-        }
-
-        List<Category> result = categoryService.searchByName(keyword);
-        List<CategoryDto.responseDto> response = result.stream()
-                .map(CategoryDto.responseDto::from)
-                .collect(Collectors.toList());
-        return BaseResponse.success(response);
-    }
 
 }
