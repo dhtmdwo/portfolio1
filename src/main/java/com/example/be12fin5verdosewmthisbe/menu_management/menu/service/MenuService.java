@@ -78,22 +78,12 @@ public class MenuService {
         return menuRepository.findById(menuId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
     }
-    public Page<Menu> searchMenusByName(String keyword, Pageable pageable) {
-        Page<Menu> result = menuRepository.findByNameContaining(keyword, pageable);
-
-        if (result.isEmpty()) {
-            throw new CustomException(ErrorCode.MENU_NOT_FOUND);
-        }
-
-        return result;
-    }
-
-    public Page<MenuDto.MenuListResponseDto> findAllMenus(Pageable pageable, String keyword) {
+    public Page<MenuDto.MenuListResponseDto> findAllMenus(Pageable pageable, String keyword,Long storeId) {
         Page<Menu> result = null;
         if (keyword == null || keyword.trim().isEmpty()) {
-            result = menuRepository.findAll(pageable);
+            result = menuRepository.findByStoreId(storeId,pageable);
         } else {
-            result = menuRepository.findByNameContaining(keyword, pageable);
+            result = menuRepository.findByStoreIdAndNameContaining(storeId, keyword, pageable);
         }
 
 
@@ -154,12 +144,6 @@ public class MenuService {
                 .category(categoryName)
                 .ingredients(ingredientSummary)
                 .build();
-    }
-
-    public void deleteMenu(Long menuId) {
-        Menu existingMenu = menuRepository.findById(menuId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
-        menuRepository.delete(existingMenu);
     }
 
     public MenuDto.MenuDetailResponseDto getMenuDetail(Long menuId) {
