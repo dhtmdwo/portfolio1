@@ -8,6 +8,8 @@ import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto.OptionDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
+import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,12 +26,17 @@ public class OptionService {
 
     private final OptionRepository optionRepository;
     private final StoreInventoryRepository storeInventoryRepository;
+    private final StoreRepository storeRepository;
 
     @Transactional
-    public void registerOption(OptionDto.RegisterRequestDto request) {
+    public void registerOption(OptionDto.RegisterRequestDto request,Long storeId) {
+
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
 
         Option option = Option.builder()
                 .name(request.getName())
+                .store(store)
                 .price(request.getPrice())
                 .build();
 
@@ -93,19 +100,16 @@ public class OptionService {
         optionRepository.deleteAll(options);
     }
 
-    public Page<Option> findAllOptions(Pageable pageable) {
-        return optionRepository.findAll(pageable);
-    }
-    public Page<Option> searchOptionsByName(String keyword, Pageable pageable) {
-        return optionRepository.findByNameContaining(keyword, pageable);
+    public Page<Option> findAllOptions(Pageable pageable,Long storeId) {
+        return optionRepository.findByStoreId(storeId,pageable);
     }
     @Transactional(readOnly = true)
     public Option findOptionWithValuesById(Long optionId) {
         return optionRepository.findByIdWithOptionValues(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션이 존재하지 않습니다. ID: " + optionId));
     }
-    public Page<Option> searchOptionsByKeyword(String keyword, Pageable pageable) {
-        return optionRepository.findByNameContaining(keyword, pageable);
+    public Page<Option> searchOptionsByKeyword(String keyword, Pageable pageable, Long storeId) {
+        return optionRepository.findByStoreIdAndNameContaining(storeId,keyword, pageable);
     }
 
 }

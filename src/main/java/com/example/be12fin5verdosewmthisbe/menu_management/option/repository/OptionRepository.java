@@ -14,8 +14,8 @@ import java.util.Optional;
 
 @Repository
 public interface OptionRepository extends JpaRepository<Option, Long> {
-
-    Page<Option> findByNameContaining(String keyword, Pageable pageable);
+    Page<Option> findByStoreId(Long storeId, Pageable pageable);
+    Page<Option> findByStoreIdAndNameContaining(Long storeId, String keyword, Pageable pageable);
     @Query("SELECT o FROM Option o " +
             "LEFT JOIN FETCH o.optionValueList ov " +
             "LEFT JOIN FETCH ov.storeInventory " +

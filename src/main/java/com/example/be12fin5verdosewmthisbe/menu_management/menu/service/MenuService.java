@@ -13,6 +13,8 @@ import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRe
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.RecipeRepository;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
+import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -35,20 +37,23 @@ public class MenuService {
     private final CategoryRepository categoryRepository;
     private final RecipeRepository recipeRepository;
     private final StoreInventoryRepository storeInventoryRepository;
+    private final StoreRepository storeRepository;
 
     @Transactional
-    public void registerMenu(MenuRegisterDto.MenuCreateRequestDto dto) {
+    public void registerMenu(MenuRegisterDto.MenuCreateRequestDto dto,Long StoreId) {
         // 1. 카테고리 조회 (nullable 허용)
         Category category = null;
         if (dto.getCategoryId() != null) {
             category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
         }
-
+        Store store = storeRepository.findById(StoreId).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_EXIST));
         // 2. 메뉴 생성
         Menu menu = Menu.builder()
                 .name(dto.getName())
                 .price(dto.getPrice())
+                .store(store)
                 .category(category)  // null일 수도 있음
                 .build();
 
@@ -73,22 +78,12 @@ public class MenuService {
         return menuRepository.findById(menuId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
     }
-    public Page<Menu> searchMenusByName(String keyword, Pageable pageable) {
-        Page<Menu> result = menuRepository.findByNameContaining(keyword, pageable);
-
-        if (result.isEmpty()) {
-            throw new CustomException(ErrorCode.MENU_NOT_FOUND);
-        }
-
-        return result;
-    }
-
-    public Page<MenuDto.MenuListResponseDto> findAllMenus(Pageable pageable, String keyword) {
+    public Page<MenuDto.MenuListResponseDto> findAllMenus(Pageable pageable, String keyword,Long storeId) {
         Page<Menu> result = null;
         if (keyword == null || keyword.trim().isEmpty()) {
-            result = menuRepository.findAll(pageable);
+            result = menuRepository.findByStoreId(storeId,pageable);
         } else {
-            result = menuRepository.findByNameContaining(keyword, pageable);
+            result = menuRepository.findByStoreIdAndNameContaining(storeId, keyword, pageable);
         }
 
 
@@ -149,12 +144,6 @@ public class MenuService {
                 .category(categoryName)
                 .ingredients(ingredientSummary)
                 .build();
-    }
-
-    public void deleteMenu(Long menuId) {
-        Menu existingMenu = menuRepository.findById(menuId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
-        menuRepository.delete(existingMenu);
     }
 
     public MenuDto.MenuDetailResponseDto getMenuDetail(Long menuId) {

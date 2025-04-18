@@ -6,6 +6,8 @@ import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuDt
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegisterDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.service.MenuService;
+import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,6 +15,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,6 +35,7 @@ import java.util.List;
 public class MenuController {
 
     private final MenuService menuService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "메뉴 등록", description = "새로운 메뉴를 등록하고, 사용되는 재료 및 카테고리 정보를 설정합니다.")
     @ApiResponses(value = {
@@ -44,8 +49,8 @@ public class MenuController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PostMapping("/register")
-    public BaseResponse<String> createMenu(@RequestBody MenuRegisterDto.MenuCreateRequestDto requestDto) {
-        menuService.registerMenu(requestDto);
+    public BaseResponse<String> createMenu(@RequestBody MenuRegisterDto.MenuCreateRequestDto requestDto, HttpServletRequest request) {
+        menuService.registerMenu(requestDto, getStoreId(request));
         return BaseResponse.success("Menu registered successfully");
     }
 
@@ -98,9 +103,10 @@ public class MenuController {
     public BaseResponse<Page<MenuDto.MenuListResponseDto>> getAllMenus(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            HttpServletRequest request
     ) {
-        Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(PageRequest.of(page,size),keyword);
+        Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(PageRequest.of(page,size),keyword,getStoreId(request));
         return BaseResponse.success(menuPage);
     }
 
@@ -121,22 +127,18 @@ public class MenuController {
         return BaseResponse.success("Menus deleted successfully");
     }
 
-    @Operation(summary = "이름으로 메뉴 검색 (페이지네이션)", description = "주어진 이름으로 메뉴를 검색하여 페이지별로 조회합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "메뉴 검색 성공"),
-            @ApiResponse(responseCode = "3001", description = "메뉴 정보 없음",
-            content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 메뉴를 찾을 수 없습니다.\", \"data\": null}"))),
-            @ApiResponse(responseCode = "500", description = "서버 오류",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
-    })
-    @GetMapping("/search/name")
-    public BaseResponse<Page<Menu>> searchMenusByName(
-            @Parameter(description = "검색할 메뉴 이름 키워드", required = true, example = "김치")
-            @RequestParam String keyword,
-            @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
-            @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
-            Pageable pageable) {
-        Page<Menu> menuPage = menuService.searchMenusByName(keyword, pageable);
-        return BaseResponse.success(menuPage);
+    private Long getStoreId(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+        return  storeId;
     }
 }

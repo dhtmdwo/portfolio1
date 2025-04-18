@@ -5,7 +5,11 @@ import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.dto.CategoryDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.service.CategoryService;
+import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +30,7 @@ import java.util.stream.Collectors;
 // TODO: 가게 ID 추가하면 가게 ID에 해당 하는 목록에서만 조회해야함
 public class CategoryController {
     private final CategoryService categoryService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "카테고리 등록", description = "새로운 메뉴 카테고리를 등록합니다.")
     @ApiResponses(value = {
@@ -34,9 +39,9 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/register")
-    public BaseResponse<String> registerCategory(@RequestBody CategoryDto.requestDto dto) {
+    public BaseResponse<String> registerCategory(@RequestBody CategoryDto.requestDto dto, HttpServletRequest request) {
         log.info("register");
-        categoryService.register(dto);
+        categoryService.register(dto,getStoreId(request));
         return BaseResponse.success("Category registered successfully");
     }
 
@@ -79,9 +84,10 @@ public class CategoryController {
     public BaseResponse<Page<CategoryDto.CategoryResponseDto>> getCategoryList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            HttpServletRequest request
     ) {
-        Page<CategoryDto.CategoryResponseDto> result = categoryService.getCategoryList(PageRequest.of(page, size), keyword);
+        Page<CategoryDto.CategoryResponseDto> result = categoryService.getCategoryList(PageRequest.of(page, size), keyword,getStoreId(request));
         return BaseResponse.success(result);
     }
 
@@ -103,5 +109,18 @@ public class CategoryController {
     }
 
 
-
+    private Long getStoreId(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+        return  storeId;
+    }
 }

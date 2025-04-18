@@ -35,7 +35,7 @@ public class MarketService {
                 //.inventoryName()
                 //.sellerStoreName()
                 .price(dto.getPrice())
-                .status(InventorySale.saleStatus.valueOf(dto.getStatus()))
+                .status(InventorySale.saleStatus.valueOf("available"))
                 .content(dto.getContent())
                 .imageList(new ArrayList<>())
                 .createdAt(Timestamp.from(Instant.now()))
