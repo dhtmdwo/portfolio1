@@ -20,6 +20,7 @@ public enum ErrorCode {
     MENU_NOT_FOUND(3001, "메뉴를 찾을 수 없습니다." ),
     RECIPE_DUPLICATED_INVENTORY(3002, "중복된 재료를 추가할 수 없습니다."),
     RECIPE_QUANTITY_INVALID(3003, "재료의 수량은 0보다 같거나 작을 수 없습니다." ),
+    MENU_ALREADY_EXIST(3004, "이미 존재하는 메뉴입니다." ),
 
     // 결제 관련 에러코드
     PAYMENT_VERIFICATION_FAILED(2001,"올바른 결제가 아닙니다."),
