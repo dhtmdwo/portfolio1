@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
@@ -90,10 +91,19 @@ public class OptionController {
     })
     @GetMapping("/list")
     public BaseResponse<Page<OptionDto.ResponseDto>> getOptionList(
+            @RequestParam(value = "keyword", required = false) String keyword,
             @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
-            @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
+            @PageableDefault(page = 0, size = 10, sort = "name", direction = Sort.Direction.ASC)
             Pageable pageable) {
-        Page<Option> optionPage = optionService.findAllOptions(pageable);
+
+        Page<Option> optionPage;
+
+        if (keyword != null && !keyword.isBlank()) {
+            optionPage = optionService.searchOptionsByKeyword(keyword, pageable);
+        } else {
+            optionPage = optionService.findAllOptions(pageable);
+        }
+
         Page<OptionDto.ResponseDto> dtoPage = optionPage.map(option -> new OptionDto.ResponseDto(
                 option.getId(),
                 option.getName()
@@ -101,6 +111,7 @@ public class OptionController {
 
         return BaseResponse.success(dtoPage);
     }
+
 
 
     @Operation(summary = "이름으로 옵션 검색 (페이지네이션)", description = "주어진 이름으로 메뉴 옵션을 검색하여 페이지별로 조회합니다.")

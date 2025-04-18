@@ -104,5 +104,8 @@ public class OptionService {
         return optionRepository.findByIdWithOptionValues(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션이 존재하지 않습니다. ID: " + optionId));
     }
+    public Page<Option> searchOptionsByKeyword(String keyword, Pageable pageable) {
+        return optionRepository.findByNameContaining(keyword, pageable);
+    }
 
 }
