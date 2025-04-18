@@ -53,7 +53,8 @@ public class CategoryController {
         }
         Claims claims = jwtTokenProvider.getClaims(token);
 
-        String storeId = claims.get("storeId", String.class);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+
         categoryService.register(dto,storeId);
         return BaseResponse.success("Category registered successfully");
     }
