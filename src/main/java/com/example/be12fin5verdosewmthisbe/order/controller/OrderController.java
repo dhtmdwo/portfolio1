@@ -2,10 +2,7 @@ package com.example.be12fin5verdosewmthisbe.order.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
-import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderDto;
-import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderMonthDto;
-import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderTodayDto;
-import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderTopMenuDto;
+import com.example.be12fin5verdosewmthisbe.order.model.dto.*;
 import com.example.be12fin5verdosewmthisbe.order.service.OrderService;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
@@ -15,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -99,6 +97,28 @@ public class OrderController {
         List<OrderMonthDto.TotalSaleResponse> monthSaleList = orderService.getMonthSales(storeId, year, month);
         return BaseResponse.success(monthSaleList);
     }
+
+//    @GetMapping("/saleDetail")
+//    public BaseResponse<List<OrderSaleDetailDto.OrderSaleDetailResponse>> getSalesDetail(HttpServletRequest request, @RequestBody OrderSaleDetailDto.OrderSaleDetailRequest dto) {
+//
+//        String token = null;
+//        if (request.getCookies() != null) {
+//            for (Cookie cookie : request.getCookies()) {
+//                if ("ATOKEN".equals(cookie.getName())) {
+//                    token = cookie.getValue();
+//                    break;
+//                }
+//            }
+//        }
+//        Claims claims = jwtTokenProvider.getClaims(token);
+//        // JWT 읽기
+//        String storeIdStr = claims.get("storeId", String.class);
+//        Long storeId = Long.parseLong(storeIdStr);
+//        LocalDate startDate = dto.getStartDate();
+//        LocalDate endDate = dto.getEndDate();
+//        List<OrderSaleDetailDto.OrderSaleDetailResponse> detailSaleList = orderService.getSalesDetail(storeId, startDate, endDate);
+//        return BaseResponse.success(detailSaleList);
+//    }
 
 
 }

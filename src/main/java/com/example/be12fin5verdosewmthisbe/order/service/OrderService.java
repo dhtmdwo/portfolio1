@@ -1,17 +1,17 @@
 package com.example.be12fin5verdosewmthisbe.order.service;
 
+import com.example.be12fin5verdosewmthisbe.common.CustomException;
+import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
-import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderDto;
-import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderMonthDto;
-import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderTodayDto;
-import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderTopMenuDto;
+import com.example.be12fin5verdosewmthisbe.order.model.dto.*;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +21,7 @@ import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -191,6 +192,102 @@ public class OrderService {
         }
         return(monthSaleList);
     }
+
+//    public List<OrderSaleDetailDto.OrderSaleDetailResponse> getSalesDetail(Long storeId, LocalDate startDate, LocalDate endDate) {
+//
+//        List<OrderSaleDetailDto.OrderSaleDetailResponse> saleDetailList = new ArrayList<>();
+//        long days = ChronoUnit.DAYS.between(startDate, endDate);
+//        LocalDate calDate = endDate.plusDays(1);
+//
+//        Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
+//        Timestamp endTimestamp = Timestamp.valueOf(calDate.atStartOfDay());
+//
+//        List<Order> orderList = orderRepository.findByCreatedAtBetween(storeId, startTimestamp, endTimestamp);
+//        Map<String, OrderSaleDetailDto.OrderSaleDetailResponse > DetailMap = new HashMap<>();
+//
+//        if(days ==0){
+//            for(int i = 0; i<24; i++){
+//                String hourKey = String.format("%02d", i);
+//                DetailMap.put(
+//                        hourKey,
+//                        OrderSaleDetailDto.OrderSaleDetailResponse.of(
+//                                hourKey,
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("hall",0,0),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("baemin",0,0),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("coupang",0,0),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("yogiyo",0,0)
+//                        )
+//                );
+//            }
+//            for(Order order : orderList){
+//                Timestamp createdAt = order.getCreatedAt();
+//                String hour = String.format("%02d", createdAt.toLocalDateTime().getHour());
+//
+//
+//            }
+//
+//
+//
+//        } // 하루 검색
+//        else if (Math.abs(days) <= 30) {
+//            LocalDate currentDate = startDate;
+//            while(!currentDate.isAfter(endDate)) {
+//                DetailMap.put(
+//                        String.valueOf(String.valueOf(currentDate)),
+//                        OrderSaleDetailDto.OrderSaleDetailResponse.of(
+//                                String.valueOf(currentDate),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("hall",0,0),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("baemin",0,0),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("coupang",0,0),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("yogiyo",0,0)
+//                        )
+//                );
+//                currentDate = currentDate.plusDays(1);
+//            }
+//
+//        } else if (Math.abs(days) <= 365){
+//            LocalDate currentFirstMonth = startDate.withDayOfMonth(1);
+//            LocalDate endFirstMonth = endDate.withDayOfMonth(1);
+//            while (!currentFirstMonth.isAfter(endFirstMonth)) {
+//                String yearMonth = String.format("%d-%02d", currentFirstMonth.getYear(), currentFirstMonth.getMonthValue());
+//                DetailMap.put(
+//                        String.valueOf(String.valueOf(yearMonth)),
+//                        OrderSaleDetailDto.OrderSaleDetailResponse.of(
+//                                String.valueOf(yearMonth),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("hall",0,0),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("baemin",0,0),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("coupang",0,0),
+//                                OrderSaleDetailDto.EachSaleDetailResponse.of("yogiyo",0,0)
+//                        )
+//                );
+//                currentFirstMonth = currentFirstMonth.plusMonths(1);
+//            }
+//        }else{
+//            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+//        }
+//
+//        LocalDate currentDate = startDate;
+//        while(!currentDate.equals(endDate)) {
+//            monthSales.put(currentDate, new Integer[]{0,0});
+//            currentDate = currentDate.plusDays(1);
+//        }
+//
+//
+//        for (Order order : orderList) {
+//            LocalDate date = order.getCreatedAt().toLocalDateTime().toLocalDate();
+//            Integer price = order.getTotalPrice();
+//            Integer[] stat = monthSales.get(date);
+//            stat[0] += price;
+//            stat[1] += 1;
+//        }
+//        for (Map.Entry<LocalDate, Integer[]> entry : monthSales.entrySet()) {
+//            LocalDate date = entry.getKey();
+//            Integer[] data = entry.getValue();
+//            OrderMonthDto.TotalSaleResponse monthsale = OrderMonthDto.TotalSaleResponse.of(Date.valueOf(date), data[0], data[1]);
+//            monthSaleList.add(monthsale);
+//        }
+//        return(saleDetailList);
+//    }
 
 
 

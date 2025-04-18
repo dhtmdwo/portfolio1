@@ -7,16 +7,20 @@ springdoc:
     enabled: true
     path: /swagger-ui.html
 spring:
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
+    show-sql: true
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
+        format_sql: true          # SQL 예쁘게 출력
+        use_sql_comments: true
         dialect: org.hibernate.dialect.MariaDBDialect
   mail:
     host: smtp.gmail.com
