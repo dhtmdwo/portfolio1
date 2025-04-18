@@ -48,7 +48,7 @@ public class CategoryService {
                 .store(store)
                 .build();
 
-        if (categoryRepository.findByName(category.getName()).isPresent()) {
+        if (categoryRepository.findByStoreIdAndName(storeId,category.getName()).isPresent()) {
             throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
         }
 
@@ -64,15 +64,15 @@ public class CategoryService {
     }
 
     @Transactional
-    public void update(Long id, String newName, List<Long> optionIds) {
+    public void update(Long id, String newName, List<Long> optionIds, Long storeId) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
         // 이름 중복 검사
-       /* Optional<Category> duplicate = categoryRepository.findByName(newName);
+        Optional<Category> duplicate = categoryRepository.findByStoreIdAndName(storeId,newName);
         if (duplicate.isPresent() && !duplicate.get().getId().equals(category.getId())) {
             throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
-        }*/
+        }
 
         category.setName(newName);
 
