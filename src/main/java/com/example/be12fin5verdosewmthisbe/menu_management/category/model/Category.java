@@ -24,15 +24,24 @@ public class Category {
     @Schema(description = "카테고리 ID (자동 생성)", example = "1")
     private Long id;
 
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Store store;
+
     @Column(unique = true, nullable = false)
     @Schema(description = "카테고리 이름", example = "메인 요리")
     private String name;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Option> options = new ArrayList<>();
+    @Builder.Default
+    private List<CategoryOption> categoryOptions = new ArrayList<>();
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Menu> menuList = new ArrayList<>();
+    public void addCategoryOption(CategoryOption categoryOption) {
+        this.categoryOptions.add(categoryOption);
+    }
 
     @ManyToOne
     @JoinColumn(name = "store_id")

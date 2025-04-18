@@ -1,22 +1,13 @@
 package com.example.be12fin5verdosewmthisbe.inventory.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
-import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.StoreInventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
-import com.example.be12fin5verdosewmthisbe.payment.service.PaymentService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,6 +55,12 @@ public class InventoryController {
         return BaseResponse.success("재고가 성공적으로 삭제되었습니다.");
     }
 
+
+    @GetMapping("/storeInventory/getList")
+    public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories() {
+        List<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories();
+        return BaseResponse.success(result);
+    }
 
 
 }

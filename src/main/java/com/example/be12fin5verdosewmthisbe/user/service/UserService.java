@@ -8,6 +8,7 @@ import com.example.be12fin5verdosewmthisbe.user.model.User;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserInfoDto;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserRegisterDto;
 import com.example.be12fin5verdosewmthisbe.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -33,6 +34,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
     }
 
+    @Transactional
     public UserRegisterDto.SignupResponse signUp(UserRegisterDto.SignupRequest dto) {
 
         if(userRepository.existsByEmail(dto.getEmail())) {
