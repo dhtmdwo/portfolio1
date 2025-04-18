@@ -10,16 +10,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Tag(name = "Inventory", description = "재고 관련 API")
 @RequiredArgsConstructor
 @RestController
+@CrossOrigin(
+        origins = "http://localhost:5173",
+        allowedHeaders = {"Authorization", "Content-Type", "*"},
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS, RequestMethod.PUT, RequestMethod.DELETE}
+)
 @RequestMapping("/api/inventory")
-@Tag(name = "재고관리", description = "재고 관리 API")
+@Tag(name = "재고관리", description = "재고 관리 API") // 이 라인을 추가하여 CORS 허용
 public class InventoryController {
     private final InventoryService inventoryService;
-
 
     //dto로 정보 받아서 StoreInventory 저장
     @PostMapping("/registerStoreInventory")
@@ -28,11 +30,17 @@ public class InventoryController {
         return BaseResponse.success("ok");
     }
 
+    @PostMapping("/totalInventory")
+    public BaseResponse<String> totalInventory(@RequestBody InventoryDetailRequestDto dto) {
+        inventoryService.totalInventory(dto);
+        return BaseResponse.success("ok");
+    }
+
     //dto로 정보 받아서Inventory 저장
     @PostMapping("/DetailInventory")
     public BaseResponse<String> DetailInventory(@RequestBody InventoryDto dto) {
-      inventoryService.DetailInventory(dto);
-      return BaseResponse.success("ok");
+        inventoryService.DetailInventory(dto);
+        return BaseResponse.success("ok");
     }
 
     @GetMapping("/storeInventory/{inventoryId}")
@@ -54,7 +62,7 @@ public class InventoryController {
         inventoryService.deleteById(inventoryId);
         return BaseResponse.success("재고가 성공적으로 삭제되었습니다.");
     }
-
+}
 
     @GetMapping("/storeInventory/getList")
     public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories() {
