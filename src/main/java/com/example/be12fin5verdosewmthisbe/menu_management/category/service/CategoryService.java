@@ -31,6 +31,12 @@ public class CategoryService {
     private final StoreRepository storeRepository;
 
     public Page<CategoryDto.CategoryResponseDto> getCategoryList(Pageable pageable, String keyword, Long storeId) {
+
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
         if (keyword == null || keyword.trim().isEmpty()) {
             return categoryRepository.findByStoreId(storeId,pageable)
                     .map(CategoryDto.CategoryResponseDto::fromEntity);
@@ -65,6 +71,11 @@ public class CategoryService {
 
     @Transactional
     public void update(Long id, String newName, List<Long> optionIds, Long storeId) {
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
