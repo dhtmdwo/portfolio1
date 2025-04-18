@@ -63,10 +63,7 @@ public class CategoryController {
         List<Long> ids = dto.getIds();
 
         for (Long id : ids) {
-            Category category = categoryService.findById(id);
-            if (category != null) {
-                categoryService.delete(category);
-            }
+                categoryService.deleteCategory(id);
         }
 
         return BaseResponse.success("Categories deleted successfully");
@@ -79,22 +76,12 @@ public class CategoryController {
             @ApiResponse(responseCode = "5003", description = "카테고리 목록이 비어있습니다."),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public BaseResponse<List<CategoryDto.responseDto>> getCategoryList(
+    public BaseResponse<Page<CategoryDto.CategoryResponseDto>> getCategoryList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<Category> categoryPage = categoryService.findAll(PageRequest.of(page, size));
-
-        if (categoryPage.isEmpty()) {
-            return BaseResponse.error(ErrorCode.EMPTY);
-        }
-
-        List<CategoryDto.responseDto> responseDtoList = categoryPage.getContent()
-                .stream()
-                .map(CategoryDto.responseDto::from)
-                .collect(Collectors.toList());
-
-        return BaseResponse.success(responseDtoList);
+        Page<CategoryDto.CategoryResponseDto> result = categoryService.getCategoryList(PageRequest.of(page, size));
+        return BaseResponse.success(result);
     }
 
 

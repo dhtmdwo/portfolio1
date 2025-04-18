@@ -7,6 +7,7 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Catego
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.dto.CategoryDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.repository.CategoryOptionRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.repository.CategoryRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,9 @@ public class CategoryService {
     private final OptionRepository optionRepository;
     private final CategoryOptionRepository categoryOptionRepository;
 
-    public Page<Category> findAll(Pageable pageable) {
-        return categoryRepository.findAll(pageable);
+    public Page<CategoryDto.CategoryResponseDto> getCategoryList(Pageable pageable) {
+        return categoryRepository.findAll(pageable)
+                .map(CategoryDto.CategoryResponseDto::fromEntity);
     }
 
 
@@ -79,10 +81,18 @@ public class CategoryService {
         categoryRepository.save(category);
     }
 
-    public void delete(Category category) {
-        Category existing = categoryRepository.findById(category.getId())
+    @Transactional
+    public void deleteCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
-        categoryRepository.delete(existing);
+
+        // 연관된 메뉴들의 category를 null로 설정
+        List<Menu> menus = category.getMenus();
+        for (Menu menu : menus) {
+            menu.setCategory(null);
+        }
+
+        categoryRepository.delete(category);
     }
 
     public Category findById(Long id) {

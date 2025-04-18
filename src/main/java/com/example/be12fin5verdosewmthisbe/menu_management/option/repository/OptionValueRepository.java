@@ -6,7 +6,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface OptionValueRepository extends JpaRepository<OptionValue, Long> {
-    List<OptionValue> findByOptionId(Long optionId);
-
-    void deleteByOptionIdAndInventoryIdIn(Long optionId, List<Long> inventoryIdsToDelete);
 }
