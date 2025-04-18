@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,6 +16,9 @@ import java.util.Optional;
 public interface OptionRepository extends JpaRepository<Option, Long> {
 
     Page<Option> findByNameContaining(String keyword, Pageable pageable);
-    @EntityGraph(attributePaths = {"optionValueList"})
-    Optional<Option> findWithOptionValuesById(Long id);
+    @Query("SELECT o FROM Option o " +
+            "LEFT JOIN FETCH o.optionValueList ov " +
+            "LEFT JOIN FETCH ov.storeInventory " +
+            "WHERE o.id = :optionId")
+    Optional<Option> findByIdWithOptionValues(@Param("optionId") Long optionId);
 }

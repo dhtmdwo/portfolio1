@@ -1,12 +1,9 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.option.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
-import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.service.CategoryService;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
-import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto.OptionDto;
-import com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto.OptionUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.service.OptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,11 +15,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Tag(name = "Option API", description = "메뉴 옵션 관련 API")
 @RestController
@@ -45,31 +42,11 @@ public class OptionController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PostMapping("/register")
-    public BaseResponse<String> registerOption(
-            @Parameter(description = "등록할 옵션 정보 및 재고별 사용 수량 리스트", required = true,
-                    schema = @Schema(implementation = OptionDto.RequestDto.class))
-            @RequestBody OptionDto.RequestDto requestDto) {
-
-
-        Option option = Option.builder()
-                .name(requestDto.getName())
-                .price(requestDto.getPrice())
-                .build();
-
-        Option registeredOption = optionService.register(option);
-
-        List<OptionValue> optionValues = requestDto.getInventoryQuantities().stream()
-                .map(iq -> OptionValue.builder()
-                        .option(registeredOption)
-                        .inventoryId(iq.getInventoryId())
-                        .quantity(iq.getQuantity())
-                        .build())
-                .collect(Collectors.toList());
-
-        optionService.registerOptionValues(optionValues);
-
-        return BaseResponse.success("Option registered successfully");
+    public BaseResponse<String> registerOption(@RequestBody OptionDto.RegisterRequestDto requestDto) {
+        optionService.registerOption(requestDto);
+        return BaseResponse.success("옵션이 성공적으로 등록되었습니다.");
     }
+
 
     @Operation(summary = "옵션 수정", description = "기존 메뉴 옵션의 정보 (이름, 가격, 카테고리) 및 재고별 사용 수량을 수정합니다. 요청에 없는 재고 ID의 사용 수량 정보는 삭제됩니다.")
     @ApiResponses(value = {
@@ -84,13 +61,10 @@ public class OptionController {
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
-    @PostMapping("/update")
-    public BaseResponse<String> updateOption(
-            @Parameter(description = "수정할 옵션 ID와 정보 및 재고별 사용 수량 리스트", required = true,
-                    schema = @Schema(implementation = OptionUpdateDto.RequestDto.class))
-            @RequestBody OptionUpdateDto.RequestDto updateDto) {
-        optionService.updateOptionWithValues(updateDto.getOptionId(), updateDto);
-        return BaseResponse.success("Option updated successfully");
+    @PutMapping
+    public BaseResponse<String> updateOption(@RequestBody OptionDto.UpdateRequestDto requestDto) {
+        optionService.updateOption(requestDto);
+        return BaseResponse.success("옵션이 성공적으로 수정되었습니다.");
     }
 
 
@@ -117,10 +91,19 @@ public class OptionController {
     })
     @GetMapping("/list")
     public BaseResponse<Page<OptionDto.ResponseDto>> getOptionList(
+            @RequestParam(value = "keyword", required = false) String keyword,
             @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
-            @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
+            @PageableDefault(page = 0, size = 10, sort = "name", direction = Sort.Direction.ASC)
             Pageable pageable) {
-        Page<Option> optionPage = optionService.findAllOptions(pageable);
+
+        Page<Option> optionPage;
+
+        if (keyword != null && !keyword.isBlank()) {
+            optionPage = optionService.searchOptionsByKeyword(keyword, pageable);
+        } else {
+            optionPage = optionService.findAllOptions(pageable);
+        }
+
         Page<OptionDto.ResponseDto> dtoPage = optionPage.map(option -> new OptionDto.ResponseDto(
                 option.getId(),
                 option.getName()
@@ -128,6 +111,7 @@ public class OptionController {
 
         return BaseResponse.success(dtoPage);
     }
+
 
 
     @Operation(summary = "이름으로 옵션 검색 (페이지네이션)", description = "주어진 이름으로 메뉴 옵션을 검색하여 페이지별로 조회합니다.")

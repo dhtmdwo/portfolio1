@@ -3,10 +3,7 @@ package com.example.be12fin5verdosewmthisbe.menu_management.category.model.dto;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,6 +51,22 @@ public class CategoryDto {
                     .options(category.getCategoryOptions().stream()
                             .map(co -> OptionDto.from(co.getOption()))
                             .collect(Collectors.toList()))
+                    .build();
+        }
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class CategoryResponseDto {
+        private Long id;
+        private String name;
+
+        public static CategoryResponseDto fromEntity(Category category) {
+            return CategoryResponseDto.builder()
+                    .id(category.getId())
+                    .name(category.getName())
                     .build();
         }
     }
