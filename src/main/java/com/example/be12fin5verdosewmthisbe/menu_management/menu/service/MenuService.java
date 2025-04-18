@@ -46,7 +46,7 @@ public class MenuService {
         // 중복 검사
         Optional<Menu> duplicate = menuRepository.findByStoreIdAndName(storeId, dto.getName());
         if(duplicate.isPresent()) {
-            new CustomException(ErrorCode.MENU_ALREADY_EXIST);
+            throw new CustomException(ErrorCode.MENU_ALREADY_EXIST);
         }
 
 
@@ -194,7 +194,14 @@ public class MenuService {
         }
     }
     @Transactional
-    public void updateMenu(Long menuId, MenuUpdateDto.RequestDto dto) {
+    public void updateMenu(Long menuId, MenuUpdateDto.RequestDto dto,Long storeId) {
+
+        // 중복 검사
+        Optional<Menu> duplicate = menuRepository.findByStoreIdAndName(storeId, dto.getName());
+        if(duplicate.isPresent() && !duplicate.get().getId().equals(menuId)) {
+            throw new CustomException(ErrorCode.MENU_ALREADY_EXIST);
+        }
+
         // 1. 메뉴 조회
         Menu menu = menuRepository.findById(menuId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
