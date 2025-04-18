@@ -1,10 +1,11 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.option.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
-import com.example.be12fin5verdosewmthisbe.menu_management.category.service.CategoryService;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto.OptionDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.service.OptionService;
+import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +31,7 @@ import java.util.List;
 public class OptionController {
 
     private final OptionService optionService;
-    private final CategoryService categoryService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "옵션 등록", description = "새로운 메뉴 옵션을 등록하고, 각 재고별 사용 수량을 설정합니다.")
     @ApiResponses(value = {
@@ -145,5 +148,19 @@ public class OptionController {
             @PathVariable Long optionId) {
         Option option = optionService.findOptionWithValuesById(optionId);
         return BaseResponse.success(OptionDto.DetailResponseDto.from(option));
+    }
+    private Long getStoreId(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+        return  storeId;
     }
 }
