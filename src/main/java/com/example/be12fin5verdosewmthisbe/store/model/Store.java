@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.store.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
+import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
@@ -34,14 +35,17 @@ public class Store {
     @JoinColumn(name="user_id")
     private User user;
 
+    @OneToMany(mappedBy = "store")
+    private List<Order> orderList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Category> categories = new ArrayList<>();
-
+    private List<Category> categoryList = new ArrayList<>();
+  
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Menu> menus = new ArrayList<>();
-
+    private List<Menu> menuList = new ArrayList<>();
+  
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Option> options = new ArrayList<>();
+    private List<Option> optionList = new ArrayList<>();
+
 }
         

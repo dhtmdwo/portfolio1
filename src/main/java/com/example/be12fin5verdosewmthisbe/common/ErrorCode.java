@@ -37,14 +37,14 @@ public enum ErrorCode {
     BUSINESSNUMBER_ALREADY_EXISTS(1004,"이미 사업자 번호로 등록된 계정이 존재합니다"),
     PHONENUMBER_ALREADY_EXISTS(1005,"이미 휴대폰 번호로 등록된 계정이 존재합니다"),
     SSN_ALREADY_EXISTS(1006,"이미 주민번호로 등록된 계정이 존재합니다"),
-    EMAIL_ALREADY_EXPIRED(1007, "인증 가능 시간이 만료되었습니다."),
-    EMAILCODE_NOT_MATCH(1008, "이메일로 전송된 코드와 일치하지 않습니다."),
-    SMS_SEND_FAILED(1009,"SMS 전송에 실패했습니다."),
-    VERIFICATION_NOT_FOUND(1010, "인증 요청을 찾을 수 없습니다."),
-    ALREADY_VERIFIED(1011, "이미 인증이 완료된 전화번호입니다."),
-    INVALID_VERIFICATION_CODE(1012, "인증번호가 올바르지 않습니다."),
-    EXPIRED_VERIFICATION_CODE(1013, "인증번호가 만료되었습니다."),
-    PHONE_NOT_VERIFIED(1014, "전화번호가 인증되지 않았습니다."),
+    SMS_SEND_FAILED(1007,"SMS 전송에 실패했습니다."),
+    VERIFICATION_NOT_FOUND(1008, "인증 요청을 찾을 수 없습니다."),
+    ALREADY_VERIFIED(1009, "이미 인증이 완료된 전화번호입니다."),
+    INVALID_VERIFICATION_CODE(1010, "인증번호가 올바르지 않습니다."),
+    PHONE_NOT_VERIFIED(1011, "전화번호가 인증되지 않았습니다."),
+    EMAIL_ALREADY_EXPIRED(1012, "인증 가능 시간이 만료되었습니다."),
+    EMAILCODE_NOT_MATCH(1013, "이메일로 전송된 코드와 일치하지 않습니다."),
+    EXPIRED_VERIFICATION_CODE(1014, "인증번호가 만료되었습니다."),
 
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
@@ -60,7 +60,11 @@ public enum ErrorCode {
     INVENTORY_UPDATE_FAIL(7003,"해당 재고 수정에 실패했습니다."),
     INVENTORY_REGISTER_FAIL(7004,"해당 재고 정보를 등록하는데 실패했습니다."),
     INVENTORY_DUPLICATE_NAME(7005, "이미 존재하는 재고 이름입니다."),
-    STORE_INVENTORY_NOT_FOUND(7006, "재고 표준 정보가 존재하지않습니다.");
+    STORE_INVENTORY_NOT_FOUND(7006, "재고 표준 정보가 존재하지않습니다."),
+
+
+    // 매출 관련 에러코드
+    INVALID_DATE_RANGE(9001, "날짜의 최대 범위는 1년까지 입니다");
 
 
     private final int status;

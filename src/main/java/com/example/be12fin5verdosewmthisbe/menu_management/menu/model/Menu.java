@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.menu.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
+import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -43,4 +44,8 @@ public class Menu {
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "메뉴 레시피 목록")
     private List<Recipe> recipes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "menu")
+    private List<OrderMenu> orderMenuList = new ArrayList<>();
+
 }
