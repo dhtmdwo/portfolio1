@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,14 +41,27 @@ public class MenuService {
     private final StoreRepository storeRepository;
 
     @Transactional
-    public void registerMenu(MenuRegisterDto.MenuCreateRequestDto dto,Long StoreId) {
+    public void registerMenu(MenuRegisterDto.MenuCreateRequestDto dto,Long storeId) {
+
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
+        // 중복 검사
+        Optional<Menu> duplicate = menuRepository.findByStoreIdAndName(storeId, dto.getName());
+        if(duplicate.isPresent()) {
+            throw new CustomException(ErrorCode.MENU_ALREADY_EXIST);
+        }
+
+
         // 1. 카테고리 조회 (nullable 허용)
         Category category = null;
         if (dto.getCategoryId() != null) {
             category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
         }
-        Store store = storeRepository.findById(StoreId).orElseThrow(
+        Store store = storeRepository.findById(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_EXIST));
         // 2. 메뉴 생성
         Menu menu = Menu.builder()
@@ -79,6 +93,11 @@ public class MenuService {
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
     }
     public Page<MenuDto.MenuListResponseDto> findAllMenus(Pageable pageable, String keyword,Long storeId) {
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
         Page<Menu> result = null;
         if (keyword == null || keyword.trim().isEmpty()) {
             result = menuRepository.findByStoreId(storeId,pageable);
@@ -185,7 +204,19 @@ public class MenuService {
         }
     }
     @Transactional
-    public void updateMenu(Long menuId, MenuUpdateDto.RequestDto dto) {
+    public void updateMenu(Long menuId, MenuUpdateDto.RequestDto dto,Long storeId) {
+
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
+        // 중복 검사
+        Optional<Menu> duplicate = menuRepository.findByStoreIdAndName(storeId, dto.getName());
+        if(duplicate.isPresent() && !duplicate.get().getId().equals(menuId)) {
+            throw new CustomException(ErrorCode.MENU_ALREADY_EXIST);
+        }
+
         // 1. 메뉴 조회
         Menu menu = menuRepository.findById(menuId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));

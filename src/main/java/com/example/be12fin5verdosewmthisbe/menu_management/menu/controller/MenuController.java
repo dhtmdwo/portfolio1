@@ -71,8 +71,8 @@ public class MenuController {
     public BaseResponse<String> updateMenu(
             @Parameter(description = "수정할 메뉴 ID와 정보", required = true,
                     schema = @Schema(implementation = MenuUpdateDto.RequestDto.class))
-            @RequestBody MenuUpdateDto.RequestDto updateDto) {
-        menuService.updateMenu(updateDto.getMenuId(), updateDto);
+            @RequestBody MenuUpdateDto.RequestDto updateDto, HttpServletRequest request) {
+        menuService.updateMenu(updateDto.getMenuId(), updateDto, getStoreId(request));
         return BaseResponse.success("Menu updated successfully");
     }
 

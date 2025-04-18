@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,8 +32,16 @@ public class OptionService {
     @Transactional
     public void registerOption(OptionDto.RegisterRequestDto request,Long storeId) {
 
+
+        // 가게 정보 체크
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
+        // 중복 체크
+        Optional<Option> duplicate = optionRepository.findByStoreIdAndName(storeId,request.getName());
+        if(duplicate.isPresent()) {
+            throw new CustomException(ErrorCode.OPTION_ALREADY_EXIST);
+        }
 
         Option option = Option.builder()
                 .name(request.getName())
@@ -58,10 +67,21 @@ public class OptionService {
     }
 
     @Transactional
-    public void updateOption(OptionDto.UpdateRequestDto request) {
+    public void updateOption(OptionDto.UpdateRequestDto request, Long storeId) {
+
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
 
         Option option = optionRepository.findById(request.getOptionId())
                 .orElseThrow(() -> new IllegalArgumentException("옵션을 찾을 수 없습니다. ID: " + request.getOptionId()));
+
+        // 중복 체크
+        Optional<Option> duplicate = optionRepository.findByStoreIdAndName(storeId,request.getName());
+        if(duplicate.isPresent() && !duplicate.get().getName().equals(request.getName())) {
+            throw new CustomException(ErrorCode.OPTION_ALREADY_EXIST);
+        }
 
         // 이름, 가격 업데이트
         option.setName(request.getName());
@@ -101,6 +121,10 @@ public class OptionService {
     }
 
     public Page<Option> findAllOptions(Pageable pageable,Long storeId) {
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
         return optionRepository.findByStoreId(storeId,pageable);
     }
     @Transactional(readOnly = true)
@@ -109,6 +133,10 @@ public class OptionService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션이 존재하지 않습니다. ID: " + optionId));
     }
     public Page<Option> searchOptionsByKeyword(String keyword, Pageable pageable, Long storeId) {
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
         return optionRepository.findByStoreIdAndNameContaining(storeId,keyword, pageable);
     }
 

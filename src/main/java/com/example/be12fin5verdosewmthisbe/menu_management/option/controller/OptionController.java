@@ -65,8 +65,8 @@ public class OptionController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PutMapping
-    public BaseResponse<String> updateOption(@RequestBody OptionDto.UpdateRequestDto requestDto) {
-        optionService.updateOption(requestDto);
+    public BaseResponse<String> updateOption(@RequestBody OptionDto.UpdateRequestDto requestDto, HttpServletRequest request) {
+        optionService.updateOption(requestDto,getStoreId(request));
         return BaseResponse.success("옵션이 성공적으로 수정되었습니다.");
     }
 

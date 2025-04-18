@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     // Your code here
-    public Optional<Category> findByName(String name);
+    public Optional<Category> findByStoreIdAndName(Long storeId, String name);
     @Query("SELECT c FROM Category c LEFT JOIN FETCH c.categoryOptions co LEFT JOIN FETCH co.option WHERE c.id = :id")
     Optional<Category> findByIdWithOptions(@Param("id") Long id);
     Page<Category> findByStoreId(Long storeId, Pageable pageable);

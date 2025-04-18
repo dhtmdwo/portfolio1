@@ -52,8 +52,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PutMapping("/update")
-    public BaseResponse<String> updateCategory(@RequestBody CategoryDto.updateDto dto) {
-        categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds());
+    public BaseResponse<String> updateCategory(@RequestBody CategoryDto.updateDto dto, HttpServletRequest request) {
+        categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds(),getStoreId(request));
         return BaseResponse.success("Category updated successfully");
     }
 
