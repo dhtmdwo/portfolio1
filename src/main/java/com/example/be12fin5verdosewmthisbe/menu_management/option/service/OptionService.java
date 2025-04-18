@@ -32,6 +32,8 @@ public class OptionService {
     @Transactional
     public void registerOption(OptionDto.RegisterRequestDto request,Long storeId) {
 
+
+        // 가게 정보 체크
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
 
@@ -67,6 +69,10 @@ public class OptionService {
     @Transactional
     public void updateOption(OptionDto.UpdateRequestDto request, Long storeId) {
 
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
 
         Option option = optionRepository.findById(request.getOptionId())
                 .orElseThrow(() -> new IllegalArgumentException("옵션을 찾을 수 없습니다. ID: " + request.getOptionId()));
@@ -115,6 +121,10 @@ public class OptionService {
     }
 
     public Page<Option> findAllOptions(Pageable pageable,Long storeId) {
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
         return optionRepository.findByStoreId(storeId,pageable);
     }
     @Transactional(readOnly = true)
@@ -123,6 +133,10 @@ public class OptionService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션이 존재하지 않습니다. ID: " + optionId));
     }
     public Page<Option> searchOptionsByKeyword(String keyword, Pageable pageable, Long storeId) {
+
+        // 가게 정보 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
         return optionRepository.findByStoreIdAndNameContaining(storeId,keyword, pageable);
     }
 
