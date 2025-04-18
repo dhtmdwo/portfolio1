@@ -15,6 +15,7 @@ public enum ErrorCode {
     
     // 옵션 관련 에러코드
     OPTION_NOT_FOUND(4001,"옵션을 찾을 수 없습니다." ),
+    OPTION_ALREADY_EXIST(4001,"이미 존재하는 옵션입니다." ),
 
     // 메뉴 관련 에러코드
     MENU_NOT_FOUND(3001, "메뉴를 찾을 수 없습니다." ),
