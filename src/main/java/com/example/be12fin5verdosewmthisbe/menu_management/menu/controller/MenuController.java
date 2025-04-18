@@ -49,8 +49,8 @@ public class MenuController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PostMapping("/register")
-    public BaseResponse<String> createMenu(@RequestBody MenuRegisterDto.MenuCreateRequestDto requestDto) {
-        menuService.registerMenu(requestDto);
+    public BaseResponse<String> createMenu(@RequestBody MenuRegisterDto.MenuCreateRequestDto requestDto, HttpServletRequest request) {
+        menuService.registerMenu(requestDto, getStoreId(request));
         return BaseResponse.success("Menu registered successfully");
     }
 
