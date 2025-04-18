@@ -45,8 +45,8 @@ public class OptionController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PostMapping("/register")
-    public BaseResponse<String> registerOption(@RequestBody OptionDto.RegisterRequestDto requestDto) {
-        optionService.registerOption(requestDto);
+    public BaseResponse<String> registerOption(@RequestBody OptionDto.RegisterRequestDto requestDto, HttpServletRequest request) {
+        optionService.registerOption(requestDto, getStoreId(request));
         return BaseResponse.success("옵션이 성공적으로 등록되었습니다.");
     }
 

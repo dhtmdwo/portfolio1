@@ -8,6 +8,8 @@ import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto.OptionDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
+import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,12 +26,17 @@ public class OptionService {
 
     private final OptionRepository optionRepository;
     private final StoreInventoryRepository storeInventoryRepository;
+    private final StoreRepository storeRepository;
 
     @Transactional
-    public void registerOption(OptionDto.RegisterRequestDto request) {
+    public void registerOption(OptionDto.RegisterRequestDto request,Long storeId) {
+
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
 
         Option option = Option.builder()
                 .name(request.getName())
+                .store(store)
                 .price(request.getPrice())
                 .build();
 
