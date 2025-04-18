@@ -103,9 +103,10 @@ public class MenuController {
     public BaseResponse<Page<MenuDto.MenuListResponseDto>> getAllMenus(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            HttpServletRequest request
     ) {
-        Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(PageRequest.of(page,size),keyword);
+        Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(PageRequest.of(page,size),keyword,getStoreId(request));
         return BaseResponse.success(menuPage);
     }
 
