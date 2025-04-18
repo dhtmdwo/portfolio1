@@ -83,8 +83,14 @@ public class MenuService {
         return result;
     }
 
-    public Page<MenuDto.MenuListResponseDto> findAllMenus(Pageable pageable) {
-        Page<Menu> result = menuRepository.findAll(pageable);
+    public Page<MenuDto.MenuListResponseDto> findAllMenus(Pageable pageable, String keyword) {
+        Page<Menu> result = null;
+        if (keyword == null || keyword.trim().isEmpty()) {
+            result = menuRepository.findAll(pageable);
+        } else {
+            result = menuRepository.findByNameContaining(keyword, pageable);
+        }
+
 
         if (result.isEmpty()) {
             throw new CustomException(ErrorCode.MENU_NOT_FOUND);

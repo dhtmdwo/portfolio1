@@ -13,10 +13,8 @@ public class InventorySaleDto {
     @Data
     public static class InventorySaleRequestDto {
         private Long inventoryId;
-        private Long sellerStoreId;
         private BigDecimal quantity;
         private int price;
-        private String status; // "available", "waiting", ...
         private String content;
         private List<String> imageUrls;
     }

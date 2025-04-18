@@ -85,7 +85,6 @@ public class JwtTokenProvider {
             return null;
         }
     }
-
     public String getEmailFromToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()

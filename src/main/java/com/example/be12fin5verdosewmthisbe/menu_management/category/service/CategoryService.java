@@ -26,14 +26,16 @@ import java.util.Optional;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final OptionRepository optionRepository;
-    private final CategoryOptionRepository categoryOptionRepository;
 
-    public Page<CategoryDto.CategoryResponseDto> getCategoryList(Pageable pageable) {
-        return categoryRepository.findAll(pageable)
-                .map(CategoryDto.CategoryResponseDto::fromEntity);
+    public Page<CategoryDto.CategoryResponseDto> getCategoryList(Pageable pageable, String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return categoryRepository.findAll(pageable)
+                    .map(CategoryDto.CategoryResponseDto::fromEntity);
+        } else {
+            return categoryRepository.findByNameContaining(keyword, pageable)
+                    .map(CategoryDto.CategoryResponseDto::fromEntity);
+        }
     }
-
-
     public void register(CategoryDto.requestDto dto) {
         log.info("Registering category: {}", dto);
         Category category = Category.builder().name(dto.getName()).build();
@@ -98,18 +100,6 @@ public class CategoryService {
     public Category findById(Long id) {
         return categoryRepository.findByIdWithOptions(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
-    }
-
-    public Category findByName(String name) {
-        Optional<Category> category = categoryRepository.findByName(name);
-        if (category.isEmpty()) {
-            throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
-        }
-        return category.get();
-    }
-
-    public List<Category> searchByName(String keyword) {
-        return categoryRepository.findByNameContaining(keyword);
     }
 
 }

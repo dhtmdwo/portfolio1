@@ -1,6 +1,8 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.category.repository;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +17,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     public Optional<Category> findByName(String name);
     @Query("SELECT c FROM Category c LEFT JOIN FETCH c.categoryOptions co LEFT JOIN FETCH co.option WHERE c.id = :id")
     Optional<Category> findByIdWithOptions(@Param("id") Long id);
-    List<Category> findByNameContaining(String keyword);
+    Page<Category> findByNameContaining(String keyword,Pageable pageable);
 }
         
