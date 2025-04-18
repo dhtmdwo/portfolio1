@@ -97,14 +97,14 @@ public class OptionController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
             @PageableDefault(page = 0, size = 10, sort = "name", direction = Sort.Direction.ASC)
-            Pageable pageable) {
+            Pageable pageable, HttpServletRequest request) {
 
         Page<Option> optionPage;
 
         if (keyword != null && !keyword.isBlank()) {
-            optionPage = optionService.searchOptionsByKeyword(keyword, pageable);
+            optionPage = optionService.searchOptionsByKeyword(keyword, pageable, getStoreId(request));
         } else {
-            optionPage = optionService.findAllOptions(pageable);
+            optionPage = optionService.findAllOptions(pageable, getStoreId(request));
         }
 
         Page<OptionDto.ResponseDto> dtoPage = optionPage.map(option -> new OptionDto.ResponseDto(
@@ -115,25 +115,6 @@ public class OptionController {
         return BaseResponse.success(dtoPage);
     }
 
-
-
-    @Operation(summary = "이름으로 옵션 검색 (페이지네이션)", description = "주어진 이름으로 메뉴 옵션을 검색하여 페이지별로 조회합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "옵션 검색 성공",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "500", description = "서버 오류",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
-    })
-    @GetMapping("/search/name")
-    public BaseResponse<Page<Option>> searchOptionsByName(
-            @Parameter(description = "검색할 옵션 이름 키워드", required = true, example = "사이즈")
-            @RequestParam String keyword,
-            @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
-            @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
-            Pageable pageable) {
-        Page<Option> optionPage = optionService.searchOptionsByName(keyword, pageable);
-        return BaseResponse.success(optionPage);
-    }
 
     @Operation(summary = "ID로 옵션 조회", description = "옵션 ID를 통해 특정 옵션을 조회합니다.")
     @ApiResponses(value = {

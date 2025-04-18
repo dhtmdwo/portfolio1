@@ -100,19 +100,16 @@ public class OptionService {
         optionRepository.deleteAll(options);
     }
 
-    public Page<Option> findAllOptions(Pageable pageable) {
-        return optionRepository.findAll(pageable);
-    }
-    public Page<Option> searchOptionsByName(String keyword, Pageable pageable) {
-        return optionRepository.findByNameContaining(keyword, pageable);
+    public Page<Option> findAllOptions(Pageable pageable,Long storeId) {
+        return optionRepository.findByStoreId(storeId,pageable);
     }
     @Transactional(readOnly = true)
     public Option findOptionWithValuesById(Long optionId) {
         return optionRepository.findByIdWithOptionValues(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션이 존재하지 않습니다. ID: " + optionId));
     }
-    public Page<Option> searchOptionsByKeyword(String keyword, Pageable pageable) {
-        return optionRepository.findByNameContaining(keyword, pageable);
+    public Page<Option> searchOptionsByKeyword(String keyword, Pageable pageable, Long storeId) {
+        return optionRepository.findByStoreIdAndNameContaining(storeId,keyword, pageable);
     }
 
 }
