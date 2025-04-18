@@ -61,8 +61,6 @@ public class MenuService {
             category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
         }
-        Store store = storeRepository.findById(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_EXIST));
         // 2. 메뉴 생성
         Menu menu = Menu.builder()
                 .name(dto.getName())
