@@ -5,6 +5,7 @@ import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.*;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.StoreInventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class InventoryService {
@@ -114,5 +119,21 @@ public class InventoryService {
         } catch (DataIntegrityViolationException e) {
             throw new CustomException(ErrorCode.INVENTORY_DELETE_FAIL);
         }
+    }
+    public List<StoreInventoryDto.responseDto> getAllStoreInventories() {
+        return storeInventoryRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    private StoreInventoryDto.responseDto toDto(StoreInventory storeInventory) {
+        return StoreInventoryDto.responseDto.builder()
+                .id(storeInventory.getStoreinventoryId())
+                .name(storeInventory.getName())
+                .expiryDate(storeInventory.getExpiryDate())
+                .miniquantity(storeInventory.getMiniquantity())
+                .unit(storeInventory.getUnit())
+                .build();
     }
 }
