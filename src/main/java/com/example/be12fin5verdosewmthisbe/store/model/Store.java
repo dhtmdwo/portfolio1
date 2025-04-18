@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.store.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,5 +36,8 @@ public class Store {
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Menu> menus = new ArrayList<>();
 }
         

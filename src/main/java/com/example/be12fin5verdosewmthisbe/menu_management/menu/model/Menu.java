@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.menu.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +30,10 @@ public class Menu {
 
     @Schema(description = "메뉴 가격", example = "8000")
     private int price;
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Store store;
 
     @ManyToOne
     @JoinColumn(name = "category_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
