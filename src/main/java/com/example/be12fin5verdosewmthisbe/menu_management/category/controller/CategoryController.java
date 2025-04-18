@@ -41,21 +41,7 @@ public class CategoryController {
     @PostMapping("/register")
     public BaseResponse<String> registerCategory(@RequestBody CategoryDto.requestDto dto, HttpServletRequest request) {
         log.info("register");
-
-        String token = null;
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("ATOKEN".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
-                }
-            }
-        }
-        Claims claims = jwtTokenProvider.getClaims(token);
-
-        Long storeId = Long.valueOf(claims.get("storeId", String.class));
-
-        categoryService.register(dto,storeId);
+        categoryService.register(dto,getStoreId(request));
         return BaseResponse.success("Category registered successfully");
     }
 
@@ -66,8 +52,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PutMapping("/update")
-    public BaseResponse<String> updateCategory(@RequestBody CategoryDto.updateDto dto) {
-        categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds());
+    public BaseResponse<String> updateCategory(@RequestBody CategoryDto.updateDto dto, HttpServletRequest request) {
+        categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds(),getStoreId(request));
         return BaseResponse.success("Category updated successfully");
     }
 
@@ -122,5 +108,19 @@ public class CategoryController {
     }
 
 
+    private Long getStoreId(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
 
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+        return  storeId;
+    }
 }
