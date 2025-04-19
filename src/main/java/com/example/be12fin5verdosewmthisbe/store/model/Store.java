@@ -31,6 +31,14 @@ public class Store {
     //@Column(length=200, unique = true, nullable = false)
     private String phoneNumber;
 
+    // 위도
+    @Column
+    private Double latitude;
+
+    // 경도
+    @Column
+    private Double longitude;
+
     @OneToOne
     @JoinColumn(name="user_id")
     private User user;

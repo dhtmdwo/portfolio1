@@ -19,7 +19,7 @@ public class StoreService {
 
     public String registerStore(StoreDto.RegistRequest dto, String emailUrl) {
         User user = userRepository.findByEmail(emailUrl).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND) );
-        Store registerStore = dto.toEntity(user);
+        Store registerStore = dto.toEntity(user,dto.getLatitude(),dto.getLongitude());
         Store store =  storeRepository.save(registerStore);
         return  String.valueOf(store.getId());
     }
