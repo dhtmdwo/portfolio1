@@ -65,4 +65,3 @@ public class StoreInventory {
     private List<OptionValue> optionValues = new ArrayList<>();
 
 }
-

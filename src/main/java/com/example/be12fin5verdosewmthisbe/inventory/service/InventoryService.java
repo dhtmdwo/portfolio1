@@ -8,6 +8,7 @@ import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.StoreInventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -136,4 +137,44 @@ public class InventoryService {
                 .unit(storeInventory.getUnit())
                 .build();
     }
+
+    @Transactional
+    public void consumeInventory(Long storeInventoryId, BigDecimal requestedQuantity) {
+        List<Inventory> inventories = inventoryRepository
+                .findByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId);
+
+        BigDecimal remaining = requestedQuantity;
+
+        for (Inventory inventory : inventories) {
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) break;
+
+            BigDecimal available = inventory.getQuantity();
+
+            if (available.compareTo(remaining) <= 0) {
+                // 전부 쓰고 삭제
+                remaining = remaining.subtract(available);
+                inventoryRepository.delete(inventory);
+            } else {
+                // 일부만 사용
+                inventory.setQuantity(available.subtract(remaining));
+                inventoryRepository.save(inventory);
+                remaining = BigDecimal.ZERO;
+            }
+        }
+
+        if (remaining.compareTo(BigDecimal.ZERO) > 0) {
+            throw new IllegalArgumentException("재고가 부족하여 요청 수량만큼 차감할 수 없습니다.");
+        }
+    }
+    // 전체를 유통기한 빠른 순으로
+    public List<Inventory> getSortedInventoriesByExpiry(Long storeInventoryId) {
+        return inventoryRepository.findByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId);
+    }
+
+    // 가장 먼저 써야 하는 재고 1개
+    public Inventory getFirstInventoryToUse(Long storeInventoryId) {
+        return inventoryRepository.findTopByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId)
+                .orElseThrow(() -> new RuntimeException("해당 storeInventory에 재고가 없습니다."));
+    }
+
 }

@@ -13,7 +13,7 @@ public class InventorySaleDto {
 
     @Data
     public static class InventorySaleRequestDto {
-        private Long inventoryId;
+        private Long storeInventoryId;
         private BigDecimal quantity;
         private int price;
         private String content;

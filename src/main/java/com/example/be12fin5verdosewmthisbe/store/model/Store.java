@@ -54,6 +54,4 @@ public class Store {
   
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Option> optionList = new ArrayList<>();
-
 }
-        

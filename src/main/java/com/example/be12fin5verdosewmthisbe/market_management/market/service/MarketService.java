@@ -2,6 +2,8 @@ package com.example.be12fin5verdosewmthisbe.market_management.market.service;
 
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
+import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.Images;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
@@ -11,6 +13,8 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.Tr
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.ImagesRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventoryPurchaseRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventorySaleRepository;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
+import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +23,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,14 +31,23 @@ public class MarketService {
     private final ImagesRepository imagesRepository;
     private final InventoryPurchaseRepository inventoryPurchaseRepository;
     private final InventorySaleRepository inventorySaleRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
+    private final StoreRepository storeRepository;
 
-    public void saleRegister(InventorySaleDto.InventorySaleRequestDto dto) {
+    public void saleRegister(InventorySaleDto.InventorySaleRequestDto dto,Long storeId) {
+
+        StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
+
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
         InventorySale inventorySale = InventorySale.builder()
-                .inventoryId(dto.getInventoryId())
-                //.sellerStoreId(dto.getSellerStoreId())
+                .inventoryName(storeInventory.getName())
+                .storeInventory(storeInventory)
+                .sellerStoreId(storeId)
+                .sellerStoreName(store.getName())
                 .quantity(dto.getQuantity())
-                //.inventoryName()
-                //.sellerStoreName()
                 .price(dto.getPrice())
                 .status(InventorySale.saleStatus.valueOf("available"))
                 .content(dto.getContent())
@@ -194,5 +208,26 @@ public class MarketService {
                 })
                 .toList();
     }*/
+    public List<InventorySaleDto.InventorySaleListDto> getNearbyAvailableSalesDto(List<Long> nearbyStoreIds) {
+        List<InventorySale> sales = inventorySaleRepository
+                .findBySellerStoreIdInAndStatus(nearbyStoreIds, InventorySale.saleStatus.available);
+
+        return convertToDtoList(sales);
+    }
+
+    public List<InventorySaleDto.InventorySaleListDto> convertToDtoList(List<InventorySale> sales) {
+
+        return sales.stream()
+                .map(sale -> new InventorySaleDto.InventorySaleListDto(
+
+                        sale.getId(),
+                        sale.getInventoryName(),
+                        sale.getQuantity().toPlainString() + sale.getStoreInventory().getUnit(),  // BigDecimal → String
+                        sale.getExpiryDate(),
+                        sale.getPrice(),
+                        sale.getCreatedAt().toLocalDateTime().toLocalDate(), // Timestamp → LocalDate
+                        sale.getSellerStoreName()
+                ))
+                .collect(Collectors.toList());
+    }
 }
-        
