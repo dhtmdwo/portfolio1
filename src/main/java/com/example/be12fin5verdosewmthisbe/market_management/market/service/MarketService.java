@@ -196,7 +196,7 @@ public class MarketService {
                 .toList();
     }*/
 
-    /*public List<InventoryPurchaseDto.InventoryPurchaseResponseDto> getPurchasesBySaleId(Long saleId) {
+    public List<InventoryPurchaseDto.InventoryPurchaseResponseDto> getPurchasesBySaleId(Long saleId) {
         InventorySale sale = inventorySaleRepository.findById(saleId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
 
@@ -208,7 +208,7 @@ public class MarketService {
                     return new InventoryPurchaseDto.InventoryPurchaseResponseDto(purchase,buyerName);
                 })
                 .toList();
-    }*/
+    }
     public List<InventorySaleDto.InventorySaleListDto> getNearbyAvailableSalesDto(List<Long> nearbyStoreIds) {
         List<InventorySale> sales = inventorySaleRepository
                 .findBySellerStoreIdInAndStatus(nearbyStoreIds, InventorySale.saleStatus.available);

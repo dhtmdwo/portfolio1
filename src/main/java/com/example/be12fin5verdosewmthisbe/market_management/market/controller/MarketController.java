@@ -51,10 +51,10 @@ public class MarketController {
         return marketService.getAvailableOrWaitingSales(storeId);
     }*/
 
-    /*@GetMapping("/get/{saleId}/purchaseList")
+    @GetMapping("/get/{saleId}/purchaseList")
     public List<InventoryPurchaseDto.InventoryPurchaseResponseDto> getPurchasesBySaleId(@PathVariable Long saleId) {
         return marketService.getPurchasesBySaleId(saleId);
-    }*/
+    }
 
     @GetMapping("/get/{saleId}/detail")
     public BaseResponse<InventorySale> getSalesDetail(@PathVariable Long saleId) {
