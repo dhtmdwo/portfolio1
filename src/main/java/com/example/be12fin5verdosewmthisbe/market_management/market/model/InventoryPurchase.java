@@ -20,6 +20,8 @@ public class InventoryPurchase {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private String inventoryName;
+
     private Long buyerStoreId;
 
     private BigDecimal quantity;
