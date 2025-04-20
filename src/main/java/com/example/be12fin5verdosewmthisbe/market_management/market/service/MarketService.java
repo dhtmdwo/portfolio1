@@ -68,15 +68,16 @@ public class MarketService {
 
         inventorySaleRepository.save(inventorySale);
     }
-    public void purchaseRegister(InventoryPurchaseDto.InventoryPurchaseRequestDto dto) {
+    public void purchaseRegister(InventoryPurchaseDto.InventoryPurchaseRequestDto dto,Long storeId) {
         InventorySale sale = inventorySaleRepository.findById(dto.getInventorySaleId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
 
         InventoryPurchase purchase = InventoryPurchase.builder()
-                .buyerStoreId(dto.getBuyerStoreId())
+                .inventoryName(dto.getInventoryName())
+                .buyerStoreId(storeId)
                 .quantity(dto.getQuantity())
                 .price(dto.getPrice())
-                .status(InventoryPurchase.purchaseStatus.valueOf(dto.getStatus()))
+                .status(InventoryPurchase.purchaseStatus.valueOf("waiting"))
                 .method(InventoryPurchase.purchaseMethod.valueOf(dto.getMethod()))
                 .createdAt(Timestamp.from(Instant.now()))
                 .inventorySale(sale)

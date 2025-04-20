@@ -10,10 +10,10 @@ public class InventoryPurchaseDto {
     @Data
     public static class InventoryPurchaseRequestDto {
         private Long inventorySaleId;     // 어떤 판매에 연결할지
+        private String inventoryName;
         private Long buyerStoreId;
         private BigDecimal quantity;
         private int price;
-        private String status;            // 예: "waiting", "payment"
         private String method;            // 예: "credit_card", "cash"
     }
     @Data

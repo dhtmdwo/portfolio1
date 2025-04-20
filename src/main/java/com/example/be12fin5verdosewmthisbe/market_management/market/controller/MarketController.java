@@ -41,8 +41,8 @@ public class MarketController {
     }
 
     @PostMapping("/registerPurchase")
-    public BaseResponse<String> registerInventoryPurchase(@RequestBody InventoryPurchaseDto.InventoryPurchaseRequestDto dto) {
-        marketService.purchaseRegister(dto);
+    public BaseResponse<String> registerInventoryPurchase(@RequestBody InventoryPurchaseDto.InventoryPurchaseRequestDto dto, HttpServletRequest request) {
+        marketService.purchaseRegister(dto, getStoreId(request));
         return BaseResponse.success("ok");
     }
 
