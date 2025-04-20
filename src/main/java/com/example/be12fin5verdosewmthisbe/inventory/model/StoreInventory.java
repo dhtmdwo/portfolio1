@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.inventory.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -54,6 +55,12 @@ public class StoreInventory {
     @JsonIgnore
     @Schema(description = "메뉴 레시피 목록")
     private List<Inventory> inventoryList = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Store store;
+
+
 
 }
 

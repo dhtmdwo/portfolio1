@@ -5,6 +5,7 @@ import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.*;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.payment.model.Payment;
@@ -101,4 +102,21 @@ public class InventoryService {
             throw new CustomException(ErrorCode.INVENTORY_DELETE_FAIL);
         }
     }
+
+    public List<InventoryInfoDto.Response> getInventoryList(Long storeId) {
+
+        List<StoreInventory> inventoryList = storeInventoryRepository.findInventoryListByStore(storeId);
+        List<InventoryInfoDto.Response> inventoryResponseList = new ArrayList<>();
+
+        for (StoreInventory inventory : inventoryList) {
+            String name = inventory.getName();
+            BigDecimal quantity = inventory.getQuantity();
+            String unit = inventory.getUnit();
+            InventoryInfoDto.Response inventoryResponse = InventoryInfoDto.Response.of(name, quantity, unit);
+            inventoryResponseList.add(inventoryResponse);
+        }
+        return(inventoryResponseList);
+    }
+
+
 }

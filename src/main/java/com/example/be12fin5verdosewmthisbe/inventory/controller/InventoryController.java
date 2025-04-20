@@ -5,14 +5,19 @@ import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
 import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
 import com.example.be12fin5verdosewmthisbe.payment.service.PaymentService;
+import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +33,7 @@ import java.util.List;
 @Tag(name = "재고관리", description = "재고 관리 API")
 public class InventoryController {
     private final InventoryService inventoryService;
+    private final JwtTokenProvider jwtTokenProvider;
 
 
     //dto로 정보 받아서 StoreInventory 저장
@@ -64,6 +70,24 @@ public class InventoryController {
         return BaseResponse.success("재고가 성공적으로 삭제되었습니다.");
     }
 
+    @GetMapping("/inventorylist")
+    public BaseResponse<List<InventoryInfoDto.Response>> getInventoryList(HttpServletRequest request) {
 
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        List<InventoryInfoDto.Response> inventoryList = inventoryService.getInventoryList(storeId);
+        return BaseResponse.success(inventoryList);
+    }
 
 }

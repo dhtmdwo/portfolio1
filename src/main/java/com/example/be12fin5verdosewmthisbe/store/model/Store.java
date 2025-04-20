@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.store.model;
 
+import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
@@ -38,6 +39,9 @@ public class Store {
 
     @OneToMany(mappedBy = "store")
     private List<Category> categoryList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store")
+    private List<StoreInventory> storeInventoryList = new ArrayList<>();
 
 
 
