@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 public class InventorySaleDto {
@@ -29,15 +29,14 @@ public class InventorySaleDto {
         // 판매물품 이름
         private String inventoryName;
         // 수량
-        private BigDecimal quantity;
+        private String quantity;
         // 유통기한
-        private Timestamp expirationDate;
+        private LocalDate expirationDate;
         // 희망 가격
         private int price;
         // 등록 날짜
-        private Timestamp createdDate;
+        private LocalDate createdDate;
         // 파는 가게명
         private String sellerStoreName;
     }
 }
-        
