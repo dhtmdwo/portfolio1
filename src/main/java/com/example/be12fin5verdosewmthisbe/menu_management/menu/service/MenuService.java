@@ -6,6 +6,7 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Catego
 import com.example.be12fin5verdosewmthisbe.menu_management.category.repository.CategoryRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuInfoDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -145,4 +148,20 @@ public class MenuService {
             recipeRepository.deleteAll(recipesToDelete);
         }
     }
+
+    public List<MenuInfoDto.MenuResponse> getmenuList(Long storeId) {
+
+        List<Menu> menuList = menuRepository.findMenuBystore(storeId);
+        List<MenuInfoDto.MenuResponse> menuResponseList = new ArrayList<>();
+
+        for (Menu menu : menuList) {
+            String menuName = menu.getName();
+            String category = menu.getCategory().getName();
+            MenuInfoDto.MenuResponse menuResponse = MenuInfoDto.MenuResponse.of(menuName, category);
+            menuResponseList.add(menuResponse);
+        }
+        return(menuResponseList);
+    }
+
+
 }
