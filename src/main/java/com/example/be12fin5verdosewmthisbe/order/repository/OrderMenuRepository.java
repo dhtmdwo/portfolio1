@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.order.repository;
 
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,5 +32,24 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenu, Long> {
                 @Param("start") Timestamp start,
                 @Param("end") Timestamp end
         );
+
+        @Query("""
+        SELECT DISTINCT om FROM OrderMenu om
+        JOIN FETCH om.order o
+        JOIN FETCH om.menu m
+        JOIN FETCH m.category c
+        JOIN FETCH c.store s
+        WHERE s.id = :storeId
+        AND o.createdAt >= :start
+        AND o.createdAt <= :end
+        
+    """)
+        List<OrderMenu> findSaleMenusByStoreAndPeriod(
+                @Param("storeId") Long storeId,
+                @Param("start") Timestamp start,
+                @Param("end") Timestamp end
+        );
+
+
 
 }

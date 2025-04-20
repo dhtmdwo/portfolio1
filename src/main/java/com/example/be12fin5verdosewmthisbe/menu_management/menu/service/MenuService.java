@@ -8,9 +8,14 @@ import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuInfoDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuSaleDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.RecipeRepository;
+import com.example.be12fin5verdosewmthisbe.order.model.Order;
+import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
+import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
+import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +39,7 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final CategoryRepository categoryRepository;
     private final RecipeRepository recipeRepository;
+    private final OrderMenuRepository orderMenuRepository;
 
     public Menu registerMenu(MenuRegistrationDto.RequestDto requestDto) {
         Category category = categoryRepository.findById(requestDto.getCategoryId())
@@ -161,6 +169,28 @@ public class MenuService {
             menuResponseList.add(menuResponse);
         }
         return(menuResponseList);
+    }
+
+    public List<MenuSaleDto.Response> getSaleList(Long storeId, MenuSaleDto.DateRequest dto) {
+
+        LocalDate startDate = dto.getStartDate();
+        LocalDate endDate = dto.getEndDate();
+        Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
+        Timestamp endTimestamp = Timestamp.valueOf(endDate.plusDays(1).atStartOfDay());
+
+
+        List<OrderMenu> saleList = orderMenuRepository.findSaleMenusByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
+        List<MenuSaleDto.Response> menuSaleList = new ArrayList<>();
+
+        for (OrderMenu orderMenu : saleList) {
+            Timestamp date = orderMenu.getOrder().getCreatedAt();
+            String category = orderMenu.getMenu().getCategory().getName();
+            String menuName = orderMenu.getMenu().getName();
+            int quantity = orderMenu.getQuantity();
+            MenuSaleDto.Response menuSale = MenuSaleDto.Response.of(date, category, menuName, quantity);
+            menuSaleList.add(menuSale);
+        }
+        return(menuSaleList);
     }
 
 

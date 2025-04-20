@@ -5,6 +5,7 @@ import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuInfoDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuSaleDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.service.MenuService;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
@@ -166,6 +167,24 @@ public class MenuController {
         return BaseResponse.success(menuList);
     }
 
+    @GetMapping("/menusale")
+    public BaseResponse<List<MenuSaleDto.Response>> getSaleList(HttpServletRequest request, MenuSaleDto.DateRequest dto) {
 
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        List<MenuSaleDto.Response> SaleList = menuService.getSaleList(storeId, dto);
+        return BaseResponse.success(SaleList);
+    }
 
 }
