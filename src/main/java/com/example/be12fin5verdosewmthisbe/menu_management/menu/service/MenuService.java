@@ -127,7 +127,7 @@ public class MenuService {
                 }
             });
 
-            Map<String, Recipe> existingRecipeMap = existingMenu.getRecipes().stream()
+            Map<String, Recipe> existingRecipeMap = existingMenu.getRecipeList().stream()
                     .collect(Collectors.toMap(Recipe::getInventoryId, r -> r));
 
             List<Recipe> toSave = updateDto.getRecipes().stream()
@@ -149,7 +149,7 @@ public class MenuService {
             recipeRepository.saveAll(toSave);
 
             List<String> updatedInventoryIds = inventoryIdList;
-            List<Recipe> recipesToDelete = existingMenu.getRecipes().stream()
+            List<Recipe> recipesToDelete = existingMenu.getRecipeList().stream()
                     .filter(recipe -> !updatedInventoryIds.contains(recipe.getInventoryId()))
                     .collect(Collectors.toList());
 

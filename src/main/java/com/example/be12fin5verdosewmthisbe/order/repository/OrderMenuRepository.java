@@ -50,6 +50,23 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenu, Long> {
                 @Param("end") Timestamp end
         );
 
+        @Query("""
+        SELECT DISTINCT om FROM OrderMenu om
+        JOIN FETCH om.order o
+        JOIN FETCH om.menu m
+        JOIN FETCH m.recipeList r
+        JOIN FETCH r.storeInventory si
+        JOIN FETCH si.store s
+        WHERE s.id = :storeId
+        AND o.createdAt >= :start
+        AND o.createdAt <= :end
+    """)
+        List<OrderMenu> findSaleMenusForInventoryByStoreAndPeriod(
+                @Param("storeId") Long storeId,
+                @Param("start") Timestamp start,
+                @Param("end") Timestamp end
+        );
+
 
 
 }

@@ -36,7 +36,7 @@ public class Menu {
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "메뉴 레시피 목록")
-    private List<Recipe> recipes = new ArrayList<>();
+    private List<Recipe> recipeList = new ArrayList<>();
 
     @OneToMany(mappedBy = "menu")
     private List<OrderMenu> orderMenuList = new ArrayList<>();

@@ -53,8 +53,13 @@ public class StoreInventory {
 
     @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    @Schema(description = "메뉴 레시피 목록")
+    @Schema(description = "인벤토리 목록")
     private List<Inventory> inventoryList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @Schema(description = "레시피 목록")
+    private List<Recipe> recipeList = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "store_id")

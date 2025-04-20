@@ -6,6 +6,7 @@ import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryMenuDto;
 import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
@@ -88,6 +89,26 @@ public class InventoryController {
         Long storeId = Long.parseLong(storeIdStr);
         List<InventoryInfoDto.Response> inventoryList = inventoryService.getInventoryList(storeId);
         return BaseResponse.success(inventoryList);
+    }
+
+    @GetMapping("/menusale")
+    public BaseResponse<List<InventoryMenuDto.SaleResponse>> getSaleList(HttpServletRequest request, InventoryMenuDto.DateRequest dto) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        List<InventoryMenuDto.SaleResponse> SaleList = inventoryService.getSaleList(storeId, dto);
+        return BaseResponse.success(SaleList);
     }
 
 }
