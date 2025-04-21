@@ -5,8 +5,10 @@ import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.*;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryUpdateResponseDto;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -29,15 +31,10 @@ public class InventoryService {
         }
 
         try {
-            StoreInventory newStoreInventory = StoreInventory.builder()
-                    .name(dto.getName())
-                    .miniquantity(dto.getMiniquantity())
-                    .unit(dto.getUnit())
-                    .quantity(BigDecimal.ZERO)
-                    .expiryDate(dto.getExpiryDate())
-                    .build();
+            // DTO의 toEntity() 메서드 사용
+            StoreInventory newStoreInventory = dto.toEntity(); // toEntity() 호출
 
-            return storeInventoryRepository.save(newStoreInventory);
+            return storeInventoryRepository.save(newStoreInventory); // 저장
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INVENTORY_REGISTER_FAIL);
         }
@@ -50,57 +47,59 @@ public class InventoryService {
         }
 
         try {
-            StoreInventory newStoreInventory = StoreInventory.builder()
-                    .name(dto.getName())
-                    .miniquantity(dto.getMiniquantity())
-                    .unit(dto.getUnit())
-                    .quantity(BigDecimal.valueOf(10.2))
-                    .expiryDate(dto.getExpiryDate())
-                    .build();
+            // DTO의 toEntity() 메서드 사용
+            StoreInventory newStoreInventory = dto.toEntity(); // toEntity() 호출
 
-            return storeInventoryRepository.save(newStoreInventory);
+            return storeInventoryRepository.save(newStoreInventory); // 저장
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INVENTORY_REGISTER_FAIL);
         }
     }
 
-    public Inventory DetailInventory(InventoryDto dto) {
-        StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
-                .orElseThrow(()-> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
 
-        Integer unitPrice = new BigDecimal(dto.getTotalPrice()).divide(dto.getQuantity(),2, RoundingMode.CEILING).intValue();
-        Timestamp purchaseDate = dto.getPurchaseDate();
-        LocalDate expiryDate = purchaseDate.toLocalDateTime().toLocalDate().plusDays(storeInventory.getExpiryDate());
+    public Inventory DetailInventory(InventoryDto dto) {
+        // StoreInventory 객체를 찾아옵니다.
+        StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+
+        // unitPrice 계산 (단가 계산)
+        Integer unitPrice = new BigDecimal(dto.getTotalPrice())
+                .divide(dto.getQuantity(), 2, RoundingMode.CEILING)
+                .intValue();
+
+        // purchaseDate에서 유통기한을 더하여 expiryDate를 계산합니다.
+        LocalDate expiryDate = dto.getPurchaseDate().toLocalDateTime().toLocalDate()
+                .plusDays(storeInventory.getExpiryDate()); // 유통기한 추가
+
         Inventory newInventory = Inventory.builder()
                 .purchaseDate(dto.getPurchaseDate())
                 .expiryDate(expiryDate)
                 .quantity(dto.getQuantity())
                 .unitPrice(unitPrice)
-                .storeInventory(storeInventory)
+                .inventoryId(dto.getStoreInventoryId())
                 .build();
+
+
         return inventoryRepository.save(newInventory);
     }
+
     // ID로 기존 재고 조회
     public StoreInventory findById(Long inventoryId) {
         return storeInventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
     }
 
-    public StoreInventory updateInventory(Long inventoryId, InventoryDetailRequestDto dto) {
-        try {
-            StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+    @Transactional
+    public InventoryUpdateResponseDto updateInventory(Long inventoryId, InventoryDetailRequestDto dto) {
+        StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
 
-            inventory.setName(dto.getName());
-            inventory.setMiniquantity(dto.getMiniquantity());
-            inventory.setUnit(dto.getUnit());
-            inventory.setExpiryDate(dto.getExpiryDate());
+        inventory.setName(dto.getName());
+        inventory.setMiniquantity(dto.getMiniquantity());
+        inventory.setUnit(dto.getUnit());
+        inventory.setExpiryDate(dto.getExpiryDate());
 
-            return storeInventoryRepository.save(inventory);
-
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.INVENTORY_UPDATE_FAIL);
-        }
+        return InventoryUpdateResponseDto.from(inventory);
     }
 
 

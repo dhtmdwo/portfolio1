@@ -28,7 +28,7 @@ public class StoreInventory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Store_inventory_id")
     @Schema(description = "매장별재고 ID", example = "1")
-    private Long StoreinventoryId;
+    private Long storeinventoryId;
 
     @Column(name = "expiry_date")
     @Schema(description = "입고날로부터 사용가능한 유통기한", example = "5")
@@ -50,10 +50,9 @@ public class StoreInventory {
     @Schema(description = "최소수량", example = "12.50(kg)")
     private Integer miniquantity;
 
-    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)  // mappedBy 수정
     @JsonIgnore
     @Schema(description = "메뉴 레시피 목록")
     private List<Inventory> inventoryList = new ArrayList<>();
-
 }
 

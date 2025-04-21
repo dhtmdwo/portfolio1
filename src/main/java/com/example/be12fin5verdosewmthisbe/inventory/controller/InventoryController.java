@@ -4,6 +4,7 @@ import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryUpdateResponseDto;
 import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -49,12 +50,13 @@ public class InventoryController {
     }
 
     @PutMapping("/storeInventory/{inventoryId}")
-    public BaseResponse<StoreInventory> updateInventory(
+    public BaseResponse<InventoryUpdateResponseDto> updateInventory(
             @PathVariable Long inventoryId,
             @RequestBody InventoryDetailRequestDto dto) {
-        StoreInventory updatedInventory = inventoryService.updateInventory(inventoryId, dto);
+        InventoryUpdateResponseDto updatedInventory = inventoryService.updateInventory(inventoryId, dto);
         return BaseResponse.success(updatedInventory);
     }
+
 
     @DeleteMapping("/storeInventory/{inventoryId}")
     public BaseResponse<String> deleteInventory(@PathVariable Long inventoryId) {
