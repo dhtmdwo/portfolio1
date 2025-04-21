@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.inventory.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,11 +59,17 @@ public class StoreInventory {
 
 
     @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Schema(description = "메뉴 레시피 목록")
-    private List<Recipe> recipes = new ArrayList<>();
-
-    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "옵션 재고 사용량 목록")
     private List<OptionValue> optionValues = new ArrayList<>();
 
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @Schema(description = "레시피 목록")
+    private List<Recipe> recipeList = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Store store;
+
 }
+

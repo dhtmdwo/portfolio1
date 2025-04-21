@@ -2,6 +2,8 @@ package com.example.be12fin5verdosewmthisbe.menu_management.menu.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuInfoDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuSaleDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegisterDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
@@ -24,6 +26,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 import java.util.List;
 
@@ -93,11 +98,11 @@ public class MenuController {
     })
 
     @GetMapping("/{menuId}")
-    public BaseResponse<MenuDto.MenuDetailResponseDto> getMenuById(
+    public BaseResponse<Menu> getMenuById(
             @Parameter(description = "조회할 메뉴 ID", required = true, example = "1")
             @PathVariable Long menuId) {
-        MenuDto.MenuDetailResponseDto dto = menuService.getMenuDetail(menuId);
-        return BaseResponse.success(dto);
+        Menu menu = menuService.findById(menuId);
+        return BaseResponse.success(menu);
     }
 
     @Operation(summary = "전체 메뉴 목록 조회 (페이지네이션)", description = "등록된 전체 메뉴 목록을 페이지별로 조회합니다.")
@@ -150,4 +155,45 @@ public class MenuController {
         Long storeId = Long.valueOf(claims.get("storeId", String.class));
         return  storeId;
     }
+
+    @GetMapping("/menulist")
+    public BaseResponse<List<MenuInfoDto.MenuResponse>> getmenuList(HttpServletRequest request) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        List<MenuInfoDto.MenuResponse> menuList = menuService.getmenuList(storeId);
+        return BaseResponse.success(menuList);
+    }
+
+    @GetMapping("/menusale")
+    public BaseResponse<List<MenuSaleDto.Response>> getSaleList(HttpServletRequest request, MenuSaleDto.DateRequest dto) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        List<MenuSaleDto.Response> SaleList = menuService.getSaleList(storeId, dto);
+        return BaseResponse.success(SaleList);
+    }
+
 }

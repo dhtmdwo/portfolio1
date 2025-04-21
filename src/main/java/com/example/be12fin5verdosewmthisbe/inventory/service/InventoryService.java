@@ -5,13 +5,25 @@ import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.*;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryMenuDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.StoreInventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
+import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
+import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
+import com.example.be12fin5verdosewmthisbe.payment.model.Payment;
+import com.example.be12fin5verdosewmthisbe.payment.repository.PaymentRepository;
+import com.example.be12fin5verdosewmthisbe.payment.service.PaymentService;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -27,6 +39,7 @@ import java.util.stream.Collectors;
 public class InventoryService {
     private final InventoryRepository inventoryRepository;
     private final StoreInventoryRepository storeInventoryRepository;
+    private final OrderMenuRepository orderMenuRepository;
 
     public StoreInventory registerInventory(InventoryDetailRequestDto dto) {
         // 이름 중복 검사
@@ -138,6 +151,48 @@ public class InventoryService {
                 .build();
     }
 
+    public List<InventoryInfoDto.Response> getInventoryList(Long storeId) {
+
+        List<StoreInventory> inventoryList = storeInventoryRepository.findInventoryListByStore(storeId);
+        List<InventoryInfoDto.Response> inventoryResponseList = new ArrayList<>();
+
+        for (StoreInventory inventory : inventoryList) {
+            String name = inventory.getName();
+            BigDecimal quantity = inventory.getQuantity();
+            String unit = inventory.getUnit();
+            InventoryInfoDto.Response inventoryResponse = InventoryInfoDto.Response.of(name, quantity, unit);
+            inventoryResponseList.add(inventoryResponse);
+        }
+        return(inventoryResponseList);
+    }
+
+    public List<InventoryMenuDto.SaleResponse> getSaleList(Long storeId, InventoryMenuDto.DateRequest dto) {
+
+        LocalDate startDate = dto.getStartDate();
+        LocalDate endDate = dto.getEndDate();
+        Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
+        Timestamp endTimestamp = Timestamp.valueOf(endDate.plusDays(1).atStartOfDay());
+
+
+        List<OrderMenu> saleList = orderMenuRepository.findSaleMenusForInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
+        List<InventoryMenuDto.SaleResponse> menuSaleList = new ArrayList<>();
+
+        for (OrderMenu orderMenu : saleList) {
+            Timestamp date = orderMenu.getOrder().getCreatedAt();
+            List<Recipe> RecipeList = orderMenu.getMenu().getRecipeList();
+            String changeReason = orderMenu.getMenu().getName();
+            int menuQuantity = orderMenu.getQuantity();
+            for(Recipe recipe : RecipeList ) {
+                String stockName = recipe.getStoreInventory().getName();
+                BigDecimal quantity = recipe.getPrice().multiply(BigDecimal.valueOf(menuQuantity));
+                String unit = recipe.getStoreInventory().getUnit();
+                InventoryMenuDto.SaleResponse menuSale = InventoryMenuDto.SaleResponse.of(date, stockName, changeReason, quantity, unit);
+                menuSaleList.add(menuSale);
+            }
+        }
+        return(menuSaleList);
+    }
+  
     @Transactional
     public void consumeInventory(Long storeInventoryId, BigDecimal requestedQuantity) {
         List<Inventory> inventories = inventoryRepository
