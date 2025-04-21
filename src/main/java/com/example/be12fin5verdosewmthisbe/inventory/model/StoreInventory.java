@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.inventory.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -28,7 +29,7 @@ public class StoreInventory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Store_inventory_id")
     @Schema(description = "매장별재고 ID", example = "1")
-    private Long storeinventoryId;
+    private Long StoreinventoryId;
 
     @Column(name = "expiry_date")
     @Schema(description = "입고날로부터 사용가능한 유통기한", example = "5")
@@ -50,9 +51,20 @@ public class StoreInventory {
     @Schema(description = "최소수량", example = "12.50(kg)")
     private Integer miniquantity;
 
-    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)  // mappedBy 수정
+
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    @Schema(description = "메뉴 레시피 목록")
+    @Schema(description = "상세 재고 목록")
     private List<Inventory> inventoryList = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Schema(description = "메뉴 레시피 목록")
+    private List<Recipe> recipes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Schema(description = "옵션 재고 사용량 목록")
+    private List<OptionValue> optionValues = new ArrayList<>();
+
 }
 

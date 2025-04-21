@@ -5,7 +5,12 @@ import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.dto.CategoryDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.service.CategoryService;
+import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Tag(name = "Category API", description = "메뉴 카테고리 관련 API")
 @RestController
 @RequestMapping("/api/category")
@@ -24,6 +30,7 @@ import java.util.stream.Collectors;
 // TODO: 가게 ID 추가하면 가게 ID에 해당 하는 목록에서만 조회해야함
 public class CategoryController {
     private final CategoryService categoryService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "카테고리 등록", description = "새로운 메뉴 카테고리를 등록합니다.")
     @ApiResponses(value = {
@@ -32,13 +39,9 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/register")
-    public BaseResponse<String> registerCategory(@RequestBody CategoryDto.requestDto dto) {
-        Category existing = categoryService.findByName(dto.getName());
-        if (existing != null) {
-            return BaseResponse.error(ErrorCode.CATEGORY_ALREADY_EXISTS);
-        }
-        Category category = Category.builder().name(dto.getName()).build();
-        categoryService.register(category);
+    public BaseResponse<String> registerCategory(@RequestBody CategoryDto.requestDto dto, HttpServletRequest request) {
+        log.info("register");
+        categoryService.register(dto,getStoreId(request));
         return BaseResponse.success("Category registered successfully");
     }
 
@@ -49,8 +52,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PutMapping("/update")
-    public BaseResponse<String> updateCategory(@RequestBody CategoryDto.updateDto dto) {
-        categoryService.update(dto.getOldName(), dto.getNewName());
+    public BaseResponse<String> updateCategory(@RequestBody CategoryDto.updateDto dto, HttpServletRequest request) {
+        categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds(),getStoreId(request));
         return BaseResponse.success("Category updated successfully");
     }
 
@@ -61,35 +64,31 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @DeleteMapping("/delete")
-    public BaseResponse<String> deleteCategory(@RequestBody CategoryDto.requestDto dto) {
-        Category category = categoryService.findByName(dto.getName());
-        categoryService.delete(category);
-        return BaseResponse.success("Category deleted successfully");
+    public BaseResponse<String> deleteCategory(@RequestBody CategoryDto.deleteDto dto) {
+        List<Long> ids = dto.getIds();
+
+        for (Long id : ids) {
+                categoryService.deleteCategory(id);
+        }
+
+        return BaseResponse.success("Categories deleted successfully");
     }
 
     @GetMapping("/getList")
-    @Operation(summary = "카테고리 목록 조회", description = "등록된 모든 메뉴 카테고리 목록을 페이지네이션으로 조회합니다.")
+    @Operation(summary = "카테고리 목록 조회", description = "키워드로 검색하거나 전체 카테고리를 페이지네이션으로 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "카테고리 목록 조회 성공"),
             @ApiResponse(responseCode = "5003", description = "카테고리 목록이 비어있습니다."),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public BaseResponse<List<CategoryDto.responseDto>> getCategoryList(
+    public BaseResponse<Page<CategoryDto.CategoryResponseDto>> getCategoryList(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword,
+            HttpServletRequest request
     ) {
-        Page<Category> categoryPage = categoryService.findAll(PageRequest.of(page, size));
-
-        if (categoryPage.isEmpty()) {
-            return BaseResponse.error(ErrorCode.EMPTY);
-        }
-
-        List<CategoryDto.responseDto> responseDtoList = categoryPage.getContent()
-                .stream()
-                .map(CategoryDto.responseDto::from)
-                .collect(Collectors.toList());
-
-        return BaseResponse.success(responseDtoList);
+        Page<CategoryDto.CategoryResponseDto> result = categoryService.getCategoryList(PageRequest.of(page, size), keyword,getStoreId(request));
+        return BaseResponse.success(result);
     }
 
 
@@ -101,31 +100,27 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/detail")
-    public BaseResponse<CategoryDto.responseDto> getCategoryDetail(@RequestParam String name) {
-        if (name == null || name.trim().isEmpty()) {
+    public BaseResponse<CategoryDto.responseDto> getCategoryDetail(@RequestParam Long id) {
+        if (id == null) {
             return BaseResponse.error(ErrorCode.INVAILD_REQUEST);
         }
-        Category category = categoryService.findByName(name);
+        Category category = categoryService.findById(id);
         return BaseResponse.success(CategoryDto.responseDto.from(category));
     }
 
-    @Operation(summary = "카테고리 이름 검색", description = "이름 일부에 해당하는 카테고리를 검색합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "카테고리 검색 성공"),
-            @ApiResponse(responseCode = "5001", description = "카테고리 타입에 맞지 않는 잘못된 요청입니다."),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
-    })
-    @GetMapping("/search")
-    public BaseResponse<List<CategoryDto.responseDto>> searchCategory(@RequestParam String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return BaseResponse.error(ErrorCode.INVAILD_REQUEST);
+
+    private Long getStoreId(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
         }
-
-        List<Category> result = categoryService.searchByName(keyword);
-        List<CategoryDto.responseDto> response = result.stream()
-                .map(CategoryDto.responseDto::from)
-                .collect(Collectors.toList());
-        return BaseResponse.success(response);
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+        return  storeId;
     }
-
 }

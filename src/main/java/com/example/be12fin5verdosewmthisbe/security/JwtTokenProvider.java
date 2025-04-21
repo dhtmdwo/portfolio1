@@ -27,12 +27,11 @@ public class JwtTokenProvider {
 
     private final @Lazy UserDetailsService userDetailsService;
 
-    public String createToken(User user) {
+    public String createToken(String email) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
         Claims claims = Jwts.claims();
-        claims.put("id", user.getId());
-        claims.put("email", user.getEmail());
+        claims.put("email", email);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -41,6 +40,24 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS512, secretKey)
                 .compact();
     }
+    // 가게 없을 때 토큰 등록
+    
+    public String createToken(String email, String storeId) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expiration);
+        Claims claims = Jwts.claims();
+        claims.put("email", email);
+        claims.put("storeId", storeId);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS512, secretKey)
+                .compact();
+    }
+    // 가게 있을 때 토큰 등록
+    
 
     public boolean validateToken(String token) {
         try {
@@ -57,24 +74,17 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-    public User getUserFromToken(String token) {
+    public Claims getClaims(String token) {
         try{
-            Claims claims = Jwts.parserBuilder()
+            return Jwts.parser()
                     .setSigningKey(secretKey)
-                    .build()
                     .parseClaimsJws(token)
                     .getBody();
-
-            return User.builder()
-                    .id(claims.get("id",Long.class))
-                    .email(claims.get("email", String.class))
-                    .build();
         }catch (Exception e){
             System.out.println("토큰이 만료되었습니다");
             return null;
         }
     }
-
     public String getEmailFromToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()

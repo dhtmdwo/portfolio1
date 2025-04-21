@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.order.model;
 
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +24,6 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private Long storeId;
-
     private Integer tableNumber;
 
     private Integer totalPrice;
@@ -31,6 +31,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    @Schema(description = "주문 시간", example = "2023-10-27T10:00:00Z")
     private Timestamp createdAt;
 
     @Enumerated(EnumType.STRING)
@@ -39,6 +40,11 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "주문에 들어온 메뉴 목록")
     private List<OrderMenu> orderMenuList = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Store store;
+
 
 
     public enum OrderType {
@@ -52,9 +58,12 @@ public class Order {
         CANCELLED,
         PAID
     }
+    /*
     @PrePersist
     public void prePersist() {
         this.createdAt = new Timestamp(System.currentTimeMillis());
     }
+    */
+
 }
         
