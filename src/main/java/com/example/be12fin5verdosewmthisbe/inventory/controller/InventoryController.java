@@ -17,6 +17,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Inventory", description = "재고 관련 API")
 @RequiredArgsConstructor
 @RestController
