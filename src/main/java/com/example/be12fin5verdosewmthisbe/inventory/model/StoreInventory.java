@@ -2,6 +2,7 @@ package com.example.be12fin5verdosewmthisbe.inventory.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -53,8 +54,13 @@ public class StoreInventory {
 
     @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    @Schema(description = "인벤토리 목록")
+    @Schema(description = "상세 재고 목록")
     private List<Inventory> inventoryList = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Schema(description = "옵션 재고 사용량 목록")
+    private List<OptionValue> optionValues = new ArrayList<>();
 
     @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

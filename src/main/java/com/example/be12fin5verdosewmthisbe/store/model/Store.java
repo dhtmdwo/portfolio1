@@ -3,6 +3,8 @@ package com.example.be12fin5verdosewmthisbe.store.model;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,8 +39,14 @@ public class Store {
     @OneToMany(mappedBy = "store")
     private List<Order> orderList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "store")
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categoryList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Menu> menuList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Option> optionList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store")
     private List<StoreInventory> storeInventoryList = new ArrayList<>();

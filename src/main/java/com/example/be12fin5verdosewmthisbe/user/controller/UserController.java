@@ -161,9 +161,9 @@ public class UserController {
         return BaseResponse.success("인증번호 전송 완료");
     }
 
-    @PostMapping("/verify")
+    @PostMapping("/phoneverify")
     public BaseResponse<String> verifyCode(@RequestBody PhoneVerificationDto.VerifyRequestDto dto) {
-        phoneVerificationService.verifyCertificationCode(dto.getPhoneNum(), dto.getCertificationCode());
+        phoneVerificationService.verifyCertificationCode(dto.getPhoneNum(), dto.getCode());
         return BaseResponse.success("인증 성공");
     }
 }

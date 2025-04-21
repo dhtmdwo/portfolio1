@@ -1,6 +1,5 @@
 package com.example.be12fin5verdosewmthisbe.inventory.service;
 
-import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.*;
@@ -8,6 +7,7 @@ import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRe
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryMenuDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.StoreInventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
@@ -32,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -111,6 +112,22 @@ public class InventoryService {
         } catch (DataIntegrityViolationException e) {
             throw new CustomException(ErrorCode.INVENTORY_DELETE_FAIL);
         }
+    }
+    public List<StoreInventoryDto.responseDto> getAllStoreInventories() {
+        return storeInventoryRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    private StoreInventoryDto.responseDto toDto(StoreInventory storeInventory) {
+        return StoreInventoryDto.responseDto.builder()
+                .id(storeInventory.getStoreinventoryId())
+                .name(storeInventory.getName())
+                .expiryDate(storeInventory.getExpiryDate())
+                .miniquantity(storeInventory.getMiniquantity())
+                .unit(storeInventory.getUnit())
+                .build();
     }
 
     public List<InventoryInfoDto.Response> getInventoryList(Long storeId) {

@@ -1,11 +1,11 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.menu.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
-import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuInfoDto;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegistrationDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuSaleDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegisterDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.service.MenuService;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
@@ -20,7 +20,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import java.util.List;
+
+@Slf4j
 @Tag(name = "Menu API", description = "메뉴 관련 API")
 @RestController
 @RequestMapping("/api/menu")
@@ -49,12 +54,9 @@ public class MenuController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PostMapping("/register")
-    public BaseResponse<Menu> registerMenu(
-            @Parameter(description = "등록할 메뉴 정보", required = true,
-                    schema = @Schema(implementation = MenuRegistrationDto.RequestDto.class))
-            @RequestBody MenuRegistrationDto.RequestDto requestDto) {
-        Menu registeredMenu = menuService.registerMenu(requestDto);
-        return BaseResponse.success(registeredMenu);
+    public BaseResponse<String> createMenu(@RequestBody MenuRegisterDto.MenuCreateRequestDto requestDto, HttpServletRequest request) {
+        menuService.registerMenu(requestDto, getStoreId(request));
+        return BaseResponse.success("Menu registered successfully");
     }
 
     @Operation(summary = "메뉴 수정", description = "기존 메뉴의 이름, 가격, 카테고리 및 레시피 정보를 수정합니다. 요청에 없는 레시피는 삭제됩니다.")
@@ -74,8 +76,8 @@ public class MenuController {
     public BaseResponse<String> updateMenu(
             @Parameter(description = "수정할 메뉴 ID와 정보", required = true,
                     schema = @Schema(implementation = MenuUpdateDto.RequestDto.class))
-            @RequestBody MenuUpdateDto.RequestDto updateDto) {
-        menuService.updateMenu(updateDto.getMenuId(), updateDto);
+            @RequestBody MenuUpdateDto.RequestDto updateDto, HttpServletRequest request) {
+        menuService.updateMenu(updateDto.getMenuId(), updateDto, getStoreId(request));
         return BaseResponse.success("Menu updated successfully");
     }
 
@@ -102,12 +104,14 @@ public class MenuController {
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
-    @GetMapping("/list")
-    public BaseResponse<Page<Menu>> getAllMenus(
-            @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
-            @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
-            Pageable pageable) {
-        Page<Menu> menuPage = menuService.findAllMenus(pageable);
+    @GetMapping("/getList")
+    public BaseResponse<Page<MenuDto.MenuListResponseDto>> getAllMenus(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword,
+            HttpServletRequest request
+    ) {
+        Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(PageRequest.of(page,size),keyword,getStoreId(request));
         return BaseResponse.success(menuPage);
     }
 
@@ -120,31 +124,27 @@ public class MenuController {
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
-    @DeleteMapping("/{menuId}")
-    public BaseResponse<String> deleteMenu(
-            @Parameter(description = "삭제할 메뉴 ID", required = true, example = "1")
-            @PathVariable Long menuId) {
-        menuService.deleteMenu(menuId);
-        return BaseResponse.success("Menu deleted successfully");
+    @DeleteMapping
+    public BaseResponse<String> deleteMenus(
+            @Parameter(description = "삭제할 메뉴 ID 리스트", required = true)
+            @RequestBody List<Long> menuIds) {
+        menuService.deleteMenus(menuIds);
+        return BaseResponse.success("Menus deleted successfully");
     }
 
-    @Operation(summary = "이름으로 메뉴 검색 (페이지네이션)", description = "주어진 이름으로 메뉴를 검색하여 페이지별로 조회합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "메뉴 검색 성공"),
-            @ApiResponse(responseCode = "3001", description = "메뉴 정보 없음",
-            content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"해당 ID의 메뉴를 찾을 수 없습니다.\", \"data\": null}"))),
-            @ApiResponse(responseCode = "500", description = "서버 오류",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
-    })
-    @GetMapping("/search/name")
-    public BaseResponse<Page<Menu>> searchMenusByName(
-            @Parameter(description = "검색할 메뉴 이름 키워드", required = true, example = "김치")
-            @RequestParam String keyword,
-            @Parameter(description = "페이지 정보 (기본: page=0, size=10, sort=name,asc)", schema = @Schema(implementation = Pageable.class))
-            @PageableDefault(page = 0, size = 10, sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
-            Pageable pageable) {
-        Page<Menu> menuPage = menuService.searchMenusByName(keyword, pageable);
-        return BaseResponse.success(menuPage);
+    private Long getStoreId(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+        return  storeId;
     }
 
     @GetMapping("/menulist")

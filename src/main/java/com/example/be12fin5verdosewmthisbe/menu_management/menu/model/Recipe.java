@@ -22,14 +22,15 @@ public class Recipe {
     private Long id;
 
     private String inventoryId;
-
-    @Schema(description = "재고 ID", example = "inventory-123")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_inventory_id")
+    @Schema(description = "레시피가 속한 메뉴에 들어가는 재료 정보")
     private StoreInventory storeInventory;
 
     @Schema(description = "레시피 가격", example = "2500.00")
     private BigDecimal price;
+    @Schema(description = "재료의 소요량", example = "30")
+    private BigDecimal quantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id")
