@@ -3,14 +3,8 @@ package com.example.be12fin5verdosewmthisbe.inventory.controller;
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
-
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.*;
-
 import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryChangeDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -75,6 +69,7 @@ public class InventoryController {
         return BaseResponse.success("재고가 성공적으로 삭제되었습니다.");
     }
 
+
     @GetMapping("/storeInventory/getList")
     public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories() {
         List<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories();
@@ -120,7 +115,7 @@ public class InventoryController {
         Long storeId = Long.parseLong(storeIdStr);
         List<InventoryChangeDto.Response> SaleList = inventoryService.getSaleList(storeId, dto);
         return BaseResponse.success(SaleList);
-    } 
+    }
     // 메뉴로 재고가 얼마나 사용됐나 조회
 
     @GetMapping("/marketSale")
@@ -141,7 +136,7 @@ public class InventoryController {
         Long storeId = Long.parseLong(storeIdStr);
         List<InventoryChangeDto.Response> SaleList = inventoryService.getMarketList(storeId, dto);
         return BaseResponse.success(SaleList);
-    } 
+    }
     // 장터로 재고가 얼마나 변동했나 조회
 
 

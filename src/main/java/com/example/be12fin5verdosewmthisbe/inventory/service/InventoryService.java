@@ -3,14 +3,7 @@ package com.example.be12fin5verdosewmthisbe.inventory.service;
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.*;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
-
-
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryChangeDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.StoreInventoryDto;
-
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.*;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
@@ -238,7 +231,7 @@ public class InventoryService {
         return(MarketSaleList);
     }
 
-  
+
     @Transactional
     public void consumeInventory(Long storeInventoryId, BigDecimal requestedQuantity) {
         List<Inventory> inventories = inventoryRepository

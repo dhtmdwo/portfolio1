@@ -18,7 +18,8 @@ import java.util.List;
 @NoArgsConstructor  // JPA에서 필요
 @AllArgsConstructor // Builder 내부에서 사용
 @Builder
-@Schema(description = "수정한 재고")
+@Schema(description = "수정한 재고"
+)
 public class ModifyInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
