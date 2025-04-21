@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.menu.model;
 
+import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -20,11 +21,14 @@ public class Recipe {
     @Schema(description = "레시피 ID (자동 생성)", example = "1")
     private Long id;
 
+    private String inventoryId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_inventory_id")
     @Schema(description = "레시피가 속한 메뉴에 들어가는 재료 정보")
     private StoreInventory storeInventory;
 
+    @Schema(description = "레시피 가격", example = "2500.00")
+    private BigDecimal price;
     @Schema(description = "재료의 소요량", example = "30")
     private BigDecimal quantity;
 

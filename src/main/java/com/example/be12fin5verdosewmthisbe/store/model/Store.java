@@ -1,5 +1,8 @@
 package com.example.be12fin5verdosewmthisbe.store.model;
 
+import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
@@ -31,6 +34,14 @@ public class Store {
     //@Column(length=200, unique = true, nullable = false)
     private String phoneNumber;
 
+    // 위도
+    @Column
+    private Double latitude;
+
+    // 경도
+    @Column
+    private Double longitude;
+
     @OneToOne
     @JoinColumn(name="user_id")
     private User user;
@@ -40,12 +51,22 @@ public class Store {
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categoryList = new ArrayList<>();
-  
+
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Menu> menuList = new ArrayList<>();
-  
+
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Option> optionList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "store")
+    private List<StoreInventory> storeInventoryList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store")
+    private List<InventorySale> inventorySaleList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store")
+    private List<InventoryPurchase> inventoryPurchaseList = new ArrayList<>();
+
 }
         
+

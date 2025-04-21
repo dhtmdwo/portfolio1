@@ -43,8 +43,4 @@ public class Category {
         this.categoryOptions.add(categoryOption);
     }
 
-    @ManyToOne
-    @JoinColumn(name = "store_id")
-    private Store store;
-
 }

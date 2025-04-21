@@ -109,7 +109,7 @@ public class CategoryService {
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
         // 연관된 메뉴들의 category를 null로 설정
-        List<Menu> menus = category.getMenus();
+        List<Menu> menus = category.getMenuList();
         for (Menu menu : menus) {
             menu.setCategory(null);
         }

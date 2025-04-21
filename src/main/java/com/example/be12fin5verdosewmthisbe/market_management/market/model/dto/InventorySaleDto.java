@@ -6,13 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public class InventorySaleDto {
 
     @Data
     public static class InventorySaleRequestDto {
-        private Long inventoryId;
+        private Long storeInventoryId;
         private BigDecimal quantity;
         private int price;
         private String content;
@@ -21,11 +22,21 @@ public class InventorySaleDto {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class InventorySaleResponseDto {
+    public static class InventorySaleListDto {
+
+        // 판매 물품 id
+        private Long inventorySaleId;
+        // 판매물품 이름
         private String inventoryName;
-        private String sellerStoreName;
-        private BigDecimal quantity;
+        // 수량
+        private String quantity;
+        // 유통기한
+        private LocalDate expirationDate;
+        // 희망 가격
         private int price;
+        // 등록 날짜
+        private LocalDate createdDate;
+        // 파는 가게명
+        private String sellerStoreName;
     }
 }
-        

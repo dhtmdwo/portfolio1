@@ -45,6 +45,7 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXPIRED(1012, "인증 가능 시간이 만료되었습니다."),
     EMAILCODE_NOT_MATCH(1013, "이메일로 전송된 코드와 일치하지 않습니다."),
     EXPIRED_VERIFICATION_CODE(1014, "인증번호가 만료되었습니다."),
+    SAME_AS_CURRENT_PASSWORD(1015, "현재 비밀번호와 동일합니다."),
 
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
