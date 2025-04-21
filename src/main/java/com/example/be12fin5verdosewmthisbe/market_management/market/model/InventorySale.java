@@ -3,6 +3,7 @@ package com.example.be12fin5verdosewmthisbe.market_management.market.model;
 
 import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -50,6 +51,10 @@ public class InventorySale {
     private LocalDate expiryDate;
 
     private Timestamp createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Store store;
 
 
     @OneToMany(mappedBy = "inventorySale", cascade = CascadeType.ALL, orphanRemoval = true)

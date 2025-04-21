@@ -30,7 +30,7 @@ public class StoreInventory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Store_inventory_id")
     @Schema(description = "매장별재고 ID", example = "1")
-    private Long StoreinventoryId;
+    private Long storeinventoryId;
 
     @Column(name = "expiry_date")
     @Schema(description = "입고날로부터 사용가능한 유통기한", example = "5")
