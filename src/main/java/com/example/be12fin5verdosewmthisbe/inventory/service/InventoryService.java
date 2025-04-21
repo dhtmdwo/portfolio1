@@ -19,6 +19,7 @@ import com.example.be12fin5verdosewmthisbe.payment.service.PaymentService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class InventoryService {
@@ -53,6 +53,27 @@ public class InventoryService {
                     .miniquantity(dto.getMiniquantity())
                     .unit(dto.getUnit())
                     .quantity(BigDecimal.ZERO)
+                    .expiryDate(dto.getExpiryDate())
+                    .build();
+
+            return storeInventoryRepository.save(newStoreInventory);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INVENTORY_REGISTER_FAIL);
+        }
+    }
+
+    public StoreInventory totalInventory(InventoryDetailRequestDto dto) {
+        // 이름 중복 검사
+        if (storeInventoryRepository.existsByName(dto.getName())) {
+            throw new CustomException(ErrorCode.INVENTORY_DUPLICATE_NAME);
+        }
+
+        try {
+            StoreInventory newStoreInventory = StoreInventory.builder()
+                    .name(dto.getName())
+                    .miniquantity(dto.getMiniquantity())
+                    .unit(dto.getUnit())
+                    .quantity(BigDecimal.valueOf(10.2))
                     .expiryDate(dto.getExpiryDate())
                     .build();
 
@@ -170,6 +191,45 @@ public class InventoryService {
             }
         }
         return(menuSaleList);
+    }
+  
+    @Transactional
+    public void consumeInventory(Long storeInventoryId, BigDecimal requestedQuantity) {
+        List<Inventory> inventories = inventoryRepository
+                .findByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId);
+
+        BigDecimal remaining = requestedQuantity;
+
+        for (Inventory inventory : inventories) {
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) break;
+
+            BigDecimal available = inventory.getQuantity();
+
+            if (available.compareTo(remaining) <= 0) {
+                // 전부 쓰고 삭제
+                remaining = remaining.subtract(available);
+                inventoryRepository.delete(inventory);
+            } else {
+                // 일부만 사용
+                inventory.setQuantity(available.subtract(remaining));
+                inventoryRepository.save(inventory);
+                remaining = BigDecimal.ZERO;
+            }
+        }
+
+        if (remaining.compareTo(BigDecimal.ZERO) > 0) {
+            throw new IllegalArgumentException("재고가 부족하여 요청 수량만큼 차감할 수 없습니다.");
+        }
+    }
+    // 전체를 유통기한 빠른 순으로
+    public List<Inventory> getSortedInventoriesByExpiry(Long storeInventoryId) {
+        return inventoryRepository.findByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId);
+    }
+
+    // 가장 먼저 써야 하는 재고 1개
+    public Inventory getFirstInventoryToUse(Long storeInventoryId) {
+        return inventoryRepository.findTopByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId)
+                .orElseThrow(() -> new RuntimeException("해당 storeInventory에 재고가 없습니다."));
     }
 
 }

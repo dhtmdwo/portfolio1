@@ -71,7 +71,5 @@ public class StoreInventory {
     @JoinColumn(name = "store_id")
     private Store store;
 
-
-
 }
 

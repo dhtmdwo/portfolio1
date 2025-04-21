@@ -10,15 +10,15 @@ public class InventoryPurchaseDto {
     @Data
     public static class InventoryPurchaseRequestDto {
         private Long inventorySaleId;     // 어떤 판매에 연결할지
+        private String inventoryName;
         private Long buyerStoreId;
         private BigDecimal quantity;
         private int price;
-        private String status;            // 예: "waiting", "payment"
         private String method;            // 예: "credit_card", "cash"
     }
     @Data
     public static class InventoryPurchaseResponseDto {
-        private Long id;
+        private Long inventoryPurchaseId;
         private String buyerStoreName;
         private BigDecimal quantity;
         private int price;
@@ -27,7 +27,7 @@ public class InventoryPurchaseDto {
         private Timestamp createdAt;
 
         public InventoryPurchaseResponseDto(InventoryPurchase purchase, String buyerStoreName) {
-            this.id = purchase.getId();
+            this.inventoryPurchaseId = purchase.getId();
             this.buyerStoreName = buyerStoreName;
             this.quantity = purchase.getQuantity();
             this.price = purchase.getPrice();

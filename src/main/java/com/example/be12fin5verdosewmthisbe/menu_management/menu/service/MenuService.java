@@ -33,6 +33,10 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -119,13 +123,30 @@ public class MenuService {
         return result.map(this::convertToMenuListResponseDto);
     }
 
+    public List<MenuDto.POSMenuListResponseDto> findAllPOSMenus() {
+        List<Menu> result = menuRepository.findAll();
+        if (result.isEmpty()) {
+            throw new CustomException(ErrorCode.MENU_NOT_FOUND);
+        }
+
+        List<MenuDto.POSMenuListResponseDto> dtoList = new ArrayList<>();
+        for (Menu menu : result) {
+            MenuDto.POSMenuListResponseDto dto = MenuDto.POSMenuListResponseDto.builder()
+                    .id(menu.getId())
+                    .name(menu.getName())
+                    .category(menu.getCategory().getId())
+                    .price(menu.getPrice())
+                    .build();
+            dtoList.add(dto);
+        }
+        return dtoList;
+    }
+
     private MenuDto.MenuListResponseDto convertToMenuListResponseDto(Menu menu) {
         List<Recipe> recipes = menu.getRecipeList();
 
-        // 카테고리가 null일 수 있으므로 안전하게 처리
         String categoryName = (menu.getCategory() != null) ? menu.getCategory().getName() : "카테고리 없음";
 
-        // 재료가 없을 경우
         if (recipes.isEmpty()) {
             return MenuDto.MenuListResponseDto.builder()
                     .id(menu.getId())
@@ -135,7 +156,6 @@ public class MenuService {
                     .build();
         }
 
-        // 사용량이 가장 큰 재료 찾기
         Recipe maxRecipe = recipes.stream()
                 .filter(r -> r.getStoreInventory() != null && r.getQuantity() != null)
                 .max(Comparator.comparing(Recipe::getQuantity))
