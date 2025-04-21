@@ -2,7 +2,12 @@ package com.example.be12fin5verdosewmthisbe.inventory.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
+
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.*;
+
 import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryChangeDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
