@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
-public class InventoryMenuDto {
+public class InventoryChangeDto {
     @Getter
     public static class DateRequest{
         LocalDate startDate;
@@ -16,7 +16,7 @@ public class InventoryMenuDto {
 
     @Builder
     @Getter
-    public static class SaleResponse{
+    public static class Response {
         private Timestamp date;
         private String stockName;
         private String changeReason;
@@ -24,8 +24,8 @@ public class InventoryMenuDto {
         private String unit;
 
 
-        public static InventoryMenuDto.SaleResponse of(Timestamp date, String stockName, String changeReason, BigDecimal quantity, String unit) {
-            return InventoryMenuDto.SaleResponse.builder()
+        public static Response of(Timestamp date, String stockName, String changeReason, BigDecimal quantity, String unit) {
+            return Response.builder()
                     .date(date)
                     .stockName(stockName)
                     .changeReason(changeReason)

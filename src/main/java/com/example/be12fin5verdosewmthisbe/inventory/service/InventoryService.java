@@ -6,33 +6,28 @@ import com.example.be12fin5verdosewmthisbe.inventory.model.*;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryMenuDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryChangeDto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.StoreInventoryDto;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
+import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventoryPurchaseRepository;
+import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventorySaleRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
-import com.example.be12fin5verdosewmthisbe.payment.model.Payment;
-import com.example.be12fin5verdosewmthisbe.payment.repository.PaymentRepository;
-import com.example.be12fin5verdosewmthisbe.payment.service.PaymentService;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
@@ -40,6 +35,8 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
     private final StoreInventoryRepository storeInventoryRepository;
     private final OrderMenuRepository orderMenuRepository;
+    private final InventorySaleRepository inventorySaleRepository;
+    private final InventoryPurchaseRepository inventoryPurchaseRepository;
 
     public StoreInventory registerInventory(InventoryDetailRequestDto dto) {
         // 이름 중복 검사
@@ -151,6 +148,7 @@ public class InventoryService {
                 .build();
     }
 
+    @Transactional
     public List<InventoryInfoDto.Response> getInventoryList(Long storeId) {
 
         List<StoreInventory> inventoryList = storeInventoryRepository.findInventoryListByStore(storeId);
@@ -166,7 +164,8 @@ public class InventoryService {
         return(inventoryResponseList);
     }
 
-    public List<InventoryMenuDto.SaleResponse> getSaleList(Long storeId, InventoryMenuDto.DateRequest dto) {
+    @Transactional
+    public List<InventoryChangeDto.Response> getSaleList(Long storeId, InventoryChangeDto.DateRequest dto) {
 
         LocalDate startDate = dto.getStartDate();
         LocalDate endDate = dto.getEndDate();
@@ -175,7 +174,7 @@ public class InventoryService {
 
 
         List<OrderMenu> saleList = orderMenuRepository.findSaleMenusForInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
-        List<InventoryMenuDto.SaleResponse> menuSaleList = new ArrayList<>();
+        List<InventoryChangeDto.Response> menuSaleList = new ArrayList<>();
 
         for (OrderMenu orderMenu : saleList) {
             Timestamp date = orderMenu.getOrder().getCreatedAt();
@@ -186,12 +185,52 @@ public class InventoryService {
                 String stockName = recipe.getStoreInventory().getName();
                 BigDecimal quantity = recipe.getPrice().multiply(BigDecimal.valueOf(menuQuantity));
                 String unit = recipe.getStoreInventory().getUnit();
-                InventoryMenuDto.SaleResponse menuSale = InventoryMenuDto.SaleResponse.of(date, stockName, changeReason, quantity, unit);
+                InventoryChangeDto.Response menuSale = InventoryChangeDto.Response.of(date, stockName, changeReason, quantity, unit);
                 menuSaleList.add(menuSale);
             }
         }
         return(menuSaleList);
     }
+
+    @Transactional
+    public List<InventoryChangeDto.Response> getMarketList(Long storeId, InventoryChangeDto.DateRequest dto) {
+
+        LocalDate startDate = dto.getStartDate();
+        LocalDate endDate = dto.getEndDate();
+        Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
+        Timestamp endTimestamp = Timestamp.valueOf(endDate.plusDays(1).atStartOfDay());
+
+        List<InventoryChangeDto.Response> MarketSaleList = new ArrayList<>();
+        List<InventorySale> saleList = inventorySaleRepository.findMarketSaleForInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
+        InventoryPurchase.purchaseStatus status = InventoryPurchase.purchaseStatus.end;
+        List<InventoryPurchase> purchaseList = inventoryPurchaseRepository.findMarketPurchaseForInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp, status);
+
+
+        for (InventorySale inventorySale : saleList) {
+            Timestamp date = inventorySale.getCreatedAt();
+            String stockName = inventorySale.getStoreInventory().getName();
+            String changeReasonq = "판매";
+            BigDecimal quantity = inventorySale.getQuantity().negate();
+            String unit = inventorySale.getStoreInventory().getUnit();
+            InventoryChangeDto.Response saleResponse = InventoryChangeDto.Response.of(date, stockName, changeReasonq, quantity, unit);
+            MarketSaleList.add(saleResponse);
+        }
+        // 장터에서 판매
+
+        for (InventoryPurchase inventoryPurchase : purchaseList) {
+            Timestamp date = inventoryPurchase.getCreatedAt();
+            String stockName = inventoryPurchase.getInventorySale().getStoreInventory().getName();
+            String changeReasonq = "구매";
+            BigDecimal quantity = inventoryPurchase.getQuantity();
+            String unit = inventoryPurchase.getInventorySale().getStoreInventory().getUnit();
+            InventoryChangeDto.Response purchaseResponse = InventoryChangeDto.Response.of(date, stockName, changeReasonq, quantity, unit);
+            MarketSaleList.add(purchaseResponse);
+        }
+        // 장터에서 구매
+
+        return(MarketSaleList);
+    }
+
   
     @Transactional
     public void consumeInventory(Long storeInventoryId, BigDecimal requestedQuantity) {

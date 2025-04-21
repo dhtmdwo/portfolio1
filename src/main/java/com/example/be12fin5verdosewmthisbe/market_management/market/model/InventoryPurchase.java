@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.market_management.market.model;
 
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -38,6 +39,10 @@ public class InventoryPurchase {
     @JoinColumn(name = "inventory_sale_id")
     @Schema(description = "구매요청들이 속한 판매 테이블 정보")
     private InventorySale inventorySale;
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Store store;
 
 
 
