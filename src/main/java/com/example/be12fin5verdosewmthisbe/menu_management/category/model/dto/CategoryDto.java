@@ -77,11 +77,13 @@ public class CategoryDto {
     public static class OptionDto {
         private Long id;
         private String name;
+        private int price;
 
         public static OptionDto from(Option option) {
             return OptionDto.builder()
                     .id(option.getId())
                     .name(option.getName())
+                    .price(option.getPrice())
                     .build();
         }
     }

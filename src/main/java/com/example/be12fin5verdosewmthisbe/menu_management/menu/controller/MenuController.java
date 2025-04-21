@@ -70,6 +70,12 @@ public class MenuController {
         return BaseResponse.success("Menu updated successfully");
     }
 
+    @GetMapping("/getPOSList")
+    public BaseResponse<List<MenuDto.POSMenuListResponseDto>> getAllMenus() {
+        List<MenuDto.POSMenuListResponseDto> menus = menuService.findAllPOSMenus();
+        return BaseResponse.success(menus);
+    }
+
     @Operation(summary = "특정 ID의 메뉴 조회", description = "주어진 ID에 해당하는 메뉴 정보를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "메뉴 조회 성공",
@@ -79,6 +85,7 @@ public class MenuController {
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
+
     @GetMapping("/{menuId}")
     public BaseResponse<MenuDto.MenuDetailResponseDto> getMenuById(
             @Parameter(description = "조회할 메뉴 ID", required = true, example = "1")
@@ -101,6 +108,8 @@ public class MenuController {
         Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(pageable);
         return BaseResponse.success(menuPage);
     }
+
+
 
     @Operation(summary = "특정 ID의 메뉴 삭제", description = "주어진 ID에 해당하는 메뉴 정보를 삭제합니다.")
     @ApiResponses(value = {

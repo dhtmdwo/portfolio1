@@ -35,5 +35,14 @@ public class MenuDto {
         private BigDecimal quantity;
         private String unit;
     }
-
+    @Builder
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class POSMenuListResponseDto {
+        private Long id;
+        private String name;
+        private Long category;
+        private int price;
+    }
 }
