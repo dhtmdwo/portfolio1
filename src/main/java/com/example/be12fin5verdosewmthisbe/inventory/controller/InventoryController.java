@@ -71,8 +71,9 @@ public class InventoryController {
     }
 
     @GetMapping("/storeInventory/getList")
-    public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories() {
-        List<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories();
+    public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories(HttpServletRequest request) {
+        List<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories(getStoreId(request));
+        Long id = (getStoreId(request));
         return BaseResponse.success(result);
     }
 
@@ -138,6 +139,19 @@ public class InventoryController {
         return BaseResponse.success(SaleList);
     } 
     // 장터로 재고가 얼마나 변동했나 조회
-
+    private Long getStoreId(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+        return  storeId;
+    }
 
 }

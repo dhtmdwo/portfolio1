@@ -46,8 +46,8 @@ public class InventoryPurchase {
 
 
     public enum purchaseStatus {
-        waiting,
-        payment,
+        PENDING_APPROVAL,
+        isPaymentInProgress,
         delivery,
         end,
         cancelled

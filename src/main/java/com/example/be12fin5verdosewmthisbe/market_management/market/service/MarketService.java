@@ -171,7 +171,7 @@ public class MarketService {
         InventorySale sale = inventorySaleRepository.findById(saleId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
 
-        sale.setStatus(InventorySale.saleStatus.sold);
+        sale.setStatus(InventorySale.saleStatus.isPaymentPending);
         inventorySaleRepository.save(sale);
 
         List<InventoryPurchase> purchases = sale.getPurchaseList();
@@ -180,7 +180,7 @@ public class MarketService {
 
         for (InventoryPurchase purchase : purchases) {
             if (purchase.getId().equals(purchaseId)) {
-                purchase.setStatus(InventoryPurchase.purchaseStatus.payment);
+                purchase.setStatus(InventoryPurchase.purchaseStatus.isPaymentInProgress);
                 found = true;
             } else {
                 purchase.setStatus(InventoryPurchase.purchaseStatus.cancelled);
@@ -207,7 +207,7 @@ public class MarketService {
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
 
         return sale.getPurchaseList().stream()
-                .filter(purchase -> purchase.getStatus() == InventoryPurchase.purchaseStatus.waiting) // 상태가 WAITING인 것만 필터링
+                .filter(purchase -> purchase.getStatus() == InventoryPurchase.purchaseStatus.PENDING_APPROVAL) // 상태가 WAITING인 것만 필터링
                 .map(purchase -> {
                     String buyerName = storeRepository.findById(purchase.getStore().getId())
                             .map(Store::getName)

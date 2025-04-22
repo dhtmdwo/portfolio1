@@ -68,6 +68,7 @@ public class InventorySale {
     public enum saleStatus {
         available,
         waiting,
+        isPaymentPending,
         delivery,
         sold,
         cancelled
