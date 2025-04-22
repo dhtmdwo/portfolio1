@@ -23,8 +23,6 @@ public class InventoryPurchase {
 
     private String inventoryName;
 
-    private Long buyerStoreId;
-
     private BigDecimal quantity;
 
     private int price;
@@ -40,6 +38,7 @@ public class InventoryPurchase {
     @Schema(description = "구매요청들이 속한 판매 테이블 정보")
     private InventorySale inventorySale;
 
+    // 구매한 매장
     @ManyToOne
     @JoinColumn(name = "store_id")
     private Store store;

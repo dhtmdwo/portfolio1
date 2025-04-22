@@ -1,7 +1,9 @@
 package com.example.be12fin5verdosewmthisbe.market_management.market.service;
 
+import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
+import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.Images;
@@ -15,6 +17,7 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.repository.I
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventorySaleRepository;
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
+import com.fasterxml.jackson.databind.ser.Serializers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +37,11 @@ public class MarketService {
     private final StoreInventoryRepository storeInventoryRepository;
     private final StoreRepository storeRepository;
 
-    public void saleRegister(InventorySaleDto.InventorySaleRequestDto dto,Long storeId) {
+    public void saleRegister(InventorySaleDto.InventorySaleRequestDto dto, Long storeId, Inventory inventory) {
 
         StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
+
 
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
@@ -46,12 +50,14 @@ public class MarketService {
                 .inventoryName(storeInventory.getName())
                 .storeInventory(storeInventory)
                 .sellerStoreId(storeId)
+                .expiryDate(inventory.getExpiryDate())
                 .sellerStoreName(store.getName())
                 .quantity(dto.getQuantity())
                 .price(dto.getPrice())
                 .status(InventorySale.saleStatus.valueOf("available"))
                 .content(dto.getContent())
                 .imageList(new ArrayList<>())
+                .store(store)
                 .createdAt(Timestamp.from(Instant.now()))
                 .build();
 
@@ -72,9 +78,17 @@ public class MarketService {
         InventorySale sale = inventorySaleRepository.findById(dto.getInventorySaleId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
 
+        if(sale.getStatus() == InventorySale.saleStatus.valueOf("available")) {
+            sale.setStatus(InventorySale.saleStatus.valueOf("waiting"));
+            inventorySaleRepository.save(sale);
+        }
+
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
         InventoryPurchase purchase = InventoryPurchase.builder()
                 .inventoryName(dto.getInventoryName())
-                .buyerStoreId(storeId)
+                .store(store)
                 .quantity(dto.getQuantity())
                 .price(dto.getPrice())
                 .status(InventoryPurchase.purchaseStatus.valueOf("waiting"))
@@ -94,13 +108,17 @@ public class MarketService {
     public List<InventorySale> findInventorySaleBySellerStoreId(Long sellerStoreId) {
         return inventorySaleRepository.findBySellerStoreId(sellerStoreId);
     }
-    public List<InventoryPurchase> findInventoryPurchaseByBuyerStoreId(Long buyerStoreId) {
-        return inventoryPurchaseRepository.findInventoryPurchaseByBuyerStoreId(buyerStoreId);
+    public List<InventoryPurchase> findInventoryPurchaseByBuyerStoreId(Store store) {
+        return inventoryPurchaseRepository.findInventoryPurchaseByStore(store);
     }
     @Transactional
-    public List<TransactionDto> getAllTransactions(Long StoreId,String keyword) {
-        List<InventorySale> inventorySaleList = findInventorySaleBySellerStoreId(StoreId);
-        List<InventoryPurchase> inventoryPurchaseList = findInventoryPurchaseByBuyerStoreId(StoreId);
+    public List<TransactionDto> getAllTransactions(Long storeId,String keyword) {
+        List<InventorySale> inventorySaleList = findInventorySaleBySellerStoreId(storeId);
+
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
+        List<InventoryPurchase> inventoryPurchaseList = findInventoryPurchaseByBuyerStoreId(store);
 
         List<TransactionDto> saleTransactionDtoList = new java.util.ArrayList<>(inventorySaleList.stream()
                 .map(sale -> {
@@ -112,6 +130,7 @@ public class MarketService {
                             .quantity(sale.getQuantity())
                             .status(String.valueOf(sale.getStatus()))
                             .otherStoreName(sale.getBuyerStoreName())
+                            .createdAt(sale.getCreatedAt().toLocalDateTime().toLocalDate())
                             .build();
                 }).toList());
         List<TransactionDto> purchaseTransactionDtoList = inventoryPurchaseList.stream()
@@ -123,6 +142,7 @@ public class MarketService {
                             .type(false)
                             .quantity(sale.getQuantity())
                             .status(String.valueOf(sale.getStatus()))
+                            .createdAt(sale.getCreatedAt().toLocalDateTime().toLocalDate())
                             .otherStoreName(sale.getInventorySale().getSellerStoreName())
                             .build();
                 }).toList();
@@ -151,6 +171,9 @@ public class MarketService {
         InventorySale sale = inventorySaleRepository.findById(saleId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
 
+        sale.setStatus(InventorySale.saleStatus.sold);
+        inventorySaleRepository.save(sale);
+
         List<InventoryPurchase> purchases = sale.getPurchaseList();
 
         boolean found = false;
@@ -171,44 +194,29 @@ public class MarketService {
         inventoryPurchaseRepository.saveAll(purchases);
     }
 
-    /*public List<InventorySaleDto.InventorySaleResponseDto> getAvailableOrWaitingSales(Long storeId) {
-        List<InventorySale> sales = inventorySaleRepository.findBySellerStoreIdAndStatusIn(
-                storeId,
-                Arrays.asList(InventorySale.saleStatus.available, InventorySale.saleStatus.waiting)
-        );
-        return sales.stream()
-                .map(sale -> {
-                    String inventoryName = inventoryRepository.findById(sale.getInventoryId())
-                            .map(Inventory::getName)
-                            .orElse("Unknown Inventory"); // 예외 처리
+    public void rejectPurchase(Long purchaseId) {
+        InventoryPurchase inventoryPurchase = inventoryPurchaseRepository.findById(purchaseId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PURCHASE_NOT_FOUND));
 
-                    String sellerStoreName = storeRepository.findById(sale.getSellerStoreId())
-                            .map(Store::getName)
-                            .orElse("Unknown Store"); // 예외 처리
-
-                    return new InventorySaleDto.InventorySaleResponseDto(
-                            inventoryName,
-                            sellerStoreName,
-                            sale.getQuantity(),
-                            sale.getPrice()
-                    );
-                })
-                .toList();
-    }*/
+        inventoryPurchase.setStatus(InventoryPurchase.purchaseStatus.cancelled);
+        inventoryPurchaseRepository.save(inventoryPurchase);
+    }
 
     public List<InventoryPurchaseDto.InventoryPurchaseResponseDto> getPurchasesBySaleId(Long saleId) {
         InventorySale sale = inventorySaleRepository.findById(saleId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
 
         return sale.getPurchaseList().stream()
+                .filter(purchase -> purchase.getStatus() == InventoryPurchase.purchaseStatus.waiting) // 상태가 WAITING인 것만 필터링
                 .map(purchase -> {
-                    String buyerName = storeRepository.findById(purchase.getBuyerStoreId())
+                    String buyerName = storeRepository.findById(purchase.getStore().getId())
                             .map(Store::getName)
                             .orElse("알 수 없음");
-                    return new InventoryPurchaseDto.InventoryPurchaseResponseDto(purchase,buyerName);
+                    return new InventoryPurchaseDto.InventoryPurchaseResponseDto(purchase, buyerName);
                 })
                 .toList();
     }
+
     public List<InventorySaleDto.InventorySaleListDto> getNearbyAvailableSalesDto(List<Long> nearbyStoreIds) {
         List<InventorySale> sales = inventorySaleRepository
                 .findBySellerStoreIdInAndStatus(nearbyStoreIds, InventorySale.saleStatus.available);

@@ -60,6 +60,7 @@ public class UserService implements UserDetailsService {
 
 
     public User login(String email, String rawPassword) {
+        String encoded = passwordEncoder.encode(rawPassword);
         User user = userRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND) );
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
