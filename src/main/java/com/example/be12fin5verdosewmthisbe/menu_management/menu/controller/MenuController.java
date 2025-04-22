@@ -176,7 +176,7 @@ public class MenuController {
         return BaseResponse.success(menuList);
     }
 
-    @GetMapping("/menuSale")
+    @PostMapping("/menuSale")
     public BaseResponse<List<MenuSaleDto.Response>> getSaleList(HttpServletRequest request, @RequestBody MenuSaleDto.DateRequest dto) {
 
         String token = null;
