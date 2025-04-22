@@ -2,6 +2,8 @@ package com.example.be12fin5verdosewmthisbe.order.service;
 
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
@@ -10,6 +12,8 @@ import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
 import com.example.be12fin5verdosewmthisbe.order.model.dto.*;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
+import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.aspectj.weaver.ast.Or;
@@ -28,29 +32,41 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.example.be12fin5verdosewmthisbe.order.model.dto.OrderDto.OrderCreateResponse.toOrderCreateResponse;
+
 @Service
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OptionRepository optionRepository;
     private final OrderMenuRepository orderMenuRepository;
-
+    private final StoreRepository storeRepository;
+    private final MenuRepository menuRepository;
 
     @Transactional
-    public Order createOrder(OrderDto.OrderCreateRequest request) {
+    public OrderDto.OrderCreateResponse createOrder(OrderDto.OrderCreateRequest request, Long storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
         Order order = Order.builder()
                 .tableNumber(request.getTableNumber())
                 .status(Order.OrderStatus.PAID)
+                .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                .store(store)
                 .orderType(Order.OrderType.valueOf(request.getOrderType()))
+                .orderMenuList(new ArrayList<>())
                 .build();
 
         int totalPrice = 0;
 
         for (OrderDto.OrderMenuRequest menuReq : request.getOrderMenus()) {
+            Menu menu = menuRepository.findById(menuReq.getMenuId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
             OrderMenu orderMenu = OrderMenu.builder()
                     .order(order)
                     .price(menuReq.getPrice())
                     .quantity(menuReq.getQuantity())
+                    .menu(menu)
                     .build();
 
             int menuTotal = menuReq.getPrice() * menuReq.getQuantity();
@@ -73,16 +89,17 @@ public class OrderService {
         }
 
         order.setTotalPrice(totalPrice);
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+
+        return toOrderCreateResponse(savedOrder); // DTO로 변환하여 리턴
     }
+
     public List<Order> getOrdersByStoreId(long storeId) {
         return orderRepository.findByStoreId(storeId);
     }
     public Order getOrderById(long orderId) {
         return orderRepository.findById(orderId).orElseThrow(()-> new RuntimeException("Order not found"));
     }
-
-
 
     public OrderTodayDto.OrderTodayResponse getTodaySales(String storeId) {
         LocalDate today = LocalDate.now();
