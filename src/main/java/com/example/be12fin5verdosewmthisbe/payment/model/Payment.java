@@ -17,10 +17,6 @@ public class Payment {
     @Schema(description = "결제 ID", example = "1")
     private Long id;
 
-    @Column(name = "order_id", nullable = false)
-    @Schema(description = "주문 ID", example = "123")
-    private Long orderId;
-
     @Column(name = "amount")
     @Schema(description = "결제 금액", example = "10000")
     private Integer amount;

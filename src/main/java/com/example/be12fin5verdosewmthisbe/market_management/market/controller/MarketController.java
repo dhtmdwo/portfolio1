@@ -2,6 +2,8 @@ package com.example.be12fin5verdosewmthisbe.market_management.market.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
+import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
+import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventoryPurchaseDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
@@ -33,10 +35,13 @@ public class MarketController {
     private final MarketService marketService;
     private final JwtTokenProvider jwtTokenProvider;
     private final StoreService storeService;
+    private final InventoryService inventoryService;
 
     @PostMapping("/registerSale")
     public BaseResponse<String> registerInventorySale(@RequestBody InventorySaleDto.InventorySaleRequestDto dto, HttpServletRequest request) {
-        marketService.saleRegister(dto,getStoreId(request));
+        Inventory inventory = inventoryService.getFirstInventoryToUse(dto.getStoreInventoryId());
+        marketService.saleRegister(dto,getStoreId(request),inventory);
+
         return BaseResponse.success("ok");
     }
 
@@ -57,11 +62,14 @@ public class MarketController {
     }
 
     @GetMapping("/get/{saleId}/detail")
-    public BaseResponse<InventorySale> getSalesDetail(@PathVariable Long saleId) {
-        return BaseResponse.success(marketService.findInventorySaleById(saleId));
+    public BaseResponse<InventorySaleDto.InventorySaleDetailDto> getSalesDetail(@PathVariable Long saleId) {
+        InventorySale entity = marketService.findInventorySaleById(saleId);
+        InventorySaleDto.InventorySaleDetailDto dto = InventorySaleDto.InventorySaleDetailDto.fromEntity(entity);
+        return BaseResponse.success(dto);
     }
 
-    @PostMapping("/approve")
+
+    @GetMapping("/approve")
     public BaseResponse<String> approve(
             @RequestParam Long saleId,
             @RequestParam Long purchaseId
@@ -70,13 +78,21 @@ public class MarketController {
         return BaseResponse.success("ok");
     }
 
-    @PostMapping("/transaction")
+    @GetMapping("/reject")
+    public BaseResponse<String> reject(
+            @RequestParam Long purchaseId
+    ) {
+        marketService.rejectPurchase(purchaseId);
+        return BaseResponse.success("ok");
+    }
+
+    @GetMapping("/transaction")
     public BaseResponse<List<TransactionDto>> transaction(
-            @RequestParam Long storeId,
+            HttpServletRequest request,
             @RequestParam(required = false) String keyword) {
-        List<TransactionDto> transactionDtoList = marketService.getAllTransactions(storeId,keyword);
+        List<TransactionDto> transactionDtoList = marketService.getAllTransactions(getStoreId(request),keyword);
         return BaseResponse.success(transactionDtoList.stream()
-                .sorted(Comparator.comparing(TransactionDto::getCreatedAt).reversed()) // 최신순으로 정렬
+                .sorted(Comparator.comparing(TransactionDto::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed()) // 최신순으로 정렬
                 .toList());
     }
 

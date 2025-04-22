@@ -24,8 +24,6 @@ public class PaymentDto {
         private String impUid;
         @Schema(description = "가맹점 주문 번호", example = "order-123")
         private String merchantUid;
-        @Schema(description = "주문 ID (DB)", example = "123")
-        private Long orderId;
         @Schema(description = "재고 구매 ID (DB)", example = "456")
         private Long inventoryPurchaseId;
     }

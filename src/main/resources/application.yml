@@ -43,7 +43,7 @@ jwt:
   expiration: 3600000 # 1 hour in ms
 portone:
   api:
-    key: ${API_KEY}
+    key: ${PORTONE_API_KEY}
     secret: ${SECRET_API_KEY}
 coolsms:
   apikey: ${api_key}

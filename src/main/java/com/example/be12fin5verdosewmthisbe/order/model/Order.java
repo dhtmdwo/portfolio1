@@ -1,12 +1,10 @@
 package com.example.be12fin5verdosewmthisbe.order.model;
 
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -38,7 +36,9 @@ public class Order {
     private OrderType orderType;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference  // 무한 참조 방지
     @Schema(description = "주문에 들어온 메뉴 목록")
+    @ToString.Exclude
     private List<OrderMenu> orderMenuList = new ArrayList<>();
 
     @ManyToOne

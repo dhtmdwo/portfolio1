@@ -23,8 +23,22 @@ public class OrderController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/create")
-    public BaseResponse<Order> createOrder(@RequestBody OrderDto.OrderCreateRequest request) {
-        Order created = orderService.createOrder(request);
+    public BaseResponse<OrderDto.OrderCreateResponse> createOrder(@RequestBody OrderDto.OrderCreateRequest request, HttpServletRequest req) {
+        String token = null;
+        if (req.getCookies() != null) {
+            for (Cookie cookie : req.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+
+        OrderDto.OrderCreateResponse created = orderService.createOrder(request, storeId);
         return BaseResponse.success(created);
     }
     @GetMapping("/getList")
