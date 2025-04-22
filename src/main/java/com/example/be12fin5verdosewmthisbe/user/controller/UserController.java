@@ -30,8 +30,19 @@ public class UserController {
     private final PhoneVerificationService phoneVerificationService;
 
     @PostMapping("/signup")
-    public BaseResponse<UserRegisterDto.SignupResponse> signUp(@RequestBody UserRegisterDto.SignupRequest dto) {
+    public BaseResponse<UserRegisterDto.SignupResponse> signUp(@RequestBody UserRegisterDto.SignupRequest dto, HttpServletResponse response) {
         UserRegisterDto.SignupResponse signupResponse = userService.signUp(dto);
+        String emailUrl = dto.getEmail();
+        String jwtToken = jwtTokenProvider.createToken(emailUrl);
+
+        ResponseCookie cookie = ResponseCookie
+                .from("ATOKEN", jwtToken)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(Duration.ofHours(1L))
+                .build();
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return BaseResponse.success(signupResponse);
     }
     //회원가입
@@ -68,11 +79,9 @@ public class UserController {
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         }
 
-
         return BaseResponse.success("로그인에 성공했습니다.");
     }
     // 로그인
-
     @PostMapping("/logout")
     public BaseResponse<String> login(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie
