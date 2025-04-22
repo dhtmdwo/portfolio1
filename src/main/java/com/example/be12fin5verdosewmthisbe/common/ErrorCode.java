@@ -45,6 +45,10 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXPIRED(1012, "인증 가능 시간이 만료되었습니다."),
     EMAILCODE_NOT_MATCH(1013, "이메일로 전송된 코드와 일치하지 않습니다."),
     EXPIRED_VERIFICATION_CODE(1014, "인증번호가 만료되었습니다."),
+    TOKEN_NOT_VALIDATE(1015, "토큰이 유효하지 않습니다."),
+    STORE_NOT_REGISTER(1016,"상점이 등록되지 않은 유저입니다."),
+    TOKEN_EMAIL_NOT_FOUND(1017, "토큰에 이메일 정보가 존재하지 않습니다."),
+
 
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
