@@ -52,6 +52,7 @@ public class StoreInventory {
     @Schema(description = "최소수량", example = "5(kg)")
     private Integer miniquantity;
 
+
     @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Schema(description = "상세 재고 목록")

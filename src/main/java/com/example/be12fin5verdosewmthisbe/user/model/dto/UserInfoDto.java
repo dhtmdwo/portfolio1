@@ -11,20 +11,13 @@ public class UserInfoDto {
     @Getter
     public static class UpdateRequest {
 
-        private String name;
         private String email;
-        private String password;
-        private String businessNumber;
-        private String phoneNumber;
-        private String ssn;
+        private String currentPassword;
+        private String newPassword;
         public User toEntity(String encodedPassword) {
             User user = User.builder()
-                    .name(name)
                     .email(email)
                     .password(encodedPassword)
-                    .businessNumber(businessNumber)
-                    .phoneNumber(phoneNumber)
-                    .ssn(ssn)
                     .build();
             return user;
         }
@@ -35,6 +28,13 @@ public class UserInfoDto {
     public static class PasswordRequest {
         private String email;
         private String password;
+    }
+
+    @Getter
+    public static class NewPasswordRequest {
+        private String email;
+        private String currentPassword;
+        private String newPassword;
     }
 
 

@@ -23,10 +23,13 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class InventoryService {
@@ -229,7 +232,7 @@ public class InventoryService {
         return(MarketSaleList);
     }
 
-  
+
     @Transactional
     public void consumeInventory(Long storeInventoryId, BigDecimal requestedQuantity) {
         List<Inventory> inventories = inventoryRepository
