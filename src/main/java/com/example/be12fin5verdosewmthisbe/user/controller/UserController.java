@@ -1,6 +1,8 @@
 package com.example.be12fin5verdosewmthisbe.user.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
+import com.example.be12fin5verdosewmthisbe.common.CustomException;
+import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserDto;
@@ -174,6 +176,33 @@ public class UserController {
     public BaseResponse<String> verifyCode(@RequestBody PhoneVerificationDto.VerifyRequestDto dto) {
         phoneVerificationService.verifyCertificationCode(dto.getPhoneNum(), dto.getCode());
         return BaseResponse.success("인증 성공");
+    }
+
+    @GetMapping("/isRegistered")
+    public BaseResponse<String> isRegistered(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+            String email = jwtTokenProvider.getEmailFromToken(token);
+            String tokenStoreId = jwtTokenProvider.getStoreIdFromToken(token);
+            if(tokenStoreId == null) {
+                throw new CustomException(ErrorCode.STORE_NOT_REGISTER);
+            }
+            String storeId = userService.getStoreId(email);
+            if(!storeId.equals(tokenStoreId)) {
+                // 토큰의 storeId와 DB의 storeId가 다를때
+                throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE);
+            }
+        } else {
+            // 토큰 없으면
+            throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE);
+        }
+        return BaseResponse.success("ok");
     }
 }
         
