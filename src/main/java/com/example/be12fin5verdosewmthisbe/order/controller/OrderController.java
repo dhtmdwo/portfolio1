@@ -76,7 +76,7 @@ public class OrderController {
         return BaseResponse.success(todayResponse);
     }
 
-    @GetMapping("/monthSales")
+    @PostMapping("/monthSales")
     public BaseResponse<List<OrderMonthDto.TotalSaleResponse>> getMonthSales(HttpServletRequest request,@RequestBody OrderMonthDto.TotalRequest totalRequest) {
 
         String token = null;
@@ -99,7 +99,7 @@ public class OrderController {
     }
     //매출 분석 리스트
 
-    @GetMapping("/saleDetail")
+    @PostMapping("/saleDetail")
     public BaseResponse<List<OrderSaleDetailDto.TotalResponse>> getSalesDetail(HttpServletRequest request, @RequestBody OrderSaleDetailDto.OrderSaleDetailRequest dto) {
 
         String token = null;
