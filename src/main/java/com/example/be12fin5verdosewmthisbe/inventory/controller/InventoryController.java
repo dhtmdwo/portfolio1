@@ -19,11 +19,6 @@ import java.util.List;
 @Tag(name = "Inventory", description = "재고 관련 API")
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(
-        origins = "http://localhost:5173",
-        allowedHeaders = {"Authorization", "Content-Type", "*"},
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS, RequestMethod.PUT, RequestMethod.DELETE}
-)
 @RequestMapping("/api/inventory")
 @Tag(name = "재고관리", description = "재고 관리 API") // 이 라인을 추가하여 CORS 허용
 public class InventoryController {
