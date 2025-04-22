@@ -29,7 +29,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null && jwtTokenProvider.validateToken(token)) {
 
             String email = jwtTokenProvider.getEmailFromToken(token); // 또는 getUsernameFromToken()
-
+            if(email == null) {
+                // emailUrl이 토큰에 없을때
+                throw new CustomException(ErrorCode.TOKEN_EMAIL_NOT_FOUND);
+            }
             var authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
