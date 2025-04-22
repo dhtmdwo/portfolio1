@@ -1,5 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.security;
 
+import com.example.be12fin5verdosewmthisbe.common.CustomException;
+import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
 import io.jsonwebtoken.*;
 import jakarta.servlet.http.Cookie;
@@ -98,6 +100,19 @@ public class JwtTokenProvider {
             return null;
         }
     }
+    public String getStoreIdFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return claims.get("storeId", String.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     public String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
@@ -111,7 +126,6 @@ public class JwtTokenProvider {
                 }
             }
         }
-
-        return null;
+        throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE);
     }
 }

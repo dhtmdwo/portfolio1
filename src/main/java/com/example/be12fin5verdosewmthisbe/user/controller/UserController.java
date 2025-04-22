@@ -1,6 +1,8 @@
 package com.example.be12fin5verdosewmthisbe.user.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
+import com.example.be12fin5verdosewmthisbe.common.CustomException;
+import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.UserDto;
@@ -30,8 +32,19 @@ public class UserController {
     private final PhoneVerificationService phoneVerificationService;
 
     @PostMapping("/signup")
-    public BaseResponse<UserRegisterDto.SignupResponse> signUp(@RequestBody UserRegisterDto.SignupRequest dto) {
+    public BaseResponse<UserRegisterDto.SignupResponse> signUp(@RequestBody UserRegisterDto.SignupRequest dto, HttpServletResponse response) {
         UserRegisterDto.SignupResponse signupResponse = userService.signUp(dto);
+        String emailUrl = dto.getEmail();
+        String jwtToken = jwtTokenProvider.createToken(emailUrl);
+
+        ResponseCookie cookie = ResponseCookie
+                .from("ATOKEN", jwtToken)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(Duration.ofHours(1L))
+                .build();
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return BaseResponse.success(signupResponse);
     }
     //회원가입
@@ -68,13 +81,11 @@ public class UserController {
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         }
 
-
         return BaseResponse.success("로그인에 성공했습니다.");
     }
     // 로그인
-
     @PostMapping("/logout")
-    public BaseResponse<String> login(HttpServletResponse response) {
+    public BaseResponse<String> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie
                 .from("ATOKEN", "")
                 .path("/")
@@ -134,15 +145,7 @@ public class UserController {
 
         String result = userService.deleteUser(emailUrl);
 
-        ResponseCookie cookie = ResponseCookie
-                .from("ATOKEN", "")
-                .path("/")
-                .httpOnly(true)
-                .secure(true)
-                .maxAge(0) // 쿠키 즉시 만료
-                .build();
-
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        removeCookie(response);
         return BaseResponse.success(result);
     }
     // 유저 탈퇴
@@ -164,6 +167,47 @@ public class UserController {
     public BaseResponse<String> verifyCode(@RequestBody PhoneVerificationDto.VerifyRequestDto dto) {
         phoneVerificationService.verifyCertificationCode(dto.getPhoneNum(), dto.getCode());
         return BaseResponse.success("인증 성공");
+    }
+
+    @GetMapping("/isRegistered")
+    public BaseResponse<String> isRegistered(HttpServletRequest request,HttpServletResponse response) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+            String email = jwtTokenProvider.getEmailFromToken(token);
+            String tokenStoreId = jwtTokenProvider.getStoreIdFromToken(token);
+            if(tokenStoreId == null) {
+                throw new CustomException(ErrorCode.STORE_NOT_REGISTER);
+            }
+            String storeId = userService.getStoreId(email);
+            if(!storeId.equals(tokenStoreId)) {
+                // 토큰의 storeId와 DB의 storeId가 다를때
+                removeCookie(response);
+                throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE);
+            }
+        } else {
+            // 토큰 없으면
+            throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE);
+        }
+        return BaseResponse.success("ok");
+    }
+
+
+    public void removeCookie(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie
+                .from("ATOKEN", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0) // 쿠키 즉시 만료
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }
         
