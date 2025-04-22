@@ -14,8 +14,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.sql.SQLOutput;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -34,32 +36,36 @@ public class PaymentService {
 
     public String getAccessToken() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED); // Content-Type 변경
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>(); // MultiValueMap 사용
         body.add("imp_key", apiKey);
         body.add("imp_secret", apiSecret);
         System.out.println(body);
 
-        if (body == null || body.get("response") == null) {
-            throw new CustomException(ErrorCode.PAYMENT_EMPTY_BODY);
-        }
-
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
                 "https://api.iamport.kr/users/getToken", request, Map.class
         );
+        System.out.println(response.getBody());
+        // ✅ 응답 바디 확인
+        Map<String, Object> responseBody = response.getBody();
+        if (responseBody == null || responseBody.get("response") == null) {
+            throw new CustomException(ErrorCode.PAYMENT_AUTH_FAILED);
+        }
 
-        Map<String, Object> res = (Map<String, Object>) body.get("response");
+        Map<String, Object> res = (Map<String, Object>) responseBody.get("response");
         String token = (String) res.get("access_token");
+
         if (token == null) {
             throw new CustomException(ErrorCode.PAYMENT_AUTH_FAILED);
         }
         return token;
     }
 
-    public PaymentDto.PaymentData savePayment(String impUid, Long orderId) {
+
+    public PaymentDto.PaymentData savePayment(String impUid) {
         String accessToken = getAccessToken();
 
         HttpHeaders headers = new HttpHeaders();
@@ -78,9 +84,7 @@ public class PaymentService {
         }
         Map<String, Object> data = (Map<String, Object>) body.get("response");
 
-        // 여기서 DTO가 필요하다면 임시로 만들어도 되고, 바로 엔티티에 매핑해도 OK
         Payment payment = new Payment();
-        payment.setOrderId(orderId);
         payment.setAmount(((Number) data.get("amount")).intValue());
         payment.setTransactionId((String) data.get("imp_uid"));
 

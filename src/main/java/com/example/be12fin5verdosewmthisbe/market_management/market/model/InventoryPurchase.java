@@ -43,12 +43,10 @@ public class InventoryPurchase {
     @JoinColumn(name = "store_id")
     private Store store;
 
-
-
     public enum purchaseStatus {
         PENDING_APPROVAL,
         isPaymentInProgress,
-        delivery,
+        confirmDelivery,
         end,
         cancelled
     }

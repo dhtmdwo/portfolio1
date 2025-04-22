@@ -11,9 +11,9 @@ import java.util.List;
 
 @Repository
 public interface InventorySaleRepository extends JpaRepository<InventorySale, Long> {
-    List<InventorySale> findBySellerStoreIdAndStatusIn(Long sellerStoreId, List<InventorySale.saleStatus> statuses);
-    List<InventorySale> findBySellerStoreId(Long sellerStoreId);
-    List<InventorySale> findBySellerStoreIdInAndStatus(List<Long> sellerStoreIds, InventorySale.saleStatus status);
+    List<InventorySale> findByStore_IdAndStatusIn(Long StoreId, List<InventorySale.saleStatus> statuses);
+    List<InventorySale> findByStore_Id(Long StoreId);
+    List<InventorySale> findByStore_IdInAndStatus(List<Long> StoreIds, InventorySale.saleStatus status);
 
     @Query("""
         SELECT DISTINCT is FROM InventorySale is

@@ -49,7 +49,6 @@ public class MarketService {
         InventorySale inventorySale = InventorySale.builder()
                 .inventoryName(storeInventory.getName())
                 .storeInventory(storeInventory)
-                .sellerStoreId(storeId)
                 .expiryDate(inventory.getExpiryDate())
                 .sellerStoreName(store.getName())
                 .quantity(dto.getQuantity())
@@ -91,7 +90,7 @@ public class MarketService {
                 .store(store)
                 .quantity(dto.getQuantity())
                 .price(dto.getPrice())
-                .status(InventoryPurchase.purchaseStatus.valueOf("waiting"))
+                .status(InventoryPurchase.purchaseStatus.PENDING_APPROVAL)
                 .method(InventoryPurchase.purchaseMethod.valueOf(dto.getMethod()))
                 .createdAt(Timestamp.from(Instant.now()))
                 .inventorySale(sale)
@@ -106,7 +105,7 @@ public class MarketService {
     }
 
     public List<InventorySale> findInventorySaleBySellerStoreId(Long sellerStoreId) {
-        return inventorySaleRepository.findBySellerStoreId(sellerStoreId);
+        return inventorySaleRepository.findByStore_Id(sellerStoreId);
     }
     public List<InventoryPurchase> findInventoryPurchaseByBuyerStoreId(Store store) {
         return inventoryPurchaseRepository.findInventoryPurchaseByStore(store);
@@ -120,7 +119,7 @@ public class MarketService {
 
         List<InventoryPurchase> inventoryPurchaseList = findInventoryPurchaseByBuyerStoreId(store);
 
-        List<TransactionDto> saleTransactionDtoList = new java.util.ArrayList<>(inventorySaleList.stream()
+        List<TransactionDto> saleTransactionDtoList = new ArrayList<>(inventorySaleList.stream()
                 .map(sale -> {
                     return TransactionDto.builder()
                             .inventorySaleId(sale.getId())
@@ -171,16 +170,19 @@ public class MarketService {
         InventorySale sale = inventorySaleRepository.findById(saleId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
 
-        sale.setStatus(InventorySale.saleStatus.isPaymentPending);
-        inventorySaleRepository.save(sale);
-
         List<InventoryPurchase> purchases = sale.getPurchaseList();
 
         boolean found = false;
-
         for (InventoryPurchase purchase : purchases) {
             if (purchase.getId().equals(purchaseId)) {
                 purchase.setStatus(InventoryPurchase.purchaseStatus.isPaymentInProgress);
+
+                sale.setPrice(purchase.getPrice());
+                sale.setQuantity(purchase.getQuantity());
+                sale.setBuyerStoreName(purchase.getStore().getName());
+                sale.setStatus(InventorySale.saleStatus.isPaymentPending);
+                sale.setInventoryPurchaseId(purchaseId);
+                inventorySaleRepository.save(sale);
                 found = true;
             } else {
                 purchase.setStatus(InventoryPurchase.purchaseStatus.cancelled);
@@ -192,6 +194,7 @@ public class MarketService {
         }
 
         inventoryPurchaseRepository.saveAll(purchases);
+
     }
 
     public void rejectPurchase(Long purchaseId) {
@@ -219,7 +222,7 @@ public class MarketService {
 
     public List<InventorySaleDto.InventorySaleListDto> getNearbyAvailableSalesDto(List<Long> nearbyStoreIds) {
         List<InventorySale> sales = inventorySaleRepository
-                .findBySellerStoreIdInAndStatus(nearbyStoreIds, InventorySale.saleStatus.available);
+                .findByStore_IdInAndStatus(nearbyStoreIds, InventorySale.saleStatus.available);
 
         return convertToDtoList(sales);
     }
@@ -238,5 +241,18 @@ public class MarketService {
                         sale.getSellerStoreName()
                 ))
                 .collect(Collectors.toList());
+    }
+    public InventoryPurchase findPurchaseById(Long purchaseId) {
+        return inventoryPurchaseRepository.findById(purchaseId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PURCHASE_NOT_FOUND));
+    }
+    public void statusChange(Long purchaseId) {
+        InventoryPurchase inventoryPurchase = inventoryPurchaseRepository.findById(purchaseId)
+                .orElseThrow(()-> new CustomException(ErrorCode.PURCHASE_NOT_FOUND));
+        inventoryPurchase.setStatus(InventoryPurchase.purchaseStatus.confirmDelivery);
+        InventorySale inventorySale = inventoryPurchase.getInventorySale();
+        inventorySale.setStatus(InventorySale.saleStatus.delivery);
+        inventoryPurchaseRepository.save(inventoryPurchase);
+        inventorySaleRepository.save(inventorySale);
     }
 }

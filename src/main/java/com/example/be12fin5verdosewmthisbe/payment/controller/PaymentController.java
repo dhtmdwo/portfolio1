@@ -3,6 +3,9 @@ package com.example.be12fin5verdosewmthisbe.payment.controller;
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
+import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
+import com.example.be12fin5verdosewmthisbe.market_management.market.service.MarketService;
 import com.example.be12fin5verdosewmthisbe.payment.model.Payment;
 import com.example.be12fin5verdosewmthisbe.payment.model.dto.PaymentCancelDto;
 import com.example.be12fin5verdosewmthisbe.payment.model.dto.PaymentDto;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PaymentController {
 
+    private final MarketService marketService;
     private final PaymentService paymentService;
 
     @Operation(summary = "결제 검증", description = "결제 검증 및 DB 저장")
@@ -37,13 +41,14 @@ public class PaymentController {
     public BaseResponse<String> verifyPayment(@Parameter(description = "결제 검증 요청 정보", required = true) @RequestBody PaymentDto.PaymentVerifyRequest request) {
 
 
-        PaymentDto.PaymentData paymentData = paymentService.savePayment(request.getImpUid(), request.getOrderId());
+        PaymentDto.PaymentData paymentData = paymentService.savePayment(request.getImpUid());
+        InventoryPurchase inventoryPurchase = marketService.findPurchaseById(request.getInventoryPurchaseId());
 
         //TODO inventoryPurchaseId로 구매할 재고의 희망가격 알아오기
         int amount = paymentData.getAmount();
-        int DBamount = 1000; // 여기 바뀌어야함
+        int DBamount = inventoryPurchase.getPrice(); // 여기 바뀌어야함
         // 금액 등 검증
-        if (!request.getMerchantUid().equals(paymentData.getMerchantUid()) && amount == DBamount) {
+        if (!request.getMerchantUid().equals(paymentData.getMerchantUid()) || amount != DBamount) {
             // 주문정보테이블 수정 - status = cancelled
             Payment payment = paymentService.findById(paymentData.getPaymentId());
             payment.setStatus(Payment.PaymentStatus.FAILED);
@@ -51,6 +56,7 @@ public class PaymentController {
             paymentService.cancelPayment(payment.getTransactionId(),"결제 정보 불일치",payment.getAmount());
             throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED);
         }
+        marketService.statusChange(request.getInventoryPurchaseId());
         // 주문정보테이블 수정 - status = paid
         return BaseResponse.success("ok");
     }

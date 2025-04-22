@@ -34,7 +34,7 @@ public class InventorySale {
 
     private String inventoryName;
 
-    private Long sellerStoreId;
+    private Long inventoryPurchaseId;
 
     private String sellerStoreName;
 
