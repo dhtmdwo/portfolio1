@@ -74,11 +74,20 @@ public class UserService implements UserDetailsService {
     }
 
     public String updateUserInfo(UserInfoDto.UpdateRequest dto) {
-        User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 이미 다른 폰 번호 있는지 로직 검사 해야한다.
-        user.setPhoneNumber(dto.getPhoneNumber());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        // 현재 비밀번호 확인
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        // 동일한 비밀번호로 변경하는 경우 방지
+        if (passwordEncoder.matches(dto.getNewPassword(), user.getPassword())) {
+            throw new CustomException(ErrorCode.SAME_AS_CURRENT_PASSWORD);
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);
         return "성공적으로 정보가 수정되었습니다.";
     }
@@ -97,7 +106,6 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
         return "새로운 비밀번호가 생성되었습니다.";
     }
-
     public boolean isStoreRegistered(String emailUrl) {
         User user = userRepository.findByEmail(emailUrl).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         Store store = user.getStore();

@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.inventory.model;
 
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,6 +13,8 @@ import org.hibernate.type.descriptor.jdbc.VarcharJdbcType;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "inventory")
@@ -33,7 +36,7 @@ public class Inventory {
     private Timestamp purchaseDate;
 
     @Column(name = "expirydate")
-    @Schema(description = "유통기한", example = "2026-04-01T00:00:00Z")
+    @Schema(description = "유통기한", example = "2026-04-01")
     private LocalDate expiryDate;
 
     @Column(name = "unitprice")
@@ -45,8 +48,10 @@ public class Inventory {
     private BigDecimal quantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_inventory_id")
-    @Schema(description = "상세정보가 속한 메뉴 표준 정보")
-    private StoreInventory storeInventory;
+    @JoinColumn(name = "store_inventory_id")  // 외래 키 설정
+    private StoreInventory storeInventory;  // 필드 이름을 storeInventory로 설정
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "modify_inventory_id")  // 외래 키 설정
+    private ModifyInventory modifyInventory;  // ModifyInventory와 연결
 }

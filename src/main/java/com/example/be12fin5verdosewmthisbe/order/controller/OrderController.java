@@ -23,8 +23,22 @@ public class OrderController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/create")
-    public BaseResponse<Order> createOrder(@RequestBody OrderDto.OrderCreateRequest request) {
-        Order created = orderService.createOrder(request);
+    public BaseResponse<OrderDto.OrderCreateResponse> createOrder(@RequestBody OrderDto.OrderCreateRequest request, HttpServletRequest req) {
+        String token = null;
+        if (req.getCookies() != null) {
+            for (Cookie cookie : req.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+
+        OrderDto.OrderCreateResponse created = orderService.createOrder(request, storeId);
         return BaseResponse.success(created);
     }
     @GetMapping("/getList")
@@ -76,7 +90,7 @@ public class OrderController {
         return BaseResponse.success(todayResponse);
     }
 
-    @GetMapping("/monthSales")
+    @PostMapping("/monthSales")
     public BaseResponse<List<OrderMonthDto.TotalSaleResponse>> getMonthSales(HttpServletRequest request,@RequestBody OrderMonthDto.TotalRequest totalRequest) {
 
         String token = null;
@@ -97,29 +111,30 @@ public class OrderController {
         List<OrderMonthDto.TotalSaleResponse> monthSaleList = orderService.getMonthSales(storeId, year, month);
         return BaseResponse.success(monthSaleList);
     }
+    //매출 분석 리스트
 
-//    @GetMapping("/saleDetail")
-//    public BaseResponse<List<OrderSaleDetailDto.OrderSaleDetailResponse>> getSalesDetail(HttpServletRequest request, @RequestBody OrderSaleDetailDto.OrderSaleDetailRequest dto) {
-//
-//        String token = null;
-//        if (request.getCookies() != null) {
-//            for (Cookie cookie : request.getCookies()) {
-//                if ("ATOKEN".equals(cookie.getName())) {
-//                    token = cookie.getValue();
-//                    break;
-//                }
-//            }
-//        }
-//        Claims claims = jwtTokenProvider.getClaims(token);
-//        // JWT 읽기
-//        String storeIdStr = claims.get("storeId", String.class);
-//        Long storeId = Long.parseLong(storeIdStr);
-//        LocalDate startDate = dto.getStartDate();
-//        LocalDate endDate = dto.getEndDate();
-//        List<OrderSaleDetailDto.OrderSaleDetailResponse> detailSaleList = orderService.getSalesDetail(storeId, startDate, endDate);
-//        return BaseResponse.success(detailSaleList);
-//    }
+    @PostMapping("/saleDetail")
+    public BaseResponse<List<OrderSaleDetailDto.TotalResponse>> getSalesDetail(HttpServletRequest request, @RequestBody OrderSaleDetailDto.OrderSaleDetailRequest dto) {
 
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        LocalDate startDate = dto.getStartDate();
+        LocalDate endDate = dto.getEndDate();
+        List<OrderSaleDetailDto.TotalResponse> detailSaleList = orderService.getSalesDetail(storeId, startDate, endDate);
+        return BaseResponse.success(detailSaleList);
+    }
+    // 매출 분석 상세
 
 }
         

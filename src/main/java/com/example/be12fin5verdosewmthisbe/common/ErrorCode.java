@@ -48,7 +48,7 @@ public enum ErrorCode {
     TOKEN_NOT_VALIDATE(1015, "토큰이 유효하지 않습니다."),
     STORE_NOT_REGISTER(1016,"상점이 등록되지 않은 유저입니다."),
     TOKEN_EMAIL_NOT_FOUND(1017, "토큰에 이메일 정보가 존재하지 않습니다."),
-
+    SAME_AS_CURRENT_PASSWORD(1015, "현재 비밀번호와 동일합니다."),
 
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
@@ -65,7 +65,7 @@ public enum ErrorCode {
     INVENTORY_REGISTER_FAIL(7004,"해당 재고 정보를 등록하는데 실패했습니다."),
     INVENTORY_DUPLICATE_NAME(7005, "이미 존재하는 재고 이름입니다."),
     STORE_INVENTORY_NOT_FOUND(7006, "재고 표준 정보가 존재하지않습니다."),
-
+    STORE_INVENTORY_EXPIRY_NOT_FOUND(7007, "재고의 표준 유통기한이 존재하지 않습니다"),
 
     // 매출 관련 에러코드
     INVALID_DATE_RANGE(9001, "날짜의 최대 범위는 1년까지 입니다");

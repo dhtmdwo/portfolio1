@@ -2,10 +2,9 @@ package com.example.be12fin5verdosewmthisbe.inventory.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.*;
 import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryChangeDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -65,6 +64,7 @@ public class InventoryController {
         return BaseResponse.success("재고가 성공적으로 삭제되었습니다.");
     }
 
+
     @GetMapping("/storeInventory/getList")
     public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories(HttpServletRequest request) {
         List<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories(getStoreId(request));
@@ -72,7 +72,7 @@ public class InventoryController {
         return BaseResponse.success(result);
     }
 
-    @GetMapping("/inventorylist")
+    @GetMapping("/inventoryList")
     public BaseResponse<List<InventoryInfoDto.Response>> getInventoryList(HttpServletRequest request) {
 
         String token = null;
@@ -93,8 +93,8 @@ public class InventoryController {
     }
     // 재고 종류 리스트로 뽑기
 
-    @GetMapping("/menuSale")
-    public BaseResponse<List<InventoryChangeDto.Response>> getSaleList(HttpServletRequest request, InventoryChangeDto.DateRequest dto) {
+    @PostMapping("/menuSale")
+    public BaseResponse<List<InventoryChangeDto.Response>> getSaleList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
 
         String token = null;
         if (request.getCookies() != null) {
@@ -111,11 +111,11 @@ public class InventoryController {
         Long storeId = Long.parseLong(storeIdStr);
         List<InventoryChangeDto.Response> SaleList = inventoryService.getSaleList(storeId, dto);
         return BaseResponse.success(SaleList);
-    } 
+    }
     // 메뉴로 재고가 얼마나 사용됐나 조회
 
-    @GetMapping("/marketSale")
-    public BaseResponse<List<InventoryChangeDto.Response>> getMarketList(HttpServletRequest request, InventoryChangeDto.DateRequest dto) {
+    @PostMapping("/marketSale")
+    public BaseResponse<List<InventoryChangeDto.Response>> getMarketList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
 
         String token = null;
         if (request.getCookies() != null) {
@@ -132,7 +132,7 @@ public class InventoryController {
         Long storeId = Long.parseLong(storeIdStr);
         List<InventoryChangeDto.Response> SaleList = inventoryService.getMarketList(storeId, dto);
         return BaseResponse.success(SaleList);
-    } 
+    }
     // 장터로 재고가 얼마나 변동했나 조회
     private Long getStoreId(HttpServletRequest request) {
         String token = null;
@@ -148,5 +148,27 @@ public class InventoryController {
         Long storeId = Long.valueOf(claims.get("storeId", String.class));
         return  storeId;
     }
+
+    @GetMapping("/inventoryCall")
+    public BaseResponse<InventoryCallDto.Response> getInventoryCall(HttpServletRequest request) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        InventoryCallDto.Response inventoryCall = inventoryService.getInventoryCall(storeId);
+        return BaseResponse.success(inventoryCall);
+    }
+
+
 
 }

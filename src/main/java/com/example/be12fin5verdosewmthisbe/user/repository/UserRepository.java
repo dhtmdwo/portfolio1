@@ -4,6 +4,7 @@ import com.example.be12fin5verdosewmthisbe.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,5 +17,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByBusinessNumber(String businessNumber);
     boolean existsByPhoneNumber(String phoneNumber);
     boolean existsBySsn(String ssn);
+
+    List<User> findByPassword(String password);
 }
         

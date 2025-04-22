@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.inventory.repository;
 
+import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,6 +20,13 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
     """)
     List<StoreInventory> findInventoryListByStore(@Param("storeId") Long storeId);
 
+    @Query("""
+        SELECT DISTINCT si FROM StoreInventory si
+        JOIN FETCH si.inventoryList i
+        JOIN FETCH si.store s
+        WHERE s.id = :storeId       
+    """)
+    List<StoreInventory> findAllStoreInventoryByStore(@Param("storeId") Long storeId);
 
 
 }

@@ -156,7 +156,7 @@ public class MenuController {
         return  storeId;
     }
 
-    @GetMapping("/menulist")
+    @GetMapping("/menuList")
     public BaseResponse<List<MenuInfoDto.MenuResponse>> getmenuList(HttpServletRequest request) {
 
         String token = null;
@@ -176,8 +176,8 @@ public class MenuController {
         return BaseResponse.success(menuList);
     }
 
-    @GetMapping("/menusale")
-    public BaseResponse<List<MenuSaleDto.Response>> getSaleList(HttpServletRequest request, MenuSaleDto.DateRequest dto) {
+    @PostMapping("/menuSale")
+    public BaseResponse<List<MenuSaleDto.Response>> getSaleList(HttpServletRequest request, @RequestBody MenuSaleDto.DateRequest dto) {
 
         String token = null;
         if (request.getCookies() != null) {

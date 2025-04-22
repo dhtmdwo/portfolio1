@@ -17,7 +17,7 @@ import java.sql.Timestamp;
 @Builder
 public class InventoryDetailRequestDto {
 
-    private Integer inventoryId;
+    private Long inventoryId;
 
 
     @NotBlank(message = "재고명은 필수입니다.")
@@ -38,6 +38,7 @@ public class InventoryDetailRequestDto {
 
     public StoreInventory toEntity() {
         return StoreInventory.builder()
+                .storeinventoryId(this.inventoryId)
                 .name(this.name)
                 .expiryDate(this.expiryDate)
                 .miniquantity(this.miniquantity)

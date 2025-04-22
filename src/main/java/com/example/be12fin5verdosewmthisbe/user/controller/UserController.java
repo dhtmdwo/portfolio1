@@ -157,7 +157,6 @@ public class UserController {
     }
     // 새로운 비밀번호 만들기
 
-
     @PostMapping("/smssend")
     public BaseResponse<String> sendCode(@RequestBody PhoneVerificationDto.SmsSendRequestDto dto) {
         phoneVerificationService.sendCertificationCode(dto.getPhoneNum());
