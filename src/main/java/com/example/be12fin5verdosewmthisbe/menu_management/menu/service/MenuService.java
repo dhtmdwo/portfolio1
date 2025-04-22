@@ -27,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigDecimal;
 import java.sql.Time;
@@ -289,7 +290,7 @@ public class MenuService {
         return(menuResponseList);
     }
 
-    public List<MenuSaleDto.Response> getSaleList(Long storeId, MenuSaleDto.DateRequest dto) {
+    public List<MenuSaleDto.Response> getSaleList(Long storeId, @RequestBody MenuSaleDto.DateRequest dto) {
 
         LocalDate startDate = dto.getStartDate();
         LocalDate endDate = dto.getEndDate();

@@ -21,11 +21,9 @@ import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -193,101 +191,148 @@ public class OrderService {
         return(monthSaleList);
     }
 
-//    public List<OrderSaleDetailDto.OrderSaleDetailResponse> getSalesDetail(Long storeId, LocalDate startDate, LocalDate endDate) {
-//
-//        List<OrderSaleDetailDto.OrderSaleDetailResponse> saleDetailList = new ArrayList<>();
-//        long days = ChronoUnit.DAYS.between(startDate, endDate);
-//        LocalDate calDate = endDate.plusDays(1);
-//
-//        Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
-//        Timestamp endTimestamp = Timestamp.valueOf(calDate.atStartOfDay());
-//
-//        List<Order> orderList = orderRepository.findByCreatedAtBetween(storeId, startTimestamp, endTimestamp);
-//        Map<String, OrderSaleDetailDto.OrderSaleDetailResponse > DetailMap = new HashMap<>();
-//
-//        if(days ==0){
-//            for(int i = 0; i<24; i++){
-//                String hourKey = String.format("%02d", i);
-//                DetailMap.put(
-//                        hourKey,
-//                        OrderSaleDetailDto.OrderSaleDetailResponse.of(
-//                                hourKey,
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("hall",0,0),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("baemin",0,0),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("coupang",0,0),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("yogiyo",0,0)
-//                        )
-//                );
-//            }
-//            for(Order order : orderList){
-//                Timestamp createdAt = order.getCreatedAt();
-//                String hour = String.format("%02d", createdAt.toLocalDateTime().getHour());
-//
-//
-//            }
-//
-//
-//
-//        } // 하루 검색
-//        else if (Math.abs(days) <= 30) {
-//            LocalDate currentDate = startDate;
-//            while(!currentDate.isAfter(endDate)) {
-//                DetailMap.put(
-//                        String.valueOf(String.valueOf(currentDate)),
-//                        OrderSaleDetailDto.OrderSaleDetailResponse.of(
-//                                String.valueOf(currentDate),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("hall",0,0),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("baemin",0,0),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("coupang",0,0),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("yogiyo",0,0)
-//                        )
-//                );
-//                currentDate = currentDate.plusDays(1);
-//            }
-//
-//        } else if (Math.abs(days) <= 365){
-//            LocalDate currentFirstMonth = startDate.withDayOfMonth(1);
-//            LocalDate endFirstMonth = endDate.withDayOfMonth(1);
-//            while (!currentFirstMonth.isAfter(endFirstMonth)) {
-//                String yearMonth = String.format("%d-%02d", currentFirstMonth.getYear(), currentFirstMonth.getMonthValue());
-//                DetailMap.put(
-//                        String.valueOf(String.valueOf(yearMonth)),
-//                        OrderSaleDetailDto.OrderSaleDetailResponse.of(
-//                                String.valueOf(yearMonth),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("hall",0,0),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("baemin",0,0),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("coupang",0,0),
-//                                OrderSaleDetailDto.EachSaleDetailResponse.of("yogiyo",0,0)
-//                        )
-//                );
-//                currentFirstMonth = currentFirstMonth.plusMonths(1);
-//            }
-//        }else{
-//            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
-//        }
-//
-//        LocalDate currentDate = startDate;
-//        while(!currentDate.equals(endDate)) {
-//            monthSales.put(currentDate, new Integer[]{0,0});
-//            currentDate = currentDate.plusDays(1);
-//        }
-//
-//
-//        for (Order order : orderList) {
-//            LocalDate date = order.getCreatedAt().toLocalDateTime().toLocalDate();
-//            Integer price = order.getTotalPrice();
-//            Integer[] stat = monthSales.get(date);
-//            stat[0] += price;
-//            stat[1] += 1;
-//        }
-//        for (Map.Entry<LocalDate, Integer[]> entry : monthSales.entrySet()) {
-//            LocalDate date = entry.getKey();
-//            Integer[] data = entry.getValue();
-//            OrderMonthDto.TotalSaleResponse monthsale = OrderMonthDto.TotalSaleResponse.of(Date.valueOf(date), data[0], data[1]);
-//            monthSaleList.add(monthsale);
-//        }
-//        return(saleDetailList);
-//    }
+
+    private List<OrderSaleDetailDto.OneTimeResponse> initSaleOneTimeList() {
+        List<OrderSaleDetailDto.OneTimeResponse> list = new ArrayList<>();
+        list.add(OrderSaleDetailDto.OneTimeResponse.of("hall", 0, 0));
+        list.add(OrderSaleDetailDto.OneTimeResponse.of("baemin", 0, 0));
+        list.add(OrderSaleDetailDto.OneTimeResponse.of("coupang", 0, 0));
+        list.add(OrderSaleDetailDto.OneTimeResponse.of("yogiyo", 0, 0));
+        return list;
+    }
+
+    public List<OrderSaleDetailDto.TotalResponse> getSalesDetail(Long storeId, LocalDate startDate, LocalDate endDate) {
+
+        List<OrderSaleDetailDto.TotalResponse> saleDetailList = new ArrayList<>();
+
+        long days = ChronoUnit.DAYS.between(startDate, endDate);
+        LocalDate calDate = endDate.plusDays(1);
+        Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
+        Timestamp endTimestamp = Timestamp.valueOf(calDate.atStartOfDay());
+
+        List<Order> orderList = orderRepository.findByCreatedAtBetween(storeId, startTimestamp, endTimestamp);
+
+
+        if(days ==0){
+            Map<String, List<OrderSaleDetailDto.OneTimeResponse>> hourlyMap = new LinkedHashMap<>();
+
+            for (int i = 0; i < 24; i++) {
+                String hourKey = String.format("%02d", i);
+                List<OrderSaleDetailDto.OneTimeResponse> saleOneTimeList = initSaleOneTimeList();
+                hourlyMap.put(hourKey, saleOneTimeList);
+            }
+
+            // 주문 데이터를 시간별로 분류 및 누적
+            for (Order order : orderList) {
+                Timestamp createdAt = order.getCreatedAt();
+                String hour = String.format("%02d", createdAt.toLocalDateTime().getHour()); // 예: "09", "15"
+                String orderType = order.getOrderType().name(); // 예: baemin, hall 등
+
+                List<OrderSaleDetailDto.OneTimeResponse> saleOneTimeList = hourlyMap.get(hour);
+                for (int i = 0; i < saleOneTimeList.size(); i++) {
+                    OrderSaleDetailDto.OneTimeResponse response = saleOneTimeList.get(i);
+                    if (response.getSaleMethod().equalsIgnoreCase(orderType)) {
+                        int updatedQuantity = response.getSaleQuantity() + 1;
+                        int updatedPrice = response.getSalePrice() + order.getTotalPrice();
+                        saleOneTimeList.set(i, OrderSaleDetailDto.OneTimeResponse.of(orderType, updatedQuantity, updatedPrice));
+                        break;
+                    }
+                }
+            }
+
+            // 결과를 TotalResponse 리스트에 담기
+            for (Map.Entry<String, List<OrderSaleDetailDto.OneTimeResponse>> entry : hourlyMap.entrySet()) {
+                saleDetailList.add(OrderSaleDetailDto.TotalResponse.of(entry.getKey(), entry.getValue()));
+            }
+        }// 하루 검색
+
+        else if (Math.abs(days) <= 30) {
+            LocalDate currentDate = startDate;
+            while (!currentDate.isAfter(endDate)) {
+                List<OrderSaleDetailDto.OneTimeResponse> saleOneTimeList = initSaleOneTimeList();
+
+                // ✨ 현재 날짜에 해당하는 주문만 필터링
+                LocalDate finalCurrentDate = currentDate;
+                List<Order> filteredOrders = new ArrayList<>();
+                for (Order order : orderList) {
+                    LocalDate orderDate = order.getCreatedAt().toLocalDateTime().toLocalDate();
+                    if (orderDate.equals(finalCurrentDate)) {
+                        filteredOrders.add(order);
+                    }
+                }
+
+                // ✨ OrderType별로 수량과 금액 누적
+                for (Order order : filteredOrders) {
+                    String type = order.getOrderType().name(); // hall, baemin 등
+                    int totalPrice = Optional.ofNullable(order.getTotalPrice()).orElse(0);
+                    for (OrderSaleDetailDto.OneTimeResponse response : saleOneTimeList) {
+                        if (response.getSaleMethod().equalsIgnoreCase(type)) {
+                            // 리플렉션 안 쓰고 새로 객체 생성해야 하므로 리스트를 새로 구성해야 함
+                            int updatedQuantity = response.getSaleQuantity() + 1;
+                            int updatedPrice = response.getSalePrice() + totalPrice;
+                            saleOneTimeList.set(
+                                    saleOneTimeList.indexOf(response),
+                                    OrderSaleDetailDto.OneTimeResponse.of(type, updatedQuantity, updatedPrice)
+                            );
+                            break;
+                        }
+                    }
+                }
+
+                // ✨ 날짜별 전체 결과 리스트에 추가
+                OrderSaleDetailDto.TotalResponse saleDetail = OrderSaleDetailDto.TotalResponse.of(String.valueOf(currentDate), saleOneTimeList);
+                saleDetailList.add(saleDetail);
+
+                currentDate = currentDate.plusDays(1);
+            }
+        } // 한달 이내
+
+        else if (Math.abs(days) <= 365) {
+            YearMonth currentMonth = YearMonth.from(startDate);
+            YearMonth endMonth = YearMonth.from(endDate);
+
+            while (!currentMonth.isAfter(endMonth)) {
+                List<OrderSaleDetailDto.OneTimeResponse> saleOneTimeList = initSaleOneTimeList();
+
+                // 월별로 주문 필터링 (for문 사용)
+                List<Order> filteredOrders = new ArrayList<>();
+                for (Order order : orderList) {
+                    LocalDate orderDate = order.getCreatedAt().toLocalDateTime().toLocalDate();
+                    YearMonth orderMonth = YearMonth.from(orderDate);
+                    if (orderMonth.equals(currentMonth)) {
+                        filteredOrders.add(order);
+                    }
+                }
+
+                // OrderType 별로 수량, 가격 누적
+                for (Order order : filteredOrders) {
+                    String type = order.getOrderType().name();
+                    int totalPrice = Optional.ofNullable(order.getTotalPrice()).orElse(0);
+                    for (int i = 0; i < saleOneTimeList.size(); i++) {
+                        OrderSaleDetailDto.OneTimeResponse response = saleOneTimeList.get(i);
+                        if (response.getSaleMethod().equalsIgnoreCase(type)) {
+                            int updatedQuantity = response.getSaleQuantity() + 1;
+                            int updatedPrice = response.getSalePrice() + totalPrice;
+                            saleOneTimeList.set(i, OrderSaleDetailDto.OneTimeResponse.of(type, updatedQuantity, updatedPrice));
+                            break;
+                        }
+                    }
+                }
+
+                // 월별 결과 추가
+                OrderSaleDetailDto.TotalResponse saleDetail = OrderSaleDetailDto.TotalResponse.of(currentMonth.toString(), saleOneTimeList);
+                saleDetailList.add(saleDetail);
+
+                // 다음 달로 이동
+                currentMonth = currentMonth.plusMonths(1);
+            }
+        } // 일년 이내
+
+        else{
+            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+        }
+        return(saleDetailList);
+    }
 
 
 

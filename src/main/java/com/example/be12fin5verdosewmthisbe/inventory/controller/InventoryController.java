@@ -76,7 +76,7 @@ public class InventoryController {
         return BaseResponse.success(result);
     }
 
-    @GetMapping("/inventorylist")
+    @GetMapping("/inventoryList")
     public BaseResponse<List<InventoryInfoDto.Response>> getInventoryList(HttpServletRequest request) {
 
         String token = null;
@@ -98,7 +98,7 @@ public class InventoryController {
     // 재고 종류 리스트로 뽑기
 
     @GetMapping("/menuSale")
-    public BaseResponse<List<InventoryChangeDto.Response>> getSaleList(HttpServletRequest request, InventoryChangeDto.DateRequest dto) {
+    public BaseResponse<List<InventoryChangeDto.Response>> getSaleList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
 
         String token = null;
         if (request.getCookies() != null) {
@@ -119,7 +119,7 @@ public class InventoryController {
     // 메뉴로 재고가 얼마나 사용됐나 조회
 
     @GetMapping("/marketSale")
-    public BaseResponse<List<InventoryChangeDto.Response>> getMarketList(HttpServletRequest request, InventoryChangeDto.DateRequest dto) {
+    public BaseResponse<List<InventoryChangeDto.Response>> getMarketList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
 
         String token = null;
         if (request.getCookies() != null) {
@@ -138,6 +138,28 @@ public class InventoryController {
         return BaseResponse.success(SaleList);
     }
     // 장터로 재고가 얼마나 변동했나 조회
+
+
+    @GetMapping("/inventoryCall")
+    public BaseResponse<InventoryCallDto.Response> getInventoryCall(HttpServletRequest request) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        InventoryCallDto.Response inventoryCall = inventoryService.getInventoryCall(storeId);
+        return BaseResponse.success(inventoryCall);
+    }
+
 
 
 }
