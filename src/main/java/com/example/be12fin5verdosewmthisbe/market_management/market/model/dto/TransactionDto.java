@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -31,7 +32,7 @@ public class TransactionDto {
 
     private String otherStoreName;
 
-    private Timestamp createdAt;
+    private LocalDate createdAt;
 
     
 
