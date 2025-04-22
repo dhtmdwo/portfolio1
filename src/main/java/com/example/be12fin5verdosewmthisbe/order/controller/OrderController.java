@@ -97,29 +97,30 @@ public class OrderController {
         List<OrderMonthDto.TotalSaleResponse> monthSaleList = orderService.getMonthSales(storeId, year, month);
         return BaseResponse.success(monthSaleList);
     }
+    //매출 분석 리스트
 
-//    @GetMapping("/saleDetail")
-//    public BaseResponse<List<OrderSaleDetailDto.OrderSaleDetailResponse>> getSalesDetail(HttpServletRequest request, @RequestBody OrderSaleDetailDto.OrderSaleDetailRequest dto) {
-//
-//        String token = null;
-//        if (request.getCookies() != null) {
-//            for (Cookie cookie : request.getCookies()) {
-//                if ("ATOKEN".equals(cookie.getName())) {
-//                    token = cookie.getValue();
-//                    break;
-//                }
-//            }
-//        }
-//        Claims claims = jwtTokenProvider.getClaims(token);
-//        // JWT 읽기
-//        String storeIdStr = claims.get("storeId", String.class);
-//        Long storeId = Long.parseLong(storeIdStr);
-//        LocalDate startDate = dto.getStartDate();
-//        LocalDate endDate = dto.getEndDate();
-//        List<OrderSaleDetailDto.OrderSaleDetailResponse> detailSaleList = orderService.getSalesDetail(storeId, startDate, endDate);
-//        return BaseResponse.success(detailSaleList);
-//    }
+    @GetMapping("/saleDetail")
+    public BaseResponse<List<OrderSaleDetailDto.TotalResponse>> getSalesDetail(HttpServletRequest request, @RequestBody OrderSaleDetailDto.OrderSaleDetailRequest dto) {
 
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        LocalDate startDate = dto.getStartDate();
+        LocalDate endDate = dto.getEndDate();
+        List<OrderSaleDetailDto.TotalResponse> detailSaleList = orderService.getSalesDetail(storeId, startDate, endDate);
+        return BaseResponse.success(detailSaleList);
+    }
+    // 매출 분석 상세
 
 }
         

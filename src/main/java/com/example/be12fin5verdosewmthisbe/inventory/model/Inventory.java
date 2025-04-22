@@ -33,7 +33,7 @@ public class Inventory {
     private Timestamp purchaseDate;
 
     @Column(name = "expirydate")
-    @Schema(description = "유통기한", example = "2026-04-01T00:00:00Z")
+    @Schema(description = "유통기한", example = "2026-04-01")
     private LocalDate expiryDate;
 
     @Column(name = "unitprice")

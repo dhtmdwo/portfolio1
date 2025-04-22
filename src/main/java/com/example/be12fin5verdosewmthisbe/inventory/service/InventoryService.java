@@ -3,11 +3,7 @@ package com.example.be12fin5verdosewmthisbe.inventory.service;
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.*;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDetailRequestDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryInfoDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryChangeDto;
-import com.example.be12fin5verdosewmthisbe.inventory.model.dto.StoreInventoryDto;
+import com.example.be12fin5verdosewmthisbe.inventory.model.dto.*;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
@@ -26,8 +22,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
@@ -269,6 +267,55 @@ public class InventoryService {
     public Inventory getFirstInventoryToUse(Long storeInventoryId) {
         return inventoryRepository.findTopByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId)
                 .orElseThrow(() -> new RuntimeException("해당 storeInventory에 재고가 없습니다."));
+    }
+
+
+
+    @Transactional
+    public InventoryCallDto.Response getInventoryCall(Long storeId) {
+
+        List<StoreInventory> storeInventoryList = storeInventoryRepository.findAllStoreInventoryByStore(storeId);
+        int expiringCount=0;
+        int reorderRequiredCount=0;
+        int receivedTodayCount=0;
+        LocalDate today = LocalDate.now();
+
+        for (StoreInventory storeInventory : storeInventoryList) {
+            int expiryDate = Optional.ofNullable(storeInventory.getExpiryDate()).orElse(0);
+            if(expiryDate ==0){
+                throw new CustomException(ErrorCode.STORE_INVENTORY_EXPIRY_NOT_FOUND);
+            }
+            List<Inventory> inventoryList = storeInventory.getInventoryList();
+            for(Inventory inventory : inventoryList){
+                LocalDate purchaseDate = inventory.getPurchaseDate().toLocalDateTime().toLocalDate(); //입고 날짜
+                LocalDate eachExpiryDate = inventory.getExpiryDate();
+                int daysBetween = (int) ChronoUnit.DAYS.between(today, eachExpiryDate);
+                int daysTodayBetween = (int) ChronoUnit.DAYS.between(today, purchaseDate);
+
+                if (daysBetween >= 0 && daysBetween <= expiryDate / 10) {
+                    expiringCount++;
+                }
+
+                if(daysTodayBetween ==0){
+                    receivedTodayCount++;
+                }
+
+
+            }
+            // 만료 임박
+
+            Integer InteMinQuantity = storeInventory.getMiniquantity(); // 예시 Integer 값
+            BigDecimal minQuantity = BigDecimal.valueOf(Optional.ofNullable(InteMinQuantity).orElse(0));
+            BigDecimal quantity = storeInventory.getQuantity();
+
+            if(minQuantity.compareTo(quantity) < 0){
+                reorderRequiredCount ++;
+            }
+        }
+
+        InventoryCallDto.Response response = InventoryCallDto.Response.of(expiringCount, reorderRequiredCount, receivedTodayCount);
+
+        return(response);
     }
 
 }

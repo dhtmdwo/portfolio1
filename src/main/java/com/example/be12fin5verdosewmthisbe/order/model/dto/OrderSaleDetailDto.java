@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class OrderSaleDetailDto {
 
@@ -15,34 +16,26 @@ public class OrderSaleDetailDto {
 
     @Getter
     @Builder
-    public static class OrderSaleDetailResponse{
+    public static class TotalResponse{
         String monthDateTime;
-        EachSaleDetailResponse hall;
-        EachSaleDetailResponse baemin;
-        EachSaleDetailResponse coupang;
-        EachSaleDetailResponse yogiyo;
-
-        public static OrderSaleDetailResponse of(String monthDateTime, EachSaleDetailResponse hall, EachSaleDetailResponse baemin, EachSaleDetailResponse coupang, EachSaleDetailResponse yogiyo){
-
-            return OrderSaleDetailResponse.builder()
+        List<OneTimeResponse> oneTimeResponseList;
+        public static TotalResponse of(String monthDateTime, List<OneTimeResponse> oneTimeResponseList){
+            return TotalResponse.builder()
                     .monthDateTime(monthDateTime)
-                    .hall(hall)
-                    .baemin(baemin)
-                    .coupang(coupang)
-                    .yogiyo(yogiyo)
+                    .oneTimeResponseList(oneTimeResponseList)
                     .build();
         }
     }
 
     @Getter
     @Builder
-    public static class EachSaleDetailResponse{
+    public static class OneTimeResponse{
         String saleMethod;
         int saleQuantity;
         int salePrice;
 
-        public static EachSaleDetailResponse of(String saleMethod, int saleQuantity, int salePrice){
-            return EachSaleDetailResponse.builder()
+        public static OneTimeResponse of(String saleMethod, int saleQuantity, int salePrice){
+            return OneTimeResponse.builder()
                     .saleMethod(saleMethod)
                     .saleQuantity(saleQuantity)
                     .salePrice(salePrice)
@@ -50,6 +43,4 @@ public class OrderSaleDetailDto {
         }
 
     }
-
-
 }
