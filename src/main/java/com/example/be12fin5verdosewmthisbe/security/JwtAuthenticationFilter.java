@@ -1,5 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.security;
 
+import com.example.be12fin5verdosewmthisbe.common.CustomException;
+import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.user.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -30,6 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             var authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+            throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE);
         }
 
         filterChain.doFilter(request, response);
