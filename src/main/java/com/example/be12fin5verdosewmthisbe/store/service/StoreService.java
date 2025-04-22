@@ -45,6 +45,11 @@ public class StoreService {
         return storeRepository.findNearbyStoreIds(storeId, minLat, maxLat, minLng, maxLng);
     }
 
+    public Store getStoreById(Long storeId) {
+        return storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+    }
+
     private double kmToLat(double km) {
         return km / 111.0;
     }

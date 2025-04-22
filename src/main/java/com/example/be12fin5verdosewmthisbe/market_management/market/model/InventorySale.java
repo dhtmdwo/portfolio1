@@ -34,7 +34,7 @@ public class InventorySale {
 
     private String inventoryName;
 
-    private Long sellerStoreId;
+    private Long inventoryPurchaseId;
 
     private String sellerStoreName;
 
@@ -68,6 +68,7 @@ public class InventorySale {
     public enum saleStatus {
         available,
         waiting,
+        isPaymentPending,
         delivery,
         sold,
         cancelled

@@ -11,6 +11,8 @@ import java.util.List;
 public interface StoreInventoryRepository extends JpaRepository<StoreInventory, Long> {
     boolean existsByName(String name);
 
+    List<StoreInventory> findByStore_Id(Long storeId);
+
     @Query("""
         SELECT DISTINCT sm FROM StoreInventory sm
         JOIN FETCH sm.store s

@@ -18,11 +18,6 @@ import java.util.List;
 @Tag(name = "Inventory", description = "재고 관련 API")
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(
-        origins = "http://localhost:5173",
-        allowedHeaders = {"Authorization", "Content-Type", "*"},
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS, RequestMethod.PUT, RequestMethod.DELETE}
-)
 @RequestMapping("/api/inventory")
 @Tag(name = "재고관리", description = "재고 관리 API") // 이 라인을 추가하여 CORS 허용
 public class InventoryController {
@@ -71,8 +66,9 @@ public class InventoryController {
 
 
     @GetMapping("/storeInventory/getList")
-    public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories() {
-        List<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories();
+    public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories(HttpServletRequest request) {
+        List<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories(getStoreId(request));
+        Long id = (getStoreId(request));
         return BaseResponse.success(result);
     }
 
@@ -138,7 +134,20 @@ public class InventoryController {
         return BaseResponse.success(SaleList);
     }
     // 장터로 재고가 얼마나 변동했나 조회
-
+    private Long getStoreId(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+        return  storeId;
+    }
 
     @GetMapping("/inventoryCall")
     public BaseResponse<InventoryCallDto.Response> getInventoryCall(HttpServletRequest request) {
