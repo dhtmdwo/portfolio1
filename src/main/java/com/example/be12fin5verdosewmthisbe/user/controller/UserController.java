@@ -83,7 +83,7 @@ public class UserController {
     }
     // 로그인
     @PostMapping("/logout")
-    public BaseResponse<String> login(HttpServletResponse response) {
+    public BaseResponse<String> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie
                 .from("ATOKEN", "")
                 .path("/")
