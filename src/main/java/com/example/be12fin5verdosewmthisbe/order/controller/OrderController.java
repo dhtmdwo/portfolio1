@@ -42,9 +42,23 @@ public class OrderController {
         return BaseResponse.success(created);
     }
     @GetMapping("/getList")
-    public BaseResponse<List<Order>> getAllOrders(Long storeId) {
+    public BaseResponse<List<OrderDto.AllOrderList>> getAllOrders(HttpServletRequest req) {
+        String token = null;
+        if (req.getCookies() != null) {
+            for (Cookie cookie : req.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
         return BaseResponse.success(orderService.getOrdersByStoreId(storeId));
     }
+
     @GetMapping("/{orderId}")
     public BaseResponse<Order> getOrder(@PathVariable Long orderId) {
         return BaseResponse.success(orderService.getOrderById(orderId));
@@ -113,7 +127,7 @@ public class OrderController {
     }
     //매출 분석 리스트
 
-    @GetMapping("/saleDetail")
+    @PostMapping("/saleDetail")
     public BaseResponse<List<OrderSaleDetailDto.TotalResponse>> getSalesDetail(HttpServletRequest request, @RequestBody OrderSaleDetailDto.OrderSaleDetailRequest dto) {
 
         String token = null;

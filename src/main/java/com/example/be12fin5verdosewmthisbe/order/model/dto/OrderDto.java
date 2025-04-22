@@ -2,8 +2,10 @@ package com.example.be12fin5verdosewmthisbe.order.model.dto;
 
 
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -68,5 +70,22 @@ public class OrderDto {
         private Integer quantity;
         private Integer price;
         private List<Long> optionIds;
+    }
+
+    @Builder
+    @Data
+    public static class AllOrderList {
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+        private Timestamp createdAt;
+        private Order.OrderType orderType;
+        private int totalPrice;
+
+        public static AllOrderList toAllOrderList(Order order) {
+             return AllOrderList.builder()
+                    .createdAt(order.getCreatedAt())
+                    .orderType(order.getOrderType())
+                    .totalPrice(order.getTotalPrice())
+                    .build();
+        }
     }
 }
