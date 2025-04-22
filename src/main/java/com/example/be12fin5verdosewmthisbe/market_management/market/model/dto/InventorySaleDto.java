@@ -22,6 +22,7 @@ public class InventorySaleDto {
         private List<String> imageUrls;
     }
     @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class InventorySaleListDto {

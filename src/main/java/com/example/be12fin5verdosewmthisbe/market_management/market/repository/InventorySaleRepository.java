@@ -13,6 +13,7 @@ import java.util.List;
 public interface InventorySaleRepository extends JpaRepository<InventorySale, Long> {
     List<InventorySale> findByStore_IdAndStatusIn(Long StoreId, List<InventorySale.saleStatus> statuses);
     List<InventorySale> findByStore_Id(Long StoreId);
+    List<InventorySale> findByStore_IdAndStatus(Long StoreId,InventorySale.saleStatus status);
     List<InventorySale> findByStore_IdInAndStatus(List<Long> StoreIds, InventorySale.saleStatus status);
 
     @Query("""

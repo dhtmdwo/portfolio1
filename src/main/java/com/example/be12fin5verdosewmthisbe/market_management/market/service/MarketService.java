@@ -104,6 +104,24 @@ public class MarketService {
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
     }
 
+    public List<InventorySaleDto.InventorySaleListDto> findInventorySaleListByStoreId(Long storeId) {
+        List<InventorySale> sales = inventorySaleRepository
+                .findByStore_IdAndStatus(storeId, InventorySale.saleStatus.available);
+        List<InventorySaleDto.InventorySaleListDto> salesDto = new ArrayList<>(
+                sales.stream().map(sale -> {
+                    return InventorySaleDto.InventorySaleListDto.builder()
+                            .inventorySaleId(sale.getId())
+                            .expirationDate(sale.getExpiryDate())
+                            .createdDate(sale.getCreatedAt().toLocalDateTime().toLocalDate())
+                            .inventoryName(sale.getInventoryName())
+                            .sellerStoreName(sale.getSellerStoreName())
+                            .price(sale.getPrice())
+                            .quantity(sale.getQuantity().toString())
+                            .build();
+                }).toList());
+        return salesDto;
+    }
+
     public List<InventorySale> findInventorySaleBySellerStoreId(Long sellerStoreId) {
         return inventorySaleRepository.findByStore_Id(sellerStoreId);
     }
