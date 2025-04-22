@@ -145,15 +145,7 @@ public class UserController {
 
         String result = userService.deleteUser(emailUrl);
 
-        ResponseCookie cookie = ResponseCookie
-                .from("ATOKEN", "")
-                .path("/")
-                .httpOnly(true)
-                .secure(true)
-                .maxAge(0) // 쿠키 즉시 만료
-                .build();
-
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        removeCookie(response);
         return BaseResponse.success(result);
     }
     // 유저 탈퇴
@@ -179,7 +171,7 @@ public class UserController {
     }
 
     @GetMapping("/isRegistered")
-    public BaseResponse<String> isRegistered(HttpServletRequest request) {
+    public BaseResponse<String> isRegistered(HttpServletRequest request,HttpServletResponse response) {
         String token = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -196,6 +188,7 @@ public class UserController {
             String storeId = userService.getStoreId(email);
             if(!storeId.equals(tokenStoreId)) {
                 // 토큰의 storeId와 DB의 storeId가 다를때
+                removeCookie(response);
                 throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE);
             }
         } else {
@@ -203,6 +196,19 @@ public class UserController {
             throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE);
         }
         return BaseResponse.success("ok");
+    }
+
+
+    public void removeCookie(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie
+                .from("ATOKEN", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0) // 쿠키 즉시 만료
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }
         
