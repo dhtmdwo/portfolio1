@@ -97,7 +97,7 @@ public class InventoryController {
     }
     // 재고 종류 리스트로 뽑기
 
-    @GetMapping("/menuSale")
+    @PostMapping("/menuSale")
     public BaseResponse<List<InventoryChangeDto.Response>> getSaleList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
 
         String token = null;
@@ -118,7 +118,7 @@ public class InventoryController {
     }
     // 메뉴로 재고가 얼마나 사용됐나 조회
 
-    @GetMapping("/marketSale")
+    @PostMapping("/marketSale")
     public BaseResponse<List<InventoryChangeDto.Response>> getMarketList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
 
         String token = null;
