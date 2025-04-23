@@ -3,10 +3,12 @@ package com.example.be12fin5verdosewmthisbe.inventory.repository;
 import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 public interface StoreInventoryRepository extends JpaRepository<StoreInventory, Long> {
@@ -23,7 +25,7 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
 
     @Query("""
         SELECT DISTINCT si FROM StoreInventory si
-        JOIN FETCH si.inventoryList i
+        LEFT JOIN FETCH si.inventoryList i
         JOIN FETCH si.store s
         WHERE s.id = :storeId       
     """)
