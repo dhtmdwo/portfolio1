@@ -49,6 +49,7 @@ public enum ErrorCode {
     STORE_NOT_REGISTER(1016,"상점이 등록되지 않은 유저입니다."),
     TOKEN_EMAIL_NOT_FOUND(1017, "토큰에 이메일 정보가 존재하지 않습니다."),
     SAME_AS_CURRENT_PASSWORD(1015, "현재 비밀번호와 동일합니다."),
+    TOKEN_NOT_FOUND(1015, "로그인 되지 않았습니다"),
 
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
