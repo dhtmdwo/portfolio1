@@ -2,6 +2,7 @@ package com.example.be12fin5verdosewmthisbe.inventory.repository;
 
 import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,5 +30,8 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
     List<StoreInventory> findAllStoreInventoryByStore(@Param("storeId") Long storeId);
 
 
+    List<StoreInventory> findByStore_IdAndRecipeList(Long storeId, Recipe recipeList);
+
+    StoreInventory findStoreInventoryByStore_Id(Long id);
 }
 
