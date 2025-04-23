@@ -26,8 +26,20 @@ public class InventoryController {
 
     //dto로 정보 받아서 StoreInventory 저장
     @PostMapping("/registerStoreInventory")
-    public BaseResponse<String> registerStoreInventory(@RequestBody InventoryDetailRequestDto dto) {
-        inventoryService.registerInventory(dto);
+    public BaseResponse<String> registerStoreInventory(HttpServletRequest request, @RequestBody InventoryDetailRequestDto dto) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+
+        inventoryService.registerInventory(dto, storeId);
         return BaseResponse.success("ok");
     }
 
@@ -69,7 +81,7 @@ public class InventoryController {
     public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories(HttpServletRequest request) {
         List<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories(getStoreId(request));
         Long id = (getStoreId(request));
-        return BaseResponse.success(result);
+            return BaseResponse.success(result);
     }
 
     @GetMapping("/inventoryList")
