@@ -83,6 +83,54 @@ public class UserController {
 
         return BaseResponse.success("로그인에 성공했습니다.");
     }
+
+    @GetMapping("/isLogin")
+    public BaseResponse<Boolean> isLogin(HttpServletRequest request) {
+        String token = null;
+
+        // ATOKEN 쿠키 추출
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // ❌ 토큰 없음 → 로그인 안됨
+        if (token == null) {
+            return BaseResponse.success(false);
+            //throw new CustomException(ErrorCode.TOKEN_NOT_FOUND); // 또는 return BaseResponse.fail(...)
+        }
+
+        // ❌ 토큰 유효하지 않음
+        if (!jwtTokenProvider.validateToken(token)) {
+            return BaseResponse.success(false);
+            //throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE); // 또는 BaseResponse.fail(...)
+        }
+
+        Claims claims = jwtTokenProvider.getClaims(token);
+        if (claims == null) {
+            return BaseResponse.success(false);
+            //throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+
+        String storeIdStr = claims.get("storeId", String.class);
+        if (storeIdStr == null || storeIdStr.isEmpty()) {
+            return BaseResponse.success(false);
+            //throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+
+        // ✅ 모든 조건 만족 → 로그인 상태
+        return BaseResponse.success(true);
+    }
+    // 로그인 판단
+
+
+
+
+
     // 로그인
     @PostMapping("/logout")
     public BaseResponse<String> logout(HttpServletResponse response) {

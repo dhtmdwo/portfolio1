@@ -25,6 +25,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+
+        String path = request.getServletPath();
+
+        // 인증 없이 허용할 경로들
+        if (path.equals("/api/user/login") ||
+                path.equals("/api/user/signup") ||
+                path.equals("/api/user/searchinfo") ||
+                path.equals("/api/user/updatepassword") ||
+                path.equals("/api/email/sendcode") ||
+                path.equals("/api/email/authcode") ||
+                path.equals("/api/user/smssend") ||
+                path.equals("/api/user/phoneverify") ||
+                path.equals("/api/user/isLogin")
+        )
+        {
+
+            filterChain.doFilter(request, response); // 인증 없이 통과
+            return;
+        }
+
+
         String token = jwtTokenProvider.resolveToken(request);
         if (token != null && jwtTokenProvider.validateToken(token)) {
 
