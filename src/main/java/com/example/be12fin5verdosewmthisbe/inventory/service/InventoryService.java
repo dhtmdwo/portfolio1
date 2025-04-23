@@ -72,7 +72,9 @@ public class InventoryService {
         }
     }
 
-    public StoreInventory totalInventory(InventoryDetailRequestDto dto) {
+    public StoreInventory totalInventory(InventoryDetailRequestDto dto, Long storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(()->
+                new CustomException(ErrorCode.STORE_NOT_EXIST));
         // 이름 중복 검사
         if (storeInventoryRepository.existsByName(dto.getName())) {
             throw new CustomException(ErrorCode.INVENTORY_DUPLICATE_NAME);
@@ -83,6 +85,7 @@ public class InventoryService {
                     .name(dto.getName())
                     .miniquantity(dto.getMiniquantity())
                     .unit(dto.getUnit())
+                    .store(store)
                     .quantity(BigDecimal.valueOf(10.2))
                     .expiryDate(dto.getExpiryDate())
                     .build();
