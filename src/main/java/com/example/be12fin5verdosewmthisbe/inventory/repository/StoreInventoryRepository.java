@@ -31,6 +31,36 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
     """)
     List<StoreInventory> findAllStoreInventoryByStore(@Param("storeId") Long storeId);
 
+    @Query("""
+        SELECT DISTINCT si FROM StoreInventory si
+        LEFT JOIN FETCH si.inventorySaleList is
+        JOIN FETCH si.store s
+        WHERE s.id = :storeId
+        AND is.createdAt >= :start
+        AND is.createdAt <= :end
+    """)
+    List<StoreInventory> findAllStoreInventoryByStoreAndPeroid(
+            @Param("storeId") Long storeId,
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end
+    );
+
+    @Query("""
+        SELECT DISTINCT si FROM StoreInventory si
+        JOIN FETCH si.store s
+        LEFT JOIN FETCH si.recipeList r
+        JOIN FETCH r.menu m
+        JOIN FETCH m.orderMenuList om
+        JOIN FETCH om.order o
+        WHERE s.id = :storeId
+        AND o.createdAt >= :start
+        AND o.createdAt <= :end
+    """)
+    List<StoreInventory> findAllMenuSaleInventoryByStoreAndPeroid(
+            @Param("storeId") Long storeId,
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end
+    );
 
     List<StoreInventory> findByStore_IdAndRecipeList(Long storeId, Recipe recipeList);
 

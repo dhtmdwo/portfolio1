@@ -23,13 +23,13 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -349,5 +349,59 @@ public class InventoryService {
 
         return(response);
     }
+
+    @Transactional
+    public Integer getTotalUpdateNumber(Long storeId) {
+
+        LocalDate today = LocalDate.now();
+        LocalDate monday = today.with(DayOfWeek.MONDAY);
+
+        Timestamp startTimestamp = Timestamp.valueOf(monday.atStartOfDay());
+        Timestamp endTimestamp = Timestamp.valueOf(LocalDateTime.now());
+
+        int totalUpdateNumber = 0;
+
+        List<ModifyInventory> modifyInventoryList = modifyInventoryRepository.findUpdateListByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
+
+        for (ModifyInventory modifyInventory : modifyInventoryList) {
+                totalUpdateNumber++;
+            }
+
+
+        return(totalUpdateNumber);
+    }
+
+    @Transactional
+    public Integer getMaximumMarketPurchase(Long storeId) {
+
+        LocalDate today = LocalDate.now();
+        LocalDate monthAgo = today.minusMonths(1); // 한 달 전 날짜
+
+        Timestamp startTimestamp = Timestamp.valueOf(monthAgo.atStartOfDay()); // 한 달 전 00:00
+        Timestamp endTimestamp = Timestamp.valueOf(LocalDateTime.now());
+
+        List<StoreInventory> storeInventoryList = storeInventoryRepository.findByStore_Id(storeId);
+        List<StoreInventory> storeMarketInventoryList = storeInventoryRepository.findAllStoreInventoryByStoreAndPeroid(storeId,startTimestamp, endTimestamp);
+
+        String name ="";
+        BigDecimal total = new BigDecimal(0.0);
+        Map<String, BigDecimal> marketSale = new HashMap<String, BigDecimal>(); // 장터로 얼마 팔았니
+        Map<String, BigDecimal> menuSale = new HashMap<String, BigDecimal>(); // 메뉴로 얼마 팔았니
+
+        for (StoreInventory storeInventory : storeMarketInventoryList) {
+            List<InventorySale> inventorySaleList = storeInventory.getInventorySaleList();
+            BigDecimal totalMarket = new BigDecimal(0.0);
+            String inventoryName = storeInventory.getName();
+            for(InventorySale inventorySale : inventorySaleList){
+                totalMarket = totalMarket.add(inventorySale.getQuantity());
+            }
+            marketSale.put(inventoryName, totalMarket);
+        }
+
+
+
+        return(5);
+    }
+
 
 }
