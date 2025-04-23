@@ -98,11 +98,10 @@ public class MenuController {
     })
 
     @GetMapping("/{menuId}")
-    public BaseResponse<Menu> getMenuById(
+    public BaseResponse<MenuDto.MenuDetailResponseDto> getMenuById(
             @Parameter(description = "조회할 메뉴 ID", required = true, example = "1")
             @PathVariable Long menuId) {
-        Menu menu = menuService.findById(menuId);
-        return BaseResponse.success(menu);
+        return BaseResponse.success(menuService.getMenuDetail(menuId));
     }
 
     @Operation(summary = "전체 메뉴 목록 조회 (페이지네이션)", description = "등록된 전체 메뉴 목록을 페이지별로 조회합니다.")

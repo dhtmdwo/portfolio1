@@ -2,10 +2,16 @@ package com.example.be12fin5verdosewmthisbe.order.service;
 
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
+import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.RecipeRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionValueRepository;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
@@ -20,6 +26,7 @@ import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
@@ -39,7 +46,10 @@ public class OrderService {
     private final OptionRepository optionRepository;
     private final OrderMenuRepository orderMenuRepository;
     private final StoreRepository storeRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
     private final MenuRepository menuRepository;
+    private final RecipeRepository recipeRepository;
+    private final OptionValueRepository optionValueRepository;
 
     @Transactional
     public OrderDto.OrderCreateResponse createOrder(OrderDto.OrderCreateRequest request, Long storeId) {
@@ -58,6 +68,7 @@ public class OrderService {
         int totalPrice = 0;
 
         for (OrderDto.OrderMenuRequest menuReq : request.getOrderMenus()) {
+            // menuId를 기반으로 주문된 메뉴(orderMenu)에 넣기
             Menu menu = menuRepository.findById(menuReq.getMenuId())
                     .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
             OrderMenu orderMenu = OrderMenu.builder()
@@ -69,6 +80,21 @@ public class OrderService {
 
             int menuTotal = menuReq.getPrice() * menuReq.getQuantity();
 
+            // 레시피 만큼 재고 차감하기
+            List<Recipe> recipes = recipeRepository.findAllByMenu(menu);
+            for (Recipe recipe : recipes) {
+                List<StoreInventory> ingredients = storeInventoryRepository.findByStore_IdAndRecipeList(storeId, recipe);
+                for (StoreInventory ingredient : ingredients) {
+                    BigDecimal currentQuantity = ingredient.getQuantity();
+                    BigDecimal deduction = recipe.getQuantity().multiply(BigDecimal.valueOf(menuReq.getQuantity()));
+                    if (currentQuantity.compareTo(deduction) < 0) {
+                        throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
+                    }
+                    ingredient.setQuantity(currentQuantity.subtract(deduction));
+                    storeInventoryRepository.save(ingredient);
+                }
+            }
+            // optionId를 기반으로 추가된 옵션(orderOption)에 넣기
             for (Long optionId : menuReq.getOptionIds()) {
                 Option option = optionRepository.findById(optionId)
                         .orElseThrow(() -> new RuntimeException("Option not found"));
@@ -80,12 +106,23 @@ public class OrderService {
 
                 orderMenu.getOrderOptionList().add(orderOption);
                 menuTotal += option.getPrice() * menuReq.getQuantity(); // 수량 고려
-            }
 
+                List<OptionValue> options = optionValueRepository.findAllByOption(option);
+                for (OptionValue optionValue : options) {
+                    StoreInventory inventory = optionValue.getStoreInventory();
+
+                    BigDecimal currentQuantity = inventory.getQuantity();
+                    BigDecimal deduction = optionValue.getQuantity().multiply(BigDecimal.valueOf(menuReq.getQuantity())); // 수량 반영
+                    if (currentQuantity.compareTo(deduction) < 0) {
+                        throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
+                    }
+                    inventory.setQuantity(currentQuantity.subtract(deduction));
+                    storeInventoryRepository.save(inventory);
+                }
+            }
             order.getOrderMenuList().add(orderMenu);
             totalPrice += menuTotal;
         }
-
         order.setTotalPrice(totalPrice);
         Order savedOrder = orderRepository.save(order);
 
