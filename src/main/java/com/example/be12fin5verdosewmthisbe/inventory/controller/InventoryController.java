@@ -213,7 +213,7 @@ public class InventoryController {
     // 이번주 재료 보정 얼마나 발생했는지
 
     @GetMapping("/marketAmount")
-    public BaseResponse<Integer> getMaximumMarketPurchase(HttpServletRequest request) {
+    public BaseResponse<InventoryNotUsed> getMaximumMarketPurchase(HttpServletRequest request) {
 
         String token = null;
         if (request.getCookies() != null) {
@@ -228,8 +228,8 @@ public class InventoryController {
         // JWT 읽기
         String storeIdStr = claims.get("storeId", String.class);
         Long storeId = Long.parseLong(storeIdStr);
-        Integer result = inventoryService.getMaximumMarketPurchase(storeId);
-        return BaseResponse.success(result);
+        InventoryNotUsed inventoryNotUsed = inventoryService.getMaximumMarketPurchase(storeId);
+        return BaseResponse.success(inventoryNotUsed);
     }
     // 이번주 재료 보정 얼마나 발생했는지
 }
