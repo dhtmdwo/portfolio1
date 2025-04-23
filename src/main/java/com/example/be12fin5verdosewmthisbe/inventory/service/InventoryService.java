@@ -12,9 +12,12 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.model.Invent
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventoryPurchaseRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventorySaleRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
+import com.example.be12fin5verdosewmthisbe.store.model.Store;
+import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -41,8 +44,12 @@ public class InventoryService {
     private final InventorySaleRepository inventorySaleRepository;
     private final InventoryPurchaseRepository inventoryPurchaseRepository;
     private final ModifyInventoryRepository modifyInventoryRepository;
+    private final StoreRepository storeRepository;
 
-    public StoreInventory registerInventory(InventoryDetailRequestDto dto) {
+    public StoreInventory registerInventory(InventoryDetailRequestDto dto, Long storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(()->
+                new CustomException(ErrorCode.STORE_NOT_EXIST));
+
         // 이름 중복 검사
         if (storeInventoryRepository.existsByName(dto.getName())) {
             throw new CustomException(ErrorCode.INVENTORY_DUPLICATE_NAME);
@@ -53,6 +60,7 @@ public class InventoryService {
                     .name(dto.getName())
                     .miniquantity(dto.getMiniquantity())
                     .unit(dto.getUnit())
+                    .store(store)
                     .quantity(BigDecimal.ZERO)
                     .expiryDate(dto.getExpiryDate())
                     .build();
