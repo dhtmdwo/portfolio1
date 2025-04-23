@@ -11,6 +11,7 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.model.Invent
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventoryPurchaseRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventorySaleRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
@@ -379,36 +380,144 @@ public class InventoryService {
         return(totalUpdateNumber);
     }
 
+//    @Transactional
+//    public String getMaximumMarketPurchase(Long storeId) {
+//
+//        LocalDate today = LocalDate.now();
+//        LocalDate monthAgo = today.minusMonths(1); // 한 달 전 날짜
+//
+//        Timestamp startTimestamp = Timestamp.valueOf(monthAgo.atStartOfDay()); // 한 달 전 00:00
+//        Timestamp endTimestamp = Timestamp.valueOf(LocalDateTime.now());
+//
+//        Map<String, BigDecimal> marketSale = new HashMap<String, BigDecimal>(); // 장터로 얼마 팔았니
+//        Map<String, BigDecimal> menuSale = new HashMap<String, BigDecimal>(); // 메뉴로 얼마 팔았니
+//
+//        List<StoreInventory> storeInventoryList = storeInventoryRepository.findByStore_Id(storeId);
+//        for(StoreInventory storeInventory : storeInventoryList){
+//            marketSale.put(storeInventory.getName(), BigDecimal.ZERO);
+//            menuSale.put(storeInventory.getName(), BigDecimal.ZERO);
+//        }
+//
+//
+//        List<StoreInventory> storeMarketInventoryList = storeInventoryRepository.findAllStoreInventoryByStoreAndPeroid(storeId,startTimestamp, endTimestamp);
+//        for (StoreInventory storeInventory : storeMarketInventoryList) {
+//            List<InventorySale> inventorySaleList = storeInventory.getInventorySaleList();
+//            String inventoryName = storeInventory.getName();
+//            for(InventorySale inventorySale : inventorySaleList){
+//                BigDecimal currentValue = marketSale.get(inventoryName);
+//                BigDecimal newValue = currentValue.add(inventorySale.getQuantity());
+//                marketSale.put(inventoryName, newValue);
+//            }
+//        }
+//
+//        List<StoreInventory> storeMenuInventoryList = storeInventoryRepository.findAllMenuSaleInventoryByStoreAndPeroid(storeId,startTimestamp, endTimestamp);
+//
+//        for(StoreInventory storeInventory : storeMenuInventoryList){
+//            List<Recipe> recipeList = storeInventory.getRecipeList();
+//            String inventoryName = storeInventory.getName();
+//            for(Recipe recipe : recipeList){
+//                Menu menu = recipe.getMenu();
+//                BigDecimal recipeQuantity = recipe.getQuantity(); // 메뉴당 얼마나씀?
+//
+//                List<OrderMenu> orderMenuList = menu.getOrderMenuList();
+//                for(OrderMenu orderMenu : orderMenuList){
+//                    int orderQuantity = orderMenu.getQuantity();
+//                    BigDecimal currentValue = marketSale.get(inventoryName);
+//                    BigDecimal newValue = currentValue.add(recipeQuantity.multiply(BigDecimal.valueOf(orderQuantity)));
+//                    menuSale.put(inventoryName, newValue);
+//                }
+//            }
+//        }
+//
+//        String bestInventory = null;
+//        BigDecimal highestRatio = BigDecimal.ZERO;
+//
+//        for (String name : marketSale.keySet()) {
+//            BigDecimal market = marketSale.getOrDefault(name, BigDecimal.ZERO);
+//            BigDecimal menu = menuSale.getOrDefault(name, BigDecimal.ZERO);
+//
+//            if (menu.compareTo(BigDecimal.ZERO) == 0) {
+//                continue; // ❗ 메뉴로 사용한 적 없으면 제외 (또는 처리 방식 정의)
+//            }
+//
+//            BigDecimal ratio = market.divide(menu, 4, RoundingMode.HALF_UP); // 소수점 4자리, 반올림
+//            if (ratio.compareTo(highestRatio) > 0) {
+//                highestRatio = ratio;
+//                bestInventory = name;
+//            }
+//        }
+//
+//        return bestInventory;
+//
+//    }
+
     @Transactional
-    public Integer getMaximumMarketPurchase(Long storeId) {
+    public InventoryNotUsed getMaximumMarketPurchase(Long storeId) {
 
         LocalDate today = LocalDate.now();
-        LocalDate monthAgo = today.minusMonths(1); // 한 달 전 날짜
+        LocalDate monthAgo = today.minusMonths(1);
 
-        Timestamp startTimestamp = Timestamp.valueOf(monthAgo.atStartOfDay()); // 한 달 전 00:00
+        Timestamp startTimestamp = Timestamp.valueOf(monthAgo.atStartOfDay());
         Timestamp endTimestamp = Timestamp.valueOf(LocalDateTime.now());
 
+        Map<String, BigDecimal> marketSale = new HashMap<>();
+        Map<String, BigDecimal> menuSale = new HashMap<>();
+        Map<String, String> menuUnit = new HashMap<>();
+
+        // 1. 모든 재고 이름 초기화
         List<StoreInventory> storeInventoryList = storeInventoryRepository.findByStore_Id(storeId);
-        List<StoreInventory> storeMarketInventoryList = storeInventoryRepository.findAllStoreInventoryByStoreAndPeroid(storeId,startTimestamp, endTimestamp);
-
-        String name ="";
-        BigDecimal total = new BigDecimal(0.0);
-        Map<String, BigDecimal> marketSale = new HashMap<String, BigDecimal>(); // 장터로 얼마 팔았니
-        Map<String, BigDecimal> menuSale = new HashMap<String, BigDecimal>(); // 메뉴로 얼마 팔았니
-
-        for (StoreInventory storeInventory : storeMarketInventoryList) {
-            List<InventorySale> inventorySaleList = storeInventory.getInventorySaleList();
-            BigDecimal totalMarket = new BigDecimal(0.0);
-            String inventoryName = storeInventory.getName();
-            for(InventorySale inventorySale : inventorySaleList){
-                totalMarket = totalMarket.add(inventorySale.getQuantity());
-            }
-            marketSale.put(inventoryName, totalMarket);
+        for (StoreInventory storeInventory : storeInventoryList) {
+            String name = storeInventory.getName();
+            marketSale.put(name, BigDecimal.ZERO);
+            menuSale.put(name, BigDecimal.ZERO); // 초기화는 미리
+            menuUnit.put(name,"");
         }
 
+        // 2. 장터 판매량 계산
+        List<StoreInventory> storeMarketInventoryList = storeInventoryRepository
+                .findAllStoreInventoryByStoreAndPeroid(storeId, startTimestamp, endTimestamp);
 
+        for (StoreInventory storeInventory : storeMarketInventoryList) {
+            String inventoryName = storeInventory.getName();
+            for (InventorySale inventorySale : storeInventory.getInventorySaleList()) {
+                BigDecimal current = marketSale.get(inventoryName);
+                marketSale.put(inventoryName, current.add(inventorySale.getQuantity()));
+            }
+        }
 
-        return(5);
+        // 3. 메뉴 사용량은 JPQL로 계산
+        List<InventoryMenuUsageDto> menuUsageList = storeInventoryRepository
+                .findAllMenuSaleInventoryByStoreAndPeroid(storeId, startTimestamp, endTimestamp);
+
+        for (InventoryMenuUsageDto dto : menuUsageList) {
+            menuSale.put(dto.getInventoryName(), dto.getTotalUsedQuantity());
+            menuUnit.put(dto.getInventoryName(), dto.getUnit());
+        }
+
+        // 4. 비율 계산
+        String bestInventory = null;
+        BigDecimal highestRatio = BigDecimal.ZERO;
+        BigDecimal highest = BigDecimal.ZERO;
+        String unit = "";
+
+        for (String name : marketSale.keySet()) {
+            BigDecimal market = marketSale.get(name);
+            BigDecimal menu = menuSale.get(name);
+            String tempUnit = menuUnit.get(name);
+
+            if (menu.compareTo(BigDecimal.ZERO) == 0) continue;
+
+            BigDecimal ratio = market.divide(menu, 4, RoundingMode.HALF_UP);
+            if (ratio.compareTo(highestRatio) > 0) {
+                highestRatio = ratio;
+                bestInventory = name;
+                highest = market;
+                unit = tempUnit;
+            }
+        }
+
+        InventoryNotUsed inventoryNotUsed = InventoryNotUsed.of(bestInventory, highest, unit);
+        return inventoryNotUsed;
     }
 
 
