@@ -92,9 +92,16 @@ public class OrderService {
         return toOrderCreateResponse(savedOrder); // DTO로 변환하여 리턴
     }
 
-    public List<Order> getOrdersByStoreId(long storeId) {
-        return orderRepository.findByStoreId(storeId);
+    public List<OrderDto.AllOrderList> getOrdersByStoreId(Long storeId) {
+        List<Order> orders = orderRepository.findByStoreId(storeId);
+        List<OrderDto.AllOrderList> allOrders = new ArrayList<>();
+        for (Order order : orders) {
+            OrderDto.AllOrderList list = OrderDto.AllOrderList.toAllOrderList(order);
+            allOrders.add(list);
+        }
+        return allOrders;
     }
+
     public Order getOrderById(long orderId) {
         return orderRepository.findById(orderId).orElseThrow(()-> new RuntimeException("Order not found"));
     }
