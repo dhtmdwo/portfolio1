@@ -22,7 +22,7 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
 
     @Query("""
         SELECT DISTINCT si FROM StoreInventory si
-        JOIN FETCH si.inventoryList i
+        LEFT JOIN FETCH si.inventoryList i
         JOIN FETCH si.store s
         WHERE s.id = :storeId       
     """)

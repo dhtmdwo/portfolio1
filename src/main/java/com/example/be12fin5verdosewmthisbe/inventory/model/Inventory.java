@@ -37,7 +37,7 @@ public class Inventory {
 
     @Column(name = "expirydate")
     @Schema(description = "유통기한", example = "2026-04-01")
-    private LocalDate expiryDate;
+        private LocalDate expiryDate;
 
     @Column(name = "unitprice")
     @Schema(description = "단가", example = "1500")

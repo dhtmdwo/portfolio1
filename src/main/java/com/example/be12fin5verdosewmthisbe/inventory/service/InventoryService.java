@@ -278,9 +278,9 @@ public class InventoryService {
     public InventoryCallDto.Response getInventoryCall(Long storeId) {
 
         List<StoreInventory> storeInventoryList = storeInventoryRepository.findAllStoreInventoryByStore(storeId);
-        int expiringCount=0;
-        int reorderRequiredCount=0;
-        int receivedTodayCount=0;
+        int expiringCount=0; // 만료 임박
+        int reorderRequiredCount=0; // 발주 필요
+        int receivedTodayCount=0;// 금일 입고
         LocalDate today = LocalDate.now();
 
         for (StoreInventory storeInventory : storeInventoryList) {
@@ -311,7 +311,7 @@ public class InventoryService {
             BigDecimal minQuantity = BigDecimal.valueOf(Optional.ofNullable(InteMinQuantity).orElse(0));
             BigDecimal quantity = storeInventory.getQuantity();
 
-            if(minQuantity.compareTo(quantity) < 0){
+            if(minQuantity.compareTo(quantity) > 0){
                 reorderRequiredCount ++;
             }
         }
