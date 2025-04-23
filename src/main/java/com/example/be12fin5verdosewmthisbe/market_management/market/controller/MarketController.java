@@ -146,4 +146,5 @@ public class MarketController {
         Long storeId = Long.valueOf(claims.get("storeId", String.class));
         return  storeId;
     }
+
 }

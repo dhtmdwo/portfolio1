@@ -156,13 +156,6 @@ public class InventoryController {
     }
     // 수정으로로 재고가 얼마나 변동했나 조회
 
-
-
-
-
-
-
-
     private Long getStoreId(HttpServletRequest request) {
         String token = null;
         if (request.getCookies() != null) {
@@ -198,6 +191,45 @@ public class InventoryController {
         return BaseResponse.success(inventoryCall);
     }
 
+    @GetMapping("/inventoryAmount")
+    public BaseResponse<Integer> getTotalUpdateNumber(HttpServletRequest request) {
 
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        Integer result = inventoryService.getTotalUpdateNumber(storeId);
+        return BaseResponse.success(result);
+    }
+    // 이번주 재료 보정 얼마나 발생했는지
 
+    @GetMapping("/marketAmount")
+    public BaseResponse<Integer> getMaximumMarketPurchase(HttpServletRequest request) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        Integer result = inventoryService.getMaximumMarketPurchase(storeId);
+        return BaseResponse.success(result);
+    }
+    // 이번주 재료 보정 얼마나 발생했는지
 }

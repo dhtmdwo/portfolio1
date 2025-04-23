@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.inventory.model;
 
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
@@ -71,6 +72,10 @@ public class StoreInventory {
     @ManyToOne
     @JoinColumn(name = "store_id")
     private Store store;
+
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<InventorySale> inventorySaleList = new ArrayList<>();
 
 }
 
