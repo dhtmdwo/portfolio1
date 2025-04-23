@@ -5,6 +5,7 @@ import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.*;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.*;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
+import com.example.be12fin5verdosewmthisbe.inventory.repository.ModifyInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
@@ -13,6 +14,7 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.repository.I
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
+import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -38,6 +40,7 @@ public class InventoryService {
     private final OrderMenuRepository orderMenuRepository;
     private final InventorySaleRepository inventorySaleRepository;
     private final InventoryPurchaseRepository inventoryPurchaseRepository;
+    private final ModifyInventoryRepository modifyInventoryRepository;
 
     public StoreInventory registerInventory(InventoryDetailRequestDto dto) {
         // 이름 중복 검사
@@ -231,6 +234,32 @@ public class InventoryService {
 
         return(MarketSaleList);
     }
+
+    @Transactional
+    public List<InventoryChangeDto.Response> getUpdateList(Long storeId, InventoryChangeDto.DateRequest dto) {
+
+        LocalDate startDate = dto.getStartDate();
+        LocalDate endDate = dto.getEndDate();
+        Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
+        Timestamp endTimestamp = Timestamp.valueOf(endDate.plusDays(1).atStartOfDay());
+
+        List<InventoryChangeDto.Response> updateSoloList = new ArrayList<>();
+        List<ModifyInventory> updateList = modifyInventoryRepository.findUpdateListByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
+
+        for (ModifyInventory modifyInventory : updateList) {
+            Timestamp date = modifyInventory.getModifyDate(); // 수정 날짜
+            String stockName = modifyInventory.getInventory().getStoreInventory().getName();
+            String changeReasonq = "수정";
+            BigDecimal quantity = modifyInventory.getModifyQuantity();
+            String unit = modifyInventory.getInventory().getStoreInventory().getUnit();
+            InventoryChangeDto.Response saleResponse = InventoryChangeDto.Response.of(date, stockName, changeReasonq, quantity, unit);
+            updateSoloList.add(saleResponse);
+        }
+
+        return(updateSoloList);
+    }
+
+
 
 
     @Transactional

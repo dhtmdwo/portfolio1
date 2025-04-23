@@ -134,6 +134,35 @@ public class InventoryController {
         return BaseResponse.success(SaleList);
     }
     // 장터로 재고가 얼마나 변동했나 조회
+
+    @PostMapping("/updateSolo")
+    public BaseResponse<List<InventoryChangeDto.Response>> getUpdateList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        List<InventoryChangeDto.Response> SaleList = inventoryService.getUpdateList(storeId, dto);
+        return BaseResponse.success(SaleList);
+    }
+    // 수정으로로 재고가 얼마나 변동했나 조회
+
+
+
+
+
+
+
+
     private Long getStoreId(HttpServletRequest request) {
         String token = null;
         if (request.getCookies() != null) {
