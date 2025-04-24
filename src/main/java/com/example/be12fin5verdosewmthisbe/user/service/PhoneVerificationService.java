@@ -19,9 +19,10 @@ public class PhoneVerificationService {
     private final SmsCertificationUtil smsCertificationUtil;
 
     @Transactional
-    public void sendCertificationCode(String phoneNumber) {
+    public String sendCertificationCode(String phoneNumber) {
         String code = generateCode(); // 예: 6자리 난수
         LocalDateTime expiration = LocalDateTime.now().plusMinutes(5);
+        System.out.println(code);
 
         // DB 저장
         PhoneVerification verification = PhoneVerification.builder()
@@ -31,9 +32,9 @@ public class PhoneVerificationService {
                 .isVerified(false)
                 .build();
         phoneVerificationRepository.save(verification);
-
+        return code;
         // SMS 전송
-        smsCertificationUtil.sendSMS(phoneNumber, code);
+        //smsCertificationUtil.sendSMS(phoneNumber, code);
     }
 
     private String generateCode() {
