@@ -22,7 +22,7 @@ pipeline {
             steps {
                 script {
                     docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                    withDockerRegistry([credentialsId: 'DOCKER_HUB_CREDENTIAL_ID']) {
+                    withDockerRegistry([credentialsId: 'wmthis']) {
                         docker.image("${IMAGE_NAME}:${IMAGE_TAG}").push()
                     }
                 }
