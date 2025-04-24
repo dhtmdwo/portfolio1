@@ -12,6 +12,7 @@ pipeline {
     stages {
         stage('Git Clone') {
             steps {
+                credentialsId: 'wmthis2'
                 git branch: 'main', url: 'https://github.com/beyond-sw-camp/be12-fin-5verdose-WMTHIS-BE'
             }
         }
@@ -25,7 +26,7 @@ pipeline {
             steps {
                 script {
                     docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                    withDockerRegistry([credentialsId: 'wmthis2']) {
+                    withDockerRegistry([credentialsId: 'wmthis']) {
                         docker.image("${IMAGE_NAME}:${IMAGE_TAG}").push()
                     }
                 }
