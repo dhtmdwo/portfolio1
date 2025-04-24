@@ -8,7 +8,7 @@ pipeline {
                 [key: 'event', value: '$.action'] // optional
             ],
             causeString: 'GitHub event triggered on $ref or PR to $pr_base',
-            regexpFilterText: '$ref $pr_base $event'
+            regexpFilterText: '$ref $pr_base $event',
             regexpFilterExpression: 'refs/heads/main main closed'
         )
     }
