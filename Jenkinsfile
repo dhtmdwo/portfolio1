@@ -11,10 +11,20 @@ pipeline {
     }
 
     stages {
-        stage('Build on main only') {
-            when {
-                branch 'main'
+        stage('Check branch') {
+            steps {
+                script {
+                    if (env.GIT_BRANCH != 'origin/main') {
+                        echo "Not main branch (${env.GIT_BRANCH}), skipping pipeline."
+                        currentBuild.result = 'SUCCESS'
+                        // 즉시 종료
+                        return
+                    }
+                }
             }
+        }
+
+        stage('Build') {
             steps {
                 echo "Building ${env.GIT_BRANCH} → OK"
                 sh 'chmod +x gradlew'
