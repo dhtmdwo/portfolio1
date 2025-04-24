@@ -58,18 +58,19 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
+    // 카테고리 등록
     public void register(CategoryDto.requestDto dto,Long storeId) {
-        log.info("Registering category: {}", dto);
+        // 예외처리
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+        if (categoryRepository.findByStoreIdAndName(storeId,dto.getName()).isPresent()) {
+            throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
+        }
+
         Category category = Category.builder()
                 .name(dto.getName())
                 .store(store)
                 .build();
-
-        if (categoryRepository.findByStoreIdAndName(storeId,category.getName()).isPresent()) {
-            throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
-        }
 
         List<Option> options = optionRepository.findAllById(dto.getOptionIds());
         for (Option option : options) {
@@ -134,5 +135,6 @@ public class CategoryService {
         return categoryRepository.findByIdWithOptions(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
     }
+
 
 }
