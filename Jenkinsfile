@@ -1,22 +1,17 @@
 pipeline {
-    agent any
     triggers {
-            GenericWebhookTrigger(
-                genericVariables: [
-                    [key: 'payload', value: '$.pull_request.state']
-                ],
-                token: 'MY_SECRET_TOKEN',
-                causeString: 'Triggered by GitHub PR close',
-                filter: '$.pull_request.state == "closed"'  // PR이 close될 때만 트리거
-            )
-        }
-        stages {
-            stage('Build') {
-                steps {
-                    echo 'Building because the PR was closed'
-                }
-            }
-        }
+        GenericTrigger(
+            genericVariables: [
+                [key: 'action', value: '$.action'],
+                [key: 'pr_state', value: '$.pull_request.state']
+            ],
+            causeString: 'GitHub PR closed event: $action',
+            regexpFilterText: '$action $pr_state',
+            regexpFilterExpression: '^closed closed$'  // PR close만 트리거
+        )
+    }
+
+    agent any
 
     environment {
         IMAGE_NAME = 'jkweil125/wmthis-back'
@@ -24,17 +19,25 @@ pipeline {
     }
 
     stages {
+        stage('Start') {
+            steps {
+                echo '✅ Pull Request가 닫혔습니다. 파이프라인을 실행합니다.'
+            }
+        }
+
         stage('Git Clone') {
             steps {
                 git branch: 'main', url: 'https://github.com/beyond-sw-camp/be12-fin-5verdose-WMTHIS-BE'
             }
         }
+
         stage('Build') {
             steps {
                 sh 'chmod +x gradlew'
                 sh './gradlew bootJar'
             }
         }
+
         stage('Docker Build & Push') {
             steps {
                 script {
@@ -47,5 +50,3 @@ pipeline {
         }
     }
 }
-// 수정2트
-// 수정3트
