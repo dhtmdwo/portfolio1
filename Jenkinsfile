@@ -1,13 +1,13 @@
 pipeline {
     agent any
 
-    triggers {
-        githubPush()
-    }
-
     environment {
         IMAGE_NAME = 'jkweil125/wmthis-back'
         IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
+    triggers {
+        // githubPush() 제거 → webhook에서 푸시 이벤트만 남겨두기
     }
 
     stages {
@@ -17,9 +17,10 @@ pipeline {
             }
         }
 
-        stage('Check Branch') {
+        stage('Branch Check') {
             when {
                 expression {
+                    // main 브랜치가 아니면 빌드 중단
                     return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
                 }
             }
@@ -57,4 +58,3 @@ pipeline {
         }
     }
 }
-// 수정
