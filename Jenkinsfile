@@ -6,9 +6,6 @@ pipeline {
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
-    triggers {
-        // githubPush() 제거 → webhook에서 푸시 이벤트만 남겨두기
-    }
 
     stages {
         stage('Git Clone') {
