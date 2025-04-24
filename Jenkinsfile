@@ -8,7 +8,7 @@ pipeline {
             ],
             causeString: 'GitHub event triggered on $ref or PR to $pr_base',
             regexpFilterText: '$ref $pr_base',
-            regexpFilterExpression: 'refs/heads/main|main'
+            regexpFilterExpression: 'refs/heads/main|main',
             token: 'YOUR_SECRET_TOKEN'
         )
     }
