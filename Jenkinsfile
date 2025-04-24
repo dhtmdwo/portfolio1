@@ -5,11 +5,12 @@ pipeline {
             genericVariables: [
                 [key: 'ref', value: '$.ref'],
                 [key: 'pr_base', value: '$.pull_request.base.ref'],
-                [key: 'event', value: '$.action'] // optional
+                [key: 'event', value: '$.action'],
+                [key: 'merged', value: '$.pull_request.merged']
             ],
-            causeString: 'GitHub event triggered on $ref or PR to $pr_base',
-            regexpFilterText: '$event',
-            regexpFilterExpression: '^closed$'
+            causeString: 'PR merged into $pr_base',
+            regexpFilterText: '$event $merged $pr_base',
+            regexpFilterExpression: '^closed true main$' // "closed" && "merged=true" && base ref = "main"
         )
     }
 
@@ -44,7 +45,3 @@ pipeline {
         }
     }
 }
-// 수정2트
-// 수정3트
-// 수정4트
-// 수정5트
