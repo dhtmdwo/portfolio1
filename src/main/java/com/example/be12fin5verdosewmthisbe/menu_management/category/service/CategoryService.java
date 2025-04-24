@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,6 +46,18 @@ public class CategoryService {
                     .map(CategoryDto.CategoryResponseDto::fromEntity);
         }
     }
+
+    public List<CategoryDto.CategoryResponseDto> getPOSCategoryList(Long storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
+        List<Category> categoryList = categoryRepository.findByStoreId(storeId);
+
+        return categoryList.stream()
+                .map(CategoryDto.CategoryResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     public void register(CategoryDto.requestDto dto,Long storeId) {
         log.info("Registering category: {}", dto);
         Store store = storeRepository.findById(storeId)

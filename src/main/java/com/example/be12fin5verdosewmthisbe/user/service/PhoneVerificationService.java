@@ -33,7 +33,7 @@ public class PhoneVerificationService {
         phoneVerificationRepository.save(verification);
 
         // SMS 전송
-        smsCertificationUtil.sendSMS(phoneNumber, code);
+        //smsCertificationUtil.sendSMS(phoneNumber, code);
     }
 
     private String generateCode() {
