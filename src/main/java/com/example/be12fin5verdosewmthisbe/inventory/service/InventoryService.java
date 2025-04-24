@@ -11,7 +11,10 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.model.Invent
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventoryPurchaseRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventorySaleRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.RecipeRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
@@ -45,6 +48,8 @@ public class InventoryService {
     private final InventoryPurchaseRepository inventoryPurchaseRepository;
     private final ModifyInventoryRepository modifyInventoryRepository;
     private final StoreRepository storeRepository;
+    private final RecipeRepository recipeRepository;
+    private final MenuRepository menuRepository;
 
     public StoreInventory registerInventory(InventoryDetailRequestDto dto, Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(()->
@@ -156,6 +161,7 @@ public class InventoryService {
                 .name(storeInventory.getName())
                 .expiryDate(storeInventory.getExpiryDate())
                 .miniquantity(storeInventory.getMiniquantity())
+                .quantity(storeInventory.getQuantity())
                 .unit(storeInventory.getUnit())
                 .build();
     }
@@ -412,4 +418,16 @@ public class InventoryService {
     }
 
 
+    public InventoryRecipes.Response getInventoryRecipes(Long storeId, Long inventoryId) {
+        StoreInventory storeInventory = storeInventoryRepository.findById(inventoryId).orElseThrow(()->
+                new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+        List<Recipe> recipes = recipeRepository.findAllByStoreInventory(storeInventory);
+        List<String> list = new ArrayList<>();
+        for(Recipe recipe : recipes){
+            Menu menu = menuRepository.findById(recipe.getMenu().getId()).orElseThrow(()->
+                    new CustomException(ErrorCode.MENU_NOT_FOUND));;
+            list.add(menu.getName());
+        }
+        return InventoryRecipes.Response.from(list);
+    }
 }

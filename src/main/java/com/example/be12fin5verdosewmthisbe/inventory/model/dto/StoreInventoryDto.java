@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 public class StoreInventoryDto {
 
     @Data
@@ -18,6 +20,8 @@ public class StoreInventoryDto {
         private Integer expiryDate;
 
         private Integer miniquantity;
+
+        private BigDecimal quantity;
 
         private String unit;
     }
