@@ -60,6 +60,49 @@ pipeline {
                 }
             }
         }
+                stage('Deploy to Kubernetes') {
+                    when {
+                        expression {
+                            return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                        }
+                    }
+                    steps {
+                        script {
+                            def deploymentYaml = """
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: wmthis-back
+          labels:
+            app: wmthis-back
+        spec:
+          replicas: 2
+          selector:
+            matchLabels:
+              app: wmthis-back
+          template:
+            metadata:
+              labels:
+                app: wmthis-back
+            spec:
+              containers:
+                - name: wmthis-back
+                  image: ${IMAGE_NAME}:${IMAGE_TAG}
+                  ports:
+                    - containerPort: 8080
+                  imagePullPolicy: Always
+                  envFrom:
+                    - configMapRef:
+                        name: wmthis-config
+                    - secretRef:
+                        name: wmthis-secret
+        """
+                            writeFile file: 'wmthis-deployment.yaml', text: deploymentYaml
+                            sh 'kubectl apply -f wmthis-deployment.yaml'
+                        }
+                    }
+                }
+
     }
 }
 //s
