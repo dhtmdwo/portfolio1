@@ -2,15 +2,23 @@ pipeline {
     triggers {
         GenericTrigger(
             token: 'my-secret-token',
+            // JSONPath로 추출할 변수 정의
             genericVariables: [
-                [key: 'ref', value: '$.ref'],
-                [key: 'pr_base', value: '$.pull_request.base.ref'],
-                [key: 'event', value: '$.action'],
-                [key: 'merged', value: '$.pull_request.merged']
+                [key: 'action', value: '$.action'],
+                [key: 'merged', value: '$.pull_request.merged'],
+                [key: 'baseRef', value: '$.pull_request.base.ref']
             ],
-            causeString: 'PR merged into $pr_base',
-            regexpFilterText: '$event $merged $pr_base',
-            regexpFilterExpression: '^closed true main$' // "closed" && "merged=true" && base ref = "main"
+            causeString: 'Building because PR was merged into main',
+            // 필터식 배열로 “AND” 조건 구성
+            // 각각의 expression이 모두 true일 때만 트리거
+            filterExpressions: [
+                [key: 'action', expression: '$.action == "closed"'],
+                [key: 'merged', expression: '$.pull_request.merged == true'],
+                [key: 'baseRef', expression: '$.pull_request.base.ref == "main"']
+            ],
+            // 디버깅용 출력 (필요 없으면 false)
+            printContributedVariables: true,
+            printPostContent: true
         )
     }
 
@@ -18,7 +26,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'jkweil125/wmthis-back'
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_TAG  = "${BUILD_NUMBER}"
     }
 
     stages {
