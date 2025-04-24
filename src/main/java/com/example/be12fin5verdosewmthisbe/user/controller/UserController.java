@@ -100,26 +100,22 @@ public class UserController {
 
         // ❌ 토큰 없음 → 로그인 안됨
         if (token == null) {
-            return BaseResponse.success(false);
-            //throw new CustomException(ErrorCode.TOKEN_NOT_FOUND); // 또는 return BaseResponse.fail(...)
+            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND); // 또는 return BaseResponse.fail(...)
         }
 
         // ❌ 토큰 유효하지 않음
         if (!jwtTokenProvider.validateToken(token)) {
-            return BaseResponse.success(false);
-            //throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE); // 또는 BaseResponse.fail(...)
+            throw new CustomException(ErrorCode.TOKEN_NOT_VALIDATE); // 또는 BaseResponse.fail(...)
         }
 
         Claims claims = jwtTokenProvider.getClaims(token);
         if (claims == null) {
-            return BaseResponse.success(false);
-            //throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
+            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
         }
 
         String storeIdStr = claims.get("storeId", String.class);
         if (storeIdStr == null || storeIdStr.isEmpty()) {
-            return BaseResponse.success(false);
-            //throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
+            throw new CustomException(ErrorCode.STORE_NOT_REGISTER);
         }
 
         // ✅ 모든 조건 만족 → 로그인 상태
@@ -207,8 +203,8 @@ public class UserController {
 
     @PostMapping("/smssend")
     public BaseResponse<String> sendCode(@RequestBody PhoneVerificationDto.SmsSendRequestDto dto) {
-        phoneVerificationService.sendCertificationCode(dto.getPhoneNum());
-        return BaseResponse.success("인증번호 전송 완료");
+        String code = phoneVerificationService.sendCertificationCode(dto.getPhoneNum());
+        return BaseResponse.success(code);
     }
 
     @PostMapping("/phoneverify")
