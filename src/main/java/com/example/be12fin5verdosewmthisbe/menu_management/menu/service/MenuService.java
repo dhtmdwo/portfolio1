@@ -132,10 +132,12 @@ public class MenuService {
 
         List<MenuDto.POSMenuListResponseDto> dtoList = new ArrayList<>();
         for (Menu menu : result) {
+            Long categoryId = (menu.getCategory() != null) ? menu.getCategory().getId() : null;
+
             MenuDto.POSMenuListResponseDto dto = MenuDto.POSMenuListResponseDto.builder()
                     .id(menu.getId())
                     .name(menu.getName())
-                    .category(menu.getCategory().getId())
+                    .category(categoryId)
                     .price(menu.getPrice())
                     .build();
             dtoList.add(dto);

@@ -91,6 +91,12 @@ public class CategoryController {
         return BaseResponse.success(result);
     }
 
+    @GetMapping("getPOSCategoryList")
+    public BaseResponse<List<CategoryDto.CategoryResponseDto>> getCategoryList(HttpServletRequest request) {
+        List<CategoryDto.CategoryResponseDto> result = categoryService.getPOSCategoryList(getStoreId(request));
+        return BaseResponse.success(result);
+    }
+
 
     @Operation(summary = "카테고리 상세 조회", description = "특정 이름의 메뉴 카테고리 상세 정보를 조회합니다.")
     @ApiResponses(value = {
