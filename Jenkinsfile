@@ -1,6 +1,7 @@
 pipeline {
     triggers {
         GenericTrigger(
+            token: 'my-secret-token',
             genericVariables: [
                 [key: 'ref', value: '$.ref'],
                 [key: 'pr_base', value: '$.pull_request.base.ref'],
@@ -46,3 +47,4 @@ pipeline {
 }
 // 수정2트
 // 수정3트
+// 수정4트
