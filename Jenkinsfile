@@ -1,18 +1,22 @@
 pipeline {
-    triggers {
-        GenericTrigger(
-            genericVariables: [
-                [key: 'ref', value: '$.ref'],
-                [key: 'pr_base', value: '$.pull_request.base.ref'],
-                [key: 'event', value: '$.action'] // optional
-            ],
-            causeString: 'GitHub event triggered on $ref or PR to $pr_base',
-            regexpFilterText: '$ref $pr_base',
-            regexpFilterExpression: 'refs/heads/main|main'
-        )
-    }
-
     agent any
+    triggers {
+            GenericWebhookTrigger(
+                genericVariables: [
+                    [key: 'payload', value: '$.pull_request.state']
+                ],
+                token: 'MY_SECRET_TOKEN',
+                causeString: 'Triggered by GitHub PR close',
+                filter: '$.pull_request.state == "closed"'  // PR이 close될 때만 트리거
+            )
+        }
+        stages {
+            stage('Build') {
+                steps {
+                    echo 'Building because the PR was closed'
+                }
+            }
+        }
 
     environment {
         IMAGE_NAME = 'jkweil125/wmthis-back'
