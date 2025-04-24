@@ -2,13 +2,12 @@ pipeline {
     triggers {
         GenericTrigger(
             genericVariables: [
-                [key: 'ref', value: '$.ref'],
-                [key: 'pr_base', value: '$.pull_request.base.ref'],
-                [key: 'event', value: '$.action'] // optional
+                [key: 'action', value: '$.action'],
+                [key: 'pr_state', value: '$.pull_request.state']
             ],
-            causeString: 'GitHub event triggered on $ref or PR to $pr_base',
-            regexpFilterText: '$event',
-            regexpFilterExpression: 'closed' // PR이 닫혔을 때만 트리거
+            causeString: 'GitHub PR closed event: $action',
+            regexpFilterText: '$action $pr_state',
+            regexpFilterExpression: '^closed closed$'  // PR close만 트리거
         )
     }
 
@@ -20,17 +19,25 @@ pipeline {
     }
 
     stages {
+        stage('Start') {
+            steps {
+                echo '✅ Pull Request가 닫혔습니다. 파이프라인을 실행합니다.'
+            }
+        }
+
         stage('Git Clone') {
             steps {
                 git branch: 'main', url: 'https://github.com/beyond-sw-camp/be12-fin-5verdose-WMTHIS-BE'
             }
         }
+
         stage('Build') {
             steps {
                 sh 'chmod +x gradlew'
                 sh './gradlew bootJar'
             }
         }
+
         stage('Docker Build & Push') {
             steps {
                 script {
@@ -43,3 +50,4 @@ pipeline {
         }
     }
 }
+// 2트
