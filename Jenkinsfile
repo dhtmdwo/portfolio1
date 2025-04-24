@@ -1,12 +1,22 @@
 pipeline {
     triggers {
-            githubPush()
-        }
+        GenericTrigger(
+            genericVariables: [
+                [key: 'ref', value: '$.ref'],
+                [key: 'pr_base', value: '$.pull_request.base.ref'],
+                [key: 'event', value: '$.action'] // optional
+            ],
+            causeString: 'GitHub event triggered on $ref or PR to $pr_base',
+            regexpFilterText: '$ref $pr_base',
+            regexpFilterExpression: 'refs/heads/main|main'
+        )
+    }
+
     agent any
 
     environment {
         IMAGE_NAME = 'jkweil125/wmthis-back'
-        IMAGE_TAG = "${BUILD_NUMBER}" // 또는 git commit 해시
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
@@ -33,7 +43,3 @@ pipeline {
         }
     }
 }
-// 테스트
-// 테스트 2트
-// 테스트 3트
-// 테스트 4트
