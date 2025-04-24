@@ -185,7 +185,7 @@ public class InventoryService {
             Integer expiryDate = inventory.getExpiryDate();  // expiryDate 필드 값 가져오기
 
             // Response 객체 생성
-            InventoryInfoDto.Response inventoryResponse = InventoryInfoDto.Response.of(name, quantity, unit, expiryDate);
+            InventoryInfoDto.Response inventoryResponse = InventoryInfoDto.Response.of(name, quantity, unit);
 
             // 리스트에 추가
             inventoryResponseList.add(inventoryResponse);
