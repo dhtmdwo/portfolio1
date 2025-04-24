@@ -44,7 +44,7 @@ public class InventoryController {
     }
 
     @PostMapping("/totalInventory")
-    public BaseResponse<String> totalInventory(HttpServletRequest request, @RequestBody InventoryDetailRequestDto dto) {
+    public BaseResponse<String> totalInventory(HttpServletRequest request, @RequestBody TotalInventoryDto dto) {
         String token = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -57,7 +57,7 @@ public class InventoryController {
         Claims claims = jwtTokenProvider.getClaims(token);
         Long storeId = Long.valueOf(claims.get("storeId", String.class));
 
-        inventoryService.registerInventory(dto, storeId);
+        inventoryService.totalInventory(dto, storeId);
         return BaseResponse.success("ok");
     }
 
@@ -118,6 +118,7 @@ public class InventoryController {
     }
     // 재고 종류 리스트로 뽑기
 
+    // 재고 종류 리스트로 뽑기
     @PostMapping("/menuSale")
     public BaseResponse<List<InventoryChangeDto.Response>> getSaleList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
 
