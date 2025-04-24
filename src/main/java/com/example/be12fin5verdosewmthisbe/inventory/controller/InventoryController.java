@@ -26,16 +26,41 @@ public class InventoryController {
 
     //dto로 정보 받아서 StoreInventory 저장
     @PostMapping("/registerStoreInventory")
-    public BaseResponse<String> registerStoreInventory(@RequestBody InventoryDetailRequestDto dto) {
-        inventoryService.registerInventory(dto);
+    public BaseResponse<String> registerStoreInventory(HttpServletRequest request, @RequestBody InventoryDetailRequestDto dto) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+
+        inventoryService.registerInventory(dto, storeId);
         return BaseResponse.success("ok");
     }
 
     @PostMapping("/totalInventory")
-    public BaseResponse<String> totalInventory(@RequestBody InventoryDetailRequestDto dto) {
-        inventoryService.totalInventory(dto);
+    public BaseResponse<String> totalInventory(HttpServletRequest request, @RequestBody TotalInventoryDto dto) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+
+        inventoryService.totalInventory(dto, storeId);
         return BaseResponse.success("ok");
     }
+
 
     //dto로 정보 받아서Inventory 저장
     @PostMapping("/DetailInventory")
@@ -44,21 +69,21 @@ public class InventoryController {
         return BaseResponse.success("ok");
     }
 
-    @GetMapping("/storeInventory/{inventoryId}")
-    public BaseResponse<StoreInventory> getInventoryById(@PathVariable Long inventoryId) {
-        StoreInventory inventory = inventoryService.findById(inventoryId);
+    @GetMapping("/storeInventory/{storeinventoryId}")
+    public BaseResponse<StoreInventory> getInventoryById(@PathVariable Long storeinventoryId) {
+        StoreInventory inventory = inventoryService.findById(storeinventoryId);
         return BaseResponse.success(inventory);
     }
 
-    @PutMapping("/storeInventory/{inventoryId}")
+    @PutMapping("/storeInventory/{storeinventoryId}")
     public BaseResponse<StoreInventory> updateInventory(
-            @PathVariable Long inventoryId,
+            @PathVariable Long storeinventoryId,
             @RequestBody InventoryDetailRequestDto dto) {
-        StoreInventory updatedInventory = inventoryService.updateInventory(inventoryId, dto);
+        StoreInventory updatedInventory = inventoryService.updateInventory(storeinventoryId, dto);
         return BaseResponse.success(updatedInventory);
     }
 
-    @DeleteMapping("/storeInventory/{inventoryId}")
+    @DeleteMapping("/storeInventory/{storeinventoryId}")
     public BaseResponse<String> deleteInventory(@PathVariable Long inventoryId) {
         inventoryService.deleteById(inventoryId);
         return BaseResponse.success("재고가 성공적으로 삭제되었습니다.");
@@ -93,6 +118,7 @@ public class InventoryController {
     }
     // 재고 종류 리스트로 뽑기
 
+    // 재고 종류 리스트로 뽑기
     @PostMapping("/menuSale")
     public BaseResponse<List<InventoryChangeDto.Response>> getSaleList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
 
@@ -232,4 +258,25 @@ public class InventoryController {
         return BaseResponse.success(inventoryNotUsed);
     }
     // 이번주 재료 보정 얼마나 발생했는지
+
+    @PostMapping("/getRecipes")
+    public BaseResponse<InventoryRecipes.Response> getRecipes(HttpServletRequest request, @RequestBody InventoryRecipes.Request req) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        InventoryRecipes.Response result = inventoryService.getInventoryRecipes(storeId, req.getInventoryId());
+        return BaseResponse.success(result);
+    }
+
 }
