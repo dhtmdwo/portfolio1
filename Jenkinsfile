@@ -9,7 +9,7 @@ pipeline {
             ],
             causeString: 'GitHub event triggered on $ref or PR to $pr_base',
             regexpFilterText: '$event',
-            regexpFilterExpression: 'closed'
+            regexpFilterExpression: '^closed$'
         )
     }
 
