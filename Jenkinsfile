@@ -25,7 +25,7 @@ pipeline {
             steps {
                 script {
                     docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                    withDockerRegistry([credentialsId: 'wmthis']) {
+                    withDockerRegistry([credentialsId: 'wmthis2']) {
                         docker.image("${IMAGE_NAME}:${IMAGE_TAG}").push()
                     }
                 }
