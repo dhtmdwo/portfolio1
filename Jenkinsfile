@@ -1,7 +1,6 @@
 pipeline {
     triggers {
         GenericTrigger(
-            tokenCredentialId: 'wmthis-token',
             genericVariables: [
                 [key: 'ref', value: '$.ref'],
                 [key: 'pr_base', value: '$.pull_request.base.ref'],
