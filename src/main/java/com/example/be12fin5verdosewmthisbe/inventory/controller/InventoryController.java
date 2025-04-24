@@ -81,7 +81,7 @@ public class InventoryController {
     public BaseResponse<List<StoreInventoryDto.responseDto>> getAllStoreInventories(HttpServletRequest request) {
         List<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories(getStoreId(request));
         Long id = (getStoreId(request));
-            return BaseResponse.success(result);
+        return BaseResponse.success(result);
     }
 
     @GetMapping("/inventoryList")
@@ -244,4 +244,25 @@ public class InventoryController {
         return BaseResponse.success(inventoryNotUsed);
     }
     // 이번주 재료 보정 얼마나 발생했는지
+
+    @PostMapping("/getRecipes")
+    public BaseResponse<InventoryRecipes.Response> getRecipes(HttpServletRequest request, @RequestBody InventoryRecipes.Request req) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        InventoryRecipes.Response result = inventoryService.getInventoryRecipes(storeId, req.getInventoryId());
+        return BaseResponse.success(result);
+    }
+
 }
