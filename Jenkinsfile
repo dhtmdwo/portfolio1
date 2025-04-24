@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    triggers {
+        githubPush()
+    }
+
     environment {
         IMAGE_NAME = 'jkweil125/wmthis-back'
         IMAGE_TAG = "${BUILD_NUMBER}"
@@ -18,6 +22,7 @@ pipeline {
             when {
                 expression {
                     // main 브랜치가 아니면 빌드 중단
+                    echo "expression"
                     echo env.GIT_BRANCH
                     return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
                 }
