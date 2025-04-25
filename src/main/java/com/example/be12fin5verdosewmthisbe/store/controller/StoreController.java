@@ -14,8 +14,8 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/store")
 @RequiredArgsConstructor
@@ -35,8 +36,8 @@ public class StoreController {
     private final MarketService marketService;
 
     @PostMapping("/register")
-    public BaseResponse<String> registerStore(HttpServletRequest request, HttpServletResponse response, @RequestBody @Valid StoreDto.RegistRequest dto) {
-
+    public BaseResponse<String> registerStore(HttpServletRequest request, HttpServletResponse response, @RequestBody StoreDto.RegistRequest dto) {
+        log.info("Registering store {}", dto);
         String token = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -52,7 +53,7 @@ public class StoreController {
         String emailUrl = claims.get("email", String.class);
         String storeId = storeService.registerStore(dto, emailUrl);
         String jwtToken = jwtTokenProvider.createToken(emailUrl, storeId);
-
+        log.info("jwt token {}", jwtToken);
         ResponseCookie cookie = ResponseCookie
                 .from("ATOKEN", jwtToken)
                 .path("/")
@@ -61,7 +62,7 @@ public class StoreController {
                 .maxAge(Duration.ofHours(1L))
                 .build();
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
+        log.info("set cookie");
 
 
         return BaseResponse.success("가게등록에 성공했습니다.");

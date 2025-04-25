@@ -96,6 +96,14 @@ pipeline {
                         name: wmthis-config
                     - secretRef:
                         name: wmthis-secret
+                  volumeMounts:
+                    - name: config-volume
+                        mountPath: /config
+                        readOnly: true
+              volumes:
+                - name: config-volume
+                  configMap:
+                    name: spring-config
         """
                             writeFile file: 'wmthis-deployment.yaml', text: deploymentYaml
                             sh 'kubectl apply -f wmthis-deployment.yaml'
@@ -105,4 +113,4 @@ pipeline {
 
     }
 }
-//s
+//쿠버
