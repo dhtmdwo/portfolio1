@@ -2,6 +2,7 @@ package com.example.be12fin5verdosewmthisbe.inventory.repository;
 
 import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 
+import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +21,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     Optional<Inventory> findTopByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(Long storeInventoryId);
 
 
+    Inventory findByStoreInventory(StoreInventory storeInventory);
+
+    List<Inventory> findAllByStoreInventory(StoreInventory storeInventory);
 }

@@ -2,7 +2,11 @@ package com.example.be12fin5verdosewmthisbe.order.service;
 
 import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
+import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
+import com.example.be12fin5verdosewmthisbe.inventory.model.ModifyInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
+import com.example.be12fin5verdosewmthisbe.inventory.repository.ModifyInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
@@ -50,6 +54,8 @@ public class OrderService {
     private final MenuRepository menuRepository;
     private final RecipeRepository recipeRepository;
     private final OptionValueRepository optionValueRepository;
+    private final InventoryRepository inventoryRepository;
+    private final ModifyInventoryRepository modifyInventoryRepository;
 
     @Transactional
     public OrderDto.OrderCreateResponse createOrder(OrderDto.OrderCreateRequest request, Long storeId) {
@@ -68,7 +74,6 @@ public class OrderService {
         int totalPrice = 0;
 
         for (OrderDto.OrderMenuRequest menuReq : request.getOrderMenus()) {
-            // menuId를 기반으로 주문된 메뉴(orderMenu)에 넣기
             Menu menu = menuRepository.findById(menuReq.getMenuId())
                     .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
             OrderMenu orderMenu = OrderMenu.builder()
@@ -80,21 +85,19 @@ public class OrderService {
 
             int menuTotal = menuReq.getPrice() * menuReq.getQuantity();
 
-            // 레시피 만큼 재고 차감하기
+            // 레시피만큼 재고 차감
             List<Recipe> recipes = recipeRepository.findAllByMenu(menu);
             for (Recipe recipe : recipes) {
                 List<StoreInventory> ingredients = storeInventoryRepository.findByStore_IdAndRecipeList(storeId, recipe);
-                for (StoreInventory ingredient : ingredients) {
-                    BigDecimal currentQuantity = ingredient.getQuantity();
-                    BigDecimal deduction = recipe.getQuantity().multiply(BigDecimal.valueOf(menuReq.getQuantity()));
-                    if (currentQuantity.compareTo(deduction) < 0) {
-                        throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
-                    }
-                    ingredient.setQuantity(currentQuantity.subtract(deduction));
-                    storeInventoryRepository.save(ingredient);
+
+                for (StoreInventory storeInventory : ingredients) {
+                    // 재고 차감: 유통기한 순으로 차감 처리
+                    BigDecimal remainingDeduction = recipe.getQuantity().multiply(BigDecimal.valueOf(menuReq.getQuantity()));
+                    deductInventory(storeInventory, remainingDeduction);
                 }
             }
-            // optionId를 기반으로 추가된 옵션(orderOption)에 넣기
+
+            // 옵션 차감
             for (Long optionId : menuReq.getOptionIds()) {
                 Option option = optionRepository.findById(optionId)
                         .orElseThrow(() -> new RuntimeException("Option not found"));
@@ -105,29 +108,86 @@ public class OrderService {
                         .build();
 
                 orderMenu.getOrderOptionList().add(orderOption);
-                menuTotal += option.getPrice() * menuReq.getQuantity(); // 수량 고려
+                menuTotal += option.getPrice() * menuReq.getQuantity();
 
-                List<OptionValue> options = optionValueRepository.findAllByOption(option);
-                for (OptionValue optionValue : options) {
-                    StoreInventory inventory = optionValue.getStoreInventory();
-
-                    BigDecimal currentQuantity = inventory.getQuantity();
-                    BigDecimal deduction = optionValue.getQuantity().multiply(BigDecimal.valueOf(menuReq.getQuantity())); // 수량 반영
-                    if (currentQuantity.compareTo(deduction) < 0) {
-                        throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
-                    }
-                    inventory.setQuantity(currentQuantity.subtract(deduction));
-                    storeInventoryRepository.save(inventory);
+                // 옵션 재고 차감
+                List<OptionValue> optionValues = optionValueRepository.findAllByOption(option);
+                for (OptionValue optionValue : optionValues) {
+                    StoreInventory optionInventory = optionValue.getStoreInventory();
+                    BigDecimal deduction = optionValue.getQuantity().multiply(BigDecimal.valueOf(menuReq.getQuantity()));
+                    deductInventory(optionInventory, deduction);
                 }
             }
+
             order.getOrderMenuList().add(orderMenu);
             totalPrice += menuTotal;
         }
+
         order.setTotalPrice(totalPrice);
         Order savedOrder = orderRepository.save(order);
 
-        return toOrderCreateResponse(savedOrder); // DTO로 변환하여 리턴
+        return toOrderCreateResponse(savedOrder);
     }
+
+    private void deductInventory(StoreInventory storeInventory, BigDecimal remainingDeduction) {
+        // StoreInventory 기준으로 Inventory 목록을 유통기한 기준으로 오름차순 정렬
+        List<Inventory> inventories = inventoryRepository.findAllByStoreInventory(storeInventory);
+        inventories.sort(Comparator.comparing(Inventory::getExpiryDate));
+
+        // 차감된 총량을 추적하기 위한 변수
+        BigDecimal totalDeducted = BigDecimal.ZERO;
+
+        // 마지막으로 차감된 Inventory를 추적
+        Inventory lastDeductedInventory = null;
+
+        // 모든 재고를 차감하기 전에 ModifyInventory 기록하지 않음
+        for (Inventory inv : inventories) {
+            BigDecimal currentQuantity = inv.getQuantity();
+
+            if (currentQuantity.compareTo(remainingDeduction) < 0) {
+                // 차감할 재고가 부족하면 재고를 0으로 설정
+                inv.setQuantity(BigDecimal.ZERO);
+                remainingDeduction = remainingDeduction.subtract(currentQuantity);
+
+                // 마지막 차감된 Inventory 업데이트
+                lastDeductedInventory = inv;
+            } else {
+                // 재고가 충분하면 차감
+                inv.setQuantity(currentQuantity.subtract(remainingDeduction));
+                remainingDeduction = BigDecimal.ZERO; // 차감이 완료되었으므로 남은 차감량 0으로 설정
+
+                // 마지막 차감된 Inventory 업데이트
+                lastDeductedInventory = inv;
+            }
+
+            inventoryRepository.save(inv);
+
+            // 차감된 양을 추적
+            totalDeducted = totalDeducted.add(currentQuantity.subtract(inv.getQuantity()));
+
+            // 모든 차감이 완료되었으면 더 이상 진행하지 않음
+            if (remainingDeduction.compareTo(BigDecimal.ZERO) <= 0) {
+                break;
+            }
+        }
+
+        // 모든 재고를 차감한 후에도 남은 차감할 양이 있다면 ModifyInventory에 기록
+        if (remainingDeduction.compareTo(BigDecimal.ZERO) > 0 && lastDeductedInventory != null) {
+            ModifyInventory modify = ModifyInventory.builder()
+                    .inventory(lastDeductedInventory) // 마지막 차감된 Inventory를 사용
+                    .modifyQuantity(remainingDeduction.negate()) // 부족한 수량을 음수로 기록
+                    .modifyDate(Timestamp.valueOf(LocalDateTime.now()))
+                    .build();
+            modifyInventoryRepository.save(modify);
+        }
+
+        // StoreInventory의 총량 수정
+        storeInventory.setQuantity(storeInventory.getQuantity().subtract(totalDeducted));
+        storeInventoryRepository.save(storeInventory);
+    }
+
+
+
 
     public List<OrderDto.AllOrderList> getOrdersByStoreId(Long storeId) {
         List<Order> orders = orderRepository.findByStoreId(storeId);
