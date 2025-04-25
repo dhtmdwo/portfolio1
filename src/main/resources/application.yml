@@ -19,7 +19,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true          # SQL 예쁘게 출력
@@ -55,10 +55,9 @@ coolsms:
   fromnumber: ${phone_number}
 
 management:
-  server:
-    base-path: /api/actuator
   endpoints:
     web:
+      base-path: /api/actuator  # ✅ 이게 맞습니다 (기존 server → endpoints.web)
       exposure:
         include: health
   endpoint:
