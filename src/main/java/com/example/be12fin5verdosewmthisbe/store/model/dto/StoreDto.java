@@ -27,18 +27,18 @@ public class StoreDto {
         private String phoneNumber;
         @DecimalMin(value = "-90", message = "위도는 -90 이상이어야 합니다.")
         @DecimalMax(value = "90", message = "위도는 90 이하이어야 합니다.")
-        private String latitude;
+        private Double latitude;
         @DecimalMin(value = "-180", message = "경도는 -180 이상이어야 합니다.")
         @DecimalMax(value = "180", message = "경도는 180 이하이어야 합니다.")
-        private String longitude;
+        private Double longitude;
 
-        public Store toEntity(User user,String latitude, String longitude){
+        public Store toEntity(User user,Double latitude,Double longitude){
             return Store.builder()
                     .name(name)
                     .address(address)
                     .phoneNumber(phoneNumber)
-                    .latitude(Double.parseDouble(latitude))
-                    .longitude(Double.parseDouble(longitude))
+                    .latitude(latitude)
+                    .longitude(longitude)
                     .user(user)
                     .build();
         }
