@@ -317,7 +317,7 @@ public class InventoryService {
     // 가장 먼저 써야 하는 재고 1개
     public Inventory getFirstInventoryToUse(Long storeInventoryId) {
         return inventoryRepository.findTopByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId)
-                .orElseThrow(() -> new RuntimeException("해당 storeInventory에 재고가 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.INSUFFICIENT_INVENTORY));
     }
 
 
