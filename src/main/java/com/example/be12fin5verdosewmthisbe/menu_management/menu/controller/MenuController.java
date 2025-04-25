@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -54,7 +55,7 @@ public class MenuController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PostMapping("/register")
-    public BaseResponse<String> createMenu(@RequestBody MenuRegisterDto.MenuCreateRequestDto requestDto, HttpServletRequest request) {
+    public BaseResponse<String> createMenu(@RequestBody @Valid MenuRegisterDto.MenuCreateRequestDto requestDto, HttpServletRequest request) {
         menuService.registerMenu(requestDto, getStoreId(request));
         return BaseResponse.success("Menu registered successfully");
     }
@@ -76,7 +77,7 @@ public class MenuController {
     public BaseResponse<String> updateMenu(
             @Parameter(description = "수정할 메뉴 ID와 정보", required = true,
                     schema = @Schema(implementation = MenuUpdateDto.RequestDto.class))
-            @RequestBody MenuUpdateDto.RequestDto updateDto, HttpServletRequest request) {
+            @RequestBody @Valid MenuUpdateDto.RequestDto updateDto, HttpServletRequest request) {
         menuService.updateMenu(updateDto.getMenuId(), updateDto, getStoreId(request));
         return BaseResponse.success("Menu updated successfully");
     }
@@ -176,7 +177,7 @@ public class MenuController {
     }
 
     @PostMapping("/menuSale")
-    public BaseResponse<List<MenuSaleDto.Response>> getSaleList(HttpServletRequest request, @RequestBody MenuSaleDto.DateRequest dto) {
+    public BaseResponse<List<MenuSaleDto.Response>> getSaleList(HttpServletRequest request, @RequestBody @Valid MenuSaleDto.DateRequest dto) {
 
         String token = null;
         if (request.getCookies() != null) {

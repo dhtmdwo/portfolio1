@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,9 +9,13 @@ import java.time.LocalDate;
 
 public class MenuSaleDto {
     @Getter
-    public static class DateRequest{
-        LocalDate startDate;
-        LocalDate endDate;
+    public static class DateRequest {
+
+        @NotNull(message = "시작 날짜는 필수입니다.")
+        private LocalDate startDate;
+
+        @NotNull(message = "종료 날짜는 필수입니다.")
+        private LocalDate endDate;
     }
 
     @Builder
