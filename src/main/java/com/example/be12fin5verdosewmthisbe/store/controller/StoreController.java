@@ -14,6 +14,7 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -34,7 +35,7 @@ public class StoreController {
     private final MarketService marketService;
 
     @PostMapping("/register")
-    public BaseResponse<String> registerStore(HttpServletRequest request, HttpServletResponse response, @RequestBody StoreDto.RegistRequest dto) {
+    public BaseResponse<String> registerStore(HttpServletRequest request, HttpServletResponse response, @RequestBody @Valid StoreDto.RegistRequest dto) {
 
         String token = null;
         if (request.getCookies() != null) {
