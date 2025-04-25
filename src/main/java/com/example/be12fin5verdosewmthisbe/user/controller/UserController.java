@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import com.example.be12fin5verdosewmthisbe.user.model.dto.PhoneVerificationDto;
 import com.example.be12fin5verdosewmthisbe.user.service.PhoneVerificationService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -32,7 +33,7 @@ public class UserController {
     private final PhoneVerificationService phoneVerificationService;
 
     @PostMapping("/signup")
-    public BaseResponse<UserRegisterDto.SignupResponse> signUp(@RequestBody UserRegisterDto.SignupRequest dto, HttpServletResponse response) {
+    public BaseResponse<UserRegisterDto.SignupResponse> signUp(@RequestBody @Valid UserRegisterDto.SignupRequest dto, HttpServletResponse response) {
         UserRegisterDto.SignupResponse signupResponse = userService.signUp(dto);
         String emailUrl = dto.getEmail();
         String jwtToken = jwtTokenProvider.createToken(emailUrl);
@@ -50,7 +51,7 @@ public class UserController {
     //회원가입
 
     @PostMapping("/login")
-    public BaseResponse<String> login(@RequestBody UserDto.LoginRequest dto, HttpServletResponse response) {
+    public BaseResponse<String> login(@RequestBody @Valid UserDto.LoginRequest dto, HttpServletResponse response) {
         User user = userService.login(dto.getEmail(), dto.getPassword());
         String emailUrl = dto.getEmail();
         boolean isStoreRegistered = userService.isStoreRegistered(emailUrl);
@@ -164,7 +165,7 @@ public class UserController {
     // 유저 정보 조회
 
     @PutMapping("/updateinfo")
-    public BaseResponse<String> updateInfo(@RequestBody UserInfoDto.UpdateRequest dto) {
+    public BaseResponse<String> updateInfo(@RequestBody @Valid UserInfoDto.UpdateRequest dto) {
         String result = userService.updateUserInfo(dto);
         return BaseResponse.success(result);
     }
@@ -195,20 +196,20 @@ public class UserController {
     // 유저 탈퇴
 
     @PutMapping("/updatepassword")
-    public BaseResponse<String> updatePassword(@RequestBody UserInfoDto.PasswordRequest dto) {
+    public BaseResponse<String> updatePassword(@RequestBody @Valid UserInfoDto.PasswordRequest dto) {
         String result = userService.updatePassword(dto);
         return BaseResponse.success(result);
     }
     // 새로운 비밀번호 만들기
 
     @PostMapping("/smssend")
-    public BaseResponse<String> sendCode(@RequestBody PhoneVerificationDto.SmsSendRequestDto dto) {
+    public BaseResponse<String> sendCode(@RequestBody @Valid PhoneVerificationDto.SmsSendRequestDto dto) {
         String code = phoneVerificationService.sendCertificationCode(dto.getPhoneNum());
         return BaseResponse.success(code);
     }
 
     @PostMapping("/phoneverify")
-    public BaseResponse<String> verifyCode(@RequestBody PhoneVerificationDto.VerifyRequestDto dto) {
+    public BaseResponse<String> verifyCode(@RequestBody @Valid PhoneVerificationDto.VerifyRequestDto dto) {
         phoneVerificationService.verifyCertificationCode(dto.getPhoneNum(), dto.getCode());
         return BaseResponse.success("인증 성공");
     }
