@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,7 +46,7 @@ public class OptionController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PostMapping("/register")
-    public BaseResponse<String> registerOption(@RequestBody OptionDto.RegisterRequestDto requestDto, HttpServletRequest request) {
+    public BaseResponse<String> registerOption(@RequestBody @Valid OptionDto.RegisterRequestDto requestDto, HttpServletRequest request) {
         optionService.registerOption(requestDto, getStoreId(request));
         return BaseResponse.success("옵션이 성공적으로 등록되었습니다.");
     }
@@ -65,7 +66,7 @@ public class OptionController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PutMapping
-    public BaseResponse<String> updateOption(@RequestBody OptionDto.UpdateRequestDto requestDto, HttpServletRequest request) {
+    public BaseResponse<String> updateOption(@RequestBody @Valid OptionDto.UpdateRequestDto requestDto, HttpServletRequest request) {
         optionService.updateOption(requestDto,getStoreId(request));
         return BaseResponse.success("옵션이 성공적으로 수정되었습니다.");
     }
