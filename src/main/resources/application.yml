@@ -55,6 +55,8 @@ coolsms:
   fromnumber: ${phone_number}
 
 management:
+  server:
+    base-path: /api/actuator
   endpoints:
     web:
       exposure:
