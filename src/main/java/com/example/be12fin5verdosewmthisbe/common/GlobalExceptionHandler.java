@@ -3,17 +3,36 @@ package com.example.be12fin5verdosewmthisbe.common;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<BaseResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(new BaseResponse<>(400, "Validation Failed", errors));
+    }
+
     @ExceptionHandler(CustomException.class)
-    public BaseResponse<String> handleCustomException(CustomException ex) {
+    public ResponseEntity<BaseResponse<Void>> handleCustomException(CustomException ex) {
         ErrorCode errorCode = ex.getErrorCode();
-        return BaseResponse.error(errorCode);
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(BaseResponse.error(errorCode));
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<BaseResponse<String>> handleException(Exception ex) {
