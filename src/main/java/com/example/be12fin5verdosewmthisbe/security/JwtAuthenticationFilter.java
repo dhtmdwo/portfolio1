@@ -37,7 +37,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.equals("/api/email/authcode") ||
                 path.equals("/api/user/smssend") ||
                 path.equals("/api/user/phoneverify") ||
-                path.equals("/api/user/isLogin")
+                path.equals("/api/user/isLogin") ||
+                path.equals("/api/store/register")
 
         )
         {
