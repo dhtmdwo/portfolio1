@@ -2,6 +2,7 @@ package com.example.be12fin5verdosewmthisbe.inventory.model.dto;
 
 import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +20,8 @@ import java.time.LocalDateTime;
     public class TotalInventoryDto {
 
     private Integer quantity;  // 입고 수량
-    private LocalDateTime createdAt;  // 입고 날짜 (purchaseDate)
+    private LocalDateTime createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd")// 입고 날짜 (purchaseDate)
     private LocalDate expiryDate;  // 유통기한 (expiryDate)
     private Long storeInventoryId;  // StoreInventory ID (어떤 재고인지)
     private Integer unitPrice;
