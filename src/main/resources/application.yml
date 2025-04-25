@@ -6,8 +6,8 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
-spring:
 
+spring:
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
@@ -38,14 +38,29 @@ spring:
           ssl:
             trust: smtp.gmail.com
     test-connection: true
+
 jwt:
   secret: ${SECRETKEY}
   expiration: 3600000 # 1 hour in ms
+
 portone:
   api:
     key: ${PORTONE_API_KEY}
     secret: ${SECRET_API_KEY}
+
 coolsms:
   apikey: ${api_key}
   apisecret: ${api_secret}
   fromnumber: ${phone_number}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+  health:
+    db:
+      enabled: true

@@ -85,13 +85,27 @@ public class InventoryService {
     }
 
 
-    public Inventory totalInventory(TotalInventoryDto dto, Long storeId) {
+    public Inventory totalInventory(TotalInventoryDto dto) {
         // StoreInventory 객체 찾기
         StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
+        LocalDate nowDate = LocalDate.now(); // 찐 유통기한
+        LocalDate expriyDate;
+        Integer expiryDateInt = dto.getExpiryDateInt();
+        if(dto.getExpiryDateInt() == -1){
+            expriyDate = nowDate.plusDays(storeInventory.getExpiryDate());
+        } // DB에 저장된 유통기한과 같을 때
+        else {
+            if(expiryDateInt == null){
+                throw new CustomException(ErrorCode.INVENTORY_REGISTER_FAIL);
+            }
+            else{
+                expriyDate = nowDate.plusDays(expiryDateInt);
+            }
+        } // DB에 저장된 유통기한과 다를 때
 
         // DTO를 Inventory 엔티티로 변환
-        Inventory inventory = dto.toEntity(storeInventory, dto);
+        Inventory inventory = dto.toEntity(storeInventory, dto, expriyDate);
 
         // Inventory 엔티티 저장
         Inventory savedInventory = inventoryRepository.save(inventory);
