@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,15 +39,14 @@ public class PaymentController {
     @ApiResponse(responseCode = "2003", description = "api 오류", content = @Content(schema = @Schema(implementation = BaseResponse.class, example = "{\"success\": false, \"data\": null, \"error\": {\"code\": \"PAYMENT_VERIFICATION_FAILED\", \"message\": \"결제 api의 Body가 비어있습니다.\"}}")))
     @ApiResponse(responseCode = "2004", description = "Access Token 발급 실패", content = @Content(schema = @Schema(implementation = BaseResponse.class, example = "{\"success\": false, \"data\": null, \"error\": {\"code\": \"PAYMENT_VERIFICATION_FAILED\", \"message\": \"Access Token 발급이 실패했습니다.\"}}")))
     @PostMapping("/verify")
-    public BaseResponse<String> verifyPayment(@Parameter(description = "결제 검증 요청 정보", required = true) @RequestBody PaymentDto.PaymentVerifyRequest request) {
+    public BaseResponse<String> verifyPayment(@Parameter(description = "결제 검증 요청 정보", required = true) @RequestBody @Valid PaymentDto.PaymentVerifyRequest request) {
 
 
         PaymentDto.PaymentData paymentData = paymentService.savePayment(request.getImpUid());
         InventoryPurchase inventoryPurchase = marketService.findPurchaseById(request.getInventoryPurchaseId());
 
-        //TODO inventoryPurchaseId로 구매할 재고의 희망가격 알아오기
         int amount = paymentData.getAmount();
-        int DBamount = inventoryPurchase.getPrice(); // 여기 바뀌어야함
+        int DBamount = inventoryPurchase.getPrice();
         // 금액 등 검증
         if (!request.getMerchantUid().equals(paymentData.getMerchantUid()) || amount != DBamount) {
             // 주문정보테이블 수정 - status = cancelled
@@ -65,7 +65,7 @@ public class PaymentController {
     @ApiResponse(responseCode = "200", description = "결제 취소 성공", content = @Content(schema = @Schema(implementation = BaseResponse.class, example = "{\"success\": true, \"data\": \"ok\", \"error\": null}")))
     @ApiResponse(responseCode = "2002", description = "결제 취소 실패", content = @Content(schema = @Schema(implementation = BaseResponse.class, example = "{\"success\": false, \"data\": null, \"error\": {\"code\": \"PAYMENT_VERIFICATION_FAILED\", \"message\": \"결제 취소가 실패했습니다.\"}}")))
     @PostMapping("/cancel")
-    public BaseResponse<String> cancelPayment(@Parameter(description = "결제 취소 요청 정보", required = true) @RequestBody PaymentCancelDto.RequestDto request) {
+    public BaseResponse<String> cancelPayment(@Parameter(description = "결제 취소 요청 정보", required = true) @RequestBody @Valid PaymentCancelDto.RequestDto request) {
 
         paymentService.cancelPayment(request.getImpUid(), request.getReason(),request.getAmount());
 

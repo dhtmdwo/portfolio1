@@ -10,6 +10,7 @@ import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +40,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/register")
-    public BaseResponse<String> registerCategory(@RequestBody CategoryDto.requestDto dto, HttpServletRequest request) {
+    public BaseResponse<String> registerCategory(@RequestBody @Valid CategoryDto.requestDto dto, HttpServletRequest request) {
         log.info("register");
         categoryService.register(dto,getStoreId(request));
         return BaseResponse.success("Category registered successfully");
@@ -52,7 +53,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PutMapping("/update")
-    public BaseResponse<String> updateCategory(@RequestBody CategoryDto.updateDto dto, HttpServletRequest request) {
+    public BaseResponse<String> updateCategory(@RequestBody  @Valid CategoryDto.updateDto dto, HttpServletRequest request) {
         categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds(),getStoreId(request));
         return BaseResponse.success("Category updated successfully");
     }
@@ -64,7 +65,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @DeleteMapping("/delete")
-    public BaseResponse<String> deleteCategory(@RequestBody CategoryDto.deleteDto dto) {
+    public BaseResponse<String> deleteCategory(@RequestBody @Valid  CategoryDto.deleteDto dto) {
         List<Long> ids = dto.getIds();
 
         for (Long id : ids) {
