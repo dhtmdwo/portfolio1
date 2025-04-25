@@ -63,6 +63,15 @@ management:
   endpoint:
     health:
       show-details: always
+      show-components: always
   health:
     db:
       enabled: true
+    mail:
+      enabled: false
+    diskspace:
+      enabled: false
+    ping:
+      enabled: false
+    ssl:
+      enabled: false
