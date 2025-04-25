@@ -24,7 +24,12 @@ import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -37,6 +42,8 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static ch.qos.logback.classic.spi.ThrowableProxyVO.build;
 
 @Service
 @RequiredArgsConstructor
@@ -76,49 +83,38 @@ public class InventoryService {
         }
     }
 
-    public StoreInventory totalInventory(InventoryDetailRequestDto dto) {
-        // 이름 중복 검사
-        if (storeInventoryRepository.existsByName(dto.getName())) {
-            throw new CustomException(ErrorCode.INVENTORY_DUPLICATE_NAME);
-        }
 
-        try {
-            StoreInventory newStoreInventory = StoreInventory.builder()
-                    .name(dto.getName())
-                    .miniquantity(dto.getMiniquantity())
-                    .unit(dto.getUnit())
-                    .quantity(BigDecimal.valueOf(10.2))
-                    .expiryDate(dto.getExpiryDate())
-                    .build();
-
-            return storeInventoryRepository.save(newStoreInventory);
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.INVENTORY_REGISTER_FAIL);
-        }
-    }
-
-    public Inventory DetailInventory(InventoryDto dto) {
+    public Inventory totalInventory(TotalInventoryDto dto, Long storeId) {
+        // StoreInventory 객체 찾기
         StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
-                .orElseThrow(()-> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
 
-        Integer unitPrice = new BigDecimal(dto.getTotalPrice()).divide(dto.getQuantity(),2, RoundingMode.CEILING).intValue();
-        Timestamp purchaseDate = dto.getPurchaseDate();
-        LocalDate expiryDate = purchaseDate.toLocalDateTime().toLocalDate().plusDays(storeInventory.getExpiryDate());
-        Inventory newInventory = Inventory.builder()
-                .purchaseDate(dto.getPurchaseDate())
-                .expiryDate(expiryDate)
-                .quantity(dto.getQuantity())
-                .unitPrice(unitPrice)
-                .storeInventory(storeInventory)
-                .build();
-        return inventoryRepository.save(newInventory);
-    }
-    // ID로 기존 재고 조회
-    public StoreInventory findById(Long inventoryId) {
-        return storeInventoryRepository.findById(inventoryId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+        // DTO를 Inventory 엔티티로 변환
+        Inventory inventory = dto.toEntity(storeInventory, dto);
+
+        // Inventory 엔티티 저장
+        Inventory savedInventory = inventoryRepository.save(inventory);
+
+        // StoreInventory 객체 업데이트 (입고 후 재고 수량 업데이트)
+        storeInventory.setQuantity(storeInventory.getQuantity().add(savedInventory.getQuantity()));
+        storeInventoryRepository.save(storeInventory);
+
+        return savedInventory;  // 등록된 Inventory 객체 반환
     }
 
+
+    @Transactional
+    public List<InventoryDto> getDetailInventoryList(Long storeId) {
+        Optional<Inventory> inventoryList = inventoryRepository.findById(storeId);
+
+        return inventoryList.stream().map(inventory -> InventoryDto.builder()
+                .storeInventoryId(inventory.getStoreInventory().getStoreinventoryId())
+                .totalPrice(inventory.getQuantity().multiply(BigDecimal.valueOf(inventory.getUnitPrice())).intValue())
+                .purchaseDate(inventory.getPurchaseDate())
+                .quantity(inventory.getQuantity())
+                .build()
+        ).collect(Collectors.toList());
+    }
     public StoreInventory updateInventory(Long inventoryId, InventoryDetailRequestDto dto) {
         try {
             StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
@@ -168,19 +164,27 @@ public class InventoryService {
 
     @Transactional
     public List<InventoryInfoDto.Response> getInventoryList(Long storeId) {
-
+        // StoreInventory 리스트를 가져옵니다.
         List<StoreInventory> inventoryList = storeInventoryRepository.findInventoryListByStore(storeId);
         List<InventoryInfoDto.Response> inventoryResponseList = new ArrayList<>();
 
+        // inventoryList를 순회하며 Response 객체로 변환합니다.
         for (StoreInventory inventory : inventoryList) {
             String name = inventory.getName();
             BigDecimal quantity = inventory.getQuantity();
             String unit = inventory.getUnit();
+            Integer expiryDate = inventory.getExpiryDate();  // expiryDate 필드 값 가져오기
+
+            // Response 객체 생성
             InventoryInfoDto.Response inventoryResponse = InventoryInfoDto.Response.of(name, quantity, unit);
+
+            // 리스트에 추가
             inventoryResponseList.add(inventoryResponse);
         }
-        return(inventoryResponseList);
+
+        return inventoryResponseList;  // 변환된 리스트 반환
     }
+
 
     @Transactional
     public List<InventoryChangeDto.Response> getSaleList(Long storeId, InventoryChangeDto.DateRequest dto) {
@@ -209,6 +213,7 @@ public class InventoryService {
         }
         return(menuSaleList);
     }
+
 
     @Transactional
     public List<InventoryChangeDto.Response> getMarketList(Long storeId, InventoryChangeDto.DateRequest dto) {
