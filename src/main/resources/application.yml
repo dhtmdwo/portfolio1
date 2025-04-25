@@ -1,6 +1,5 @@
 server:
-  port: 8081
-
+  port: 8080
 springdoc:
   api-docs:
     enabled: true
@@ -9,6 +8,7 @@ springdoc:
     path: /swagger-ui.html
 
 spring:
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
