@@ -128,7 +128,6 @@ public class OrderService {
 
         return toOrderCreateResponse(savedOrder);
     }
-
     private void deductInventory(StoreInventory storeInventory, BigDecimal remainingDeduction) {
         // StoreInventory 기준으로 Inventory 목록을 유통기한 기준으로 오름차순 정렬
         List<Inventory> inventories = inventoryRepository.findAllByStoreInventory(storeInventory);
@@ -140,7 +139,7 @@ public class OrderService {
         // 마지막으로 차감된 Inventory를 추적
         Inventory lastDeductedInventory = null;
 
-        // 모든 재고를 차감하기 전에 ModifyInventory 기록하지 않음
+        // 재고 차감
         for (Inventory inv : inventories) {
             BigDecimal currentQuantity = inv.getQuantity();
 
@@ -181,10 +180,11 @@ public class OrderService {
             modifyInventoryRepository.save(modify);
         }
 
-        // StoreInventory의 총량 수정
+        // StoreInventory의 총량 수정: 차감된 양만큼 반영
         storeInventory.setQuantity(storeInventory.getQuantity().subtract(totalDeducted));
         storeInventoryRepository.save(storeInventory);
     }
+
 
 
 
