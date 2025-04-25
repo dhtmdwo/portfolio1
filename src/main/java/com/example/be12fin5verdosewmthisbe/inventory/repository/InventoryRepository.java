@@ -18,6 +18,15 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
     // 유통기한이 가장 짧은 것 하나만 반환
     Optional<Inventory> findTopByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(Long storeInventoryId);
+    List<Inventory> findByStoreInventory_Store_Id(Long storeId);
 
+    @Query("""
+        SELECT DISTINCT i FROM Inventory i
+        JOIN FETCH i.storeInventory si
+        JOIN FETCH si.store s
+        WHERE s.id = :storeId       
+        AND i.inventoryId = :inventoryId
+    """)
+    List<Inventory> findByStoreInventoryStoreIdANDStoreInAndInventoryId(@Param("storeId") Long storeId, @Param("inventoryId") Long inventoryId);
 
 }

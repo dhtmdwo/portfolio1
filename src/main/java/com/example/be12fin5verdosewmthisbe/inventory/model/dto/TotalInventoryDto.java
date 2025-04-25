@@ -21,7 +21,8 @@ import java.time.LocalDateTime;
 
     private Integer quantity;  // 입고 수량
     private LocalDateTime createdAt;
-    @JsonFormat(pattern = "yyyy-MM-dd")// 입고 날짜 (purchaseDate)
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Timestamp purchaseDate;// 입고 날짜 (purchaseDate)
     private LocalDate expiryDate;  // 유통기한 (expiryDate)
     private Long storeInventoryId;  // StoreInventory ID (어떤 재고인지)
     private Integer unitPrice;
@@ -35,5 +36,6 @@ import java.time.LocalDateTime;
                 .storeInventory(storeInventory)  // 해당 StoreInventory 객체를 연결
                 .build();
     }
+
 }
 

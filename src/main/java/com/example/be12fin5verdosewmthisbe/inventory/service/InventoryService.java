@@ -44,6 +44,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static ch.qos.logback.classic.spi.ThrowableProxyVO.build;
+import static kotlinx.datetime.LocalDateTimeKt.toLocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -115,6 +116,7 @@ public class InventoryService {
                 .build()
         ).collect(Collectors.toList());
     }
+
     public StoreInventory updateInventory(Long inventoryId, InventoryDetailRequestDto dto) {
         try {
             StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
@@ -183,6 +185,21 @@ public class InventoryService {
         }
 
         return inventoryResponseList;  // 변환된 리스트 반환
+    }
+
+    @Transactional
+    public List<TotalResponseDto.Response> getDetailedTotalInventoryList(Long storeId, Long storeInventoryId) {
+        List<Inventory> inventoryList = inventoryRepository.findByStoreInventoryStoreIdANDStoreInAndInventoryId(storeId, storeInventoryId);
+        List<TotalResponseDto.Response> responseTotalInventoryList = new ArrayList<>();
+        for(Inventory inventory : inventoryList) {
+            LocalDate purhcaseDate = inventory.getPurchaseDate().toLocalDateTime().toLocalDate();
+            TotalResponseDto.Response response = TotalResponseDto.Response.of(
+                    purhcaseDate, inventory.getExpiryDate(),
+                    inventory.getQuantity());
+            responseTotalInventoryList.add(response);
+        }
+
+        return responseTotalInventoryList;
     }
 
 
