@@ -63,17 +63,17 @@ public class InventoryController {
 
 
     //dto로 정보 받아서Inventory 저장
-    @PostMapping("/DetailInventory")
-    public BaseResponse<String> DetailInventory(@RequestBody InventoryDto dto) {
-        inventoryService.DetailInventory(dto);
-        return BaseResponse.success("ok");
+    @GetMapping("/DetailInventory/{storeId}")
+    public BaseResponse<List<InventoryDto>> getDetailInventoryList(@PathVariable Long storeId) {
+        List<InventoryDto> list = inventoryService.getDetailInventoryList(storeId);
+        return BaseResponse.success(list);
     }
 
-    @GetMapping("/storeInventory/{storeinventoryId}")
-    public BaseResponse<StoreInventory> getInventoryById(@PathVariable Long storeinventoryId) {
-        StoreInventory inventory = inventoryService.findById(storeinventoryId);
-        return BaseResponse.success(inventory);
-    }
+//    @GetMapping("/storeInventory/{storeinventoryId}")
+//    public BaseResponse<StoreInventory> getInventoryById(@PathVariable Long storeinventoryId) {
+//        StoreInventory inventory = inventoryService.findById(storeinventoryId);
+//        return BaseResponse.success(inventory);
+//    }
 
     @PutMapping("/storeInventory/{storeinventoryId}")
     public BaseResponse<StoreInventory> updateInventory(

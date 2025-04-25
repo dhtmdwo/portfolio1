@@ -79,6 +79,7 @@ public class InventoryService {
         }
     }
 
+
     public Inventory totalInventory(TotalInventoryDto dto, Long storeId) {
         // StoreInventory 객체 찾기
         StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
@@ -98,28 +99,18 @@ public class InventoryService {
     }
 
 
-    public Inventory DetailInventory(InventoryDto dto) {
-        StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
-                .orElseThrow(()-> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+    @Transactional
+    public List<InventoryDto> getDetailInventoryList(Long storeId) {
+        Optional<Inventory> inventoryList = inventoryRepository.findById(storeId);
 
-        Integer unitPrice = new BigDecimal(dto.getTotalPrice()).divide(dto.getQuantity(),2, RoundingMode.CEILING).intValue();
-        Timestamp purchaseDate = dto.getPurchaseDate();
-        LocalDate expiryDate = purchaseDate.toLocalDateTime().toLocalDate().plusDays(storeInventory.getExpiryDate());
-        Inventory newInventory = Inventory.builder()
-                .purchaseDate(dto.getPurchaseDate())
-                .expiryDate(expiryDate)
-                .quantity(dto.getQuantity())
-                .unitPrice(unitPrice)
-                .storeInventory(storeInventory)
-                .build();
-        return inventoryRepository.save(newInventory);
+        return inventoryList.stream().map(inventory -> InventoryDto.builder()
+                .storeInventoryId(inventory.getStoreInventory().getStoreinventoryId())
+                .totalPrice(inventory.getQuantity().multiply(BigDecimal.valueOf(inventory.getUnitPrice())).intValue())
+                .purchaseDate(inventory.getPurchaseDate())
+                .quantity(inventory.getQuantity())
+                .build()
+        ).collect(Collectors.toList());
     }
-    // ID로 기존 재고 조회
-    public StoreInventory findById(Long inventoryId) {
-        return storeInventoryRepository.findById(inventoryId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
-    }
-
     public StoreInventory updateInventory(Long inventoryId, InventoryDetailRequestDto dto) {
         try {
             StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
