@@ -61,11 +61,32 @@ public class InventoryController {
         return BaseResponse.success("ok");
     }
 
-
     //dto로 정보 받아서Inventory 저장
     @GetMapping("/DetailInventory/{storeId}")
     public BaseResponse<List<InventoryDto>> getDetailInventoryList(@PathVariable Long storeId) {
         List<InventoryDto> list = inventoryService.getDetailInventoryList(storeId);
+        return BaseResponse.success(list);
+    }
+
+    //dto로 정보 받아서Inventory 저장
+    @GetMapping("/totalInventory/{storeInventoryId}")
+    public BaseResponse<List<TotalResponseDto.Response>> getDetailedTotalInventoryList(HttpServletRequest request, @PathVariable Long storeInventoryId) {
+        String token = null;
+
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+
+        // 입고 내역 리스트 조회
+        List<TotalResponseDto.Response> list = inventoryService.getDetailedTotalInventoryList(storeId, storeInventoryId);
         return BaseResponse.success(list);
     }
 
