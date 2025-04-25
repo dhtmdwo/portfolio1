@@ -11,6 +11,7 @@ public class UserRegisterDto {
     public static class SignupRequest {
 
         @NotBlank(message = "이름은 필수입니다.")
+        @Size(min = 1, max = 100, message = "이름은 1~100자 사이여야 합니다.")
         private String name;
 
         @NotBlank(message = "이메일은 필수입니다.")
@@ -32,7 +33,7 @@ public class UserRegisterDto {
         private String businessNumber;
 
         @NotBlank(message = "전화번호는 필수입니다.")
-        @Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "전화번호는 010-xxxx-xxxx 형식이어야 합니다.")
+        @Pattern(regexp = "^(01[0-9])-([0-9]{3,4})-([0-9]{4})$", message = "전화번호는 01x-xxxx-xxxx 형식이어야 합니다.")
         private String phoneNumber;
 
         @NotBlank(message = "주민등록번호는 필수입니다.")
