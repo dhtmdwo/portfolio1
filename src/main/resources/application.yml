@@ -8,6 +8,7 @@ springdoc:
     path: /swagger-ui.html
 
 spring:
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}

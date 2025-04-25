@@ -44,18 +44,18 @@ public class InventoryController {
     }
 
     @PostMapping("/totalInventory")
-    public BaseResponse<String> totalInventory(@RequestBody TotalInventoryDto dto) {
-//        String token = null;
-//        if (request.getCookies() != null) {
-//            for (Cookie cookie : request.getCookies()) {
-//                if ("ATOKEN".equals(cookie.getName())) {
-//                    token = cookie.getValue();
-//                    break;
-//                }
-//            }
-//        }
-//        Claims claims = jwtTokenProvider.getClaims(token);
-//        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+    public BaseResponse<String> totalInventory(HttpServletRequest request, @RequestBody TotalInventoryDto dto) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
 
         inventoryService.totalInventory(dto);
         return BaseResponse.success("ok");
@@ -95,6 +95,7 @@ public class InventoryController {
 //        StoreInventory inventory = inventoryService.findById(storeinventoryId);
 //        return BaseResponse.success(inventory);
 //    }
+    //
 
     @PutMapping("/storeInventory/{storeinventoryId}")
     public BaseResponse<StoreInventory> updateInventory(
