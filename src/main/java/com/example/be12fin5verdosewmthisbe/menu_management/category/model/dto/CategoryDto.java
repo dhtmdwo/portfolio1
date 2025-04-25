@@ -3,6 +3,7 @@ package com.example.be12fin5verdosewmthisbe.menu_management.category.model.dto;
 import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Category;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.util.List;
@@ -13,13 +14,19 @@ public class CategoryDto {
     @Schema(description = "카테고리 등록 요청 DTO")
     @Getter
     public static class requestDto {
+
+        @NotBlank(message = "카테고리 이름은 필수입니다.")
         @Schema(description = "카테고리 이름", example = "한식")
         private String name;
+
+        @NotBlank(message = "optionIds는 필수입니다.")
         private List<Long> optionIds;
     }
     @Schema(description = "카테고리 삭제 요청 DTO")
     @Getter
     public static class deleteDto {
+
+        @NotBlank(message = "ids는 필수입니다.")
         @Schema(description = "카테고리 아이디", example = "한식")
         private List<Long> ids;
     }
@@ -30,8 +37,13 @@ public class CategoryDto {
     @Getter
     @Setter
     public static class updateDto {
+        @NotBlank(message = "id는 필수입니다.")
         private Long id;
+
+        @NotBlank(message = "newName은 필수입니다.")
         private String newName;
+
+        @NotBlank(message = "optionIds는 필수입니다.")
         private List<Long> optionIds;
     }
 
