@@ -37,8 +37,8 @@ public class Menu {
     private Store store;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    @OnDelete(action = OnDeleteAction.SET_NULL) // 선택 사항: DB에서도 ON DELETE SET NULL 하고 싶다면
+    @JoinColumn(name = "category_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), nullable = true)  // nullable true 추가
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Category category;
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -251,9 +251,13 @@ public class MenuService {
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
 
         // 2. 카테고리 조회 및 변경
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
-        menu.setCategory(category);
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+            menu.setCategory(category);
+        } else {
+            menu.setCategory(null); // 카테고리 없을 경우 null로 설정
+        }
 
         // 3. 기본 정보 수정
         menu.setName(dto.getName());
