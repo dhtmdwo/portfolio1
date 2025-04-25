@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
     // 입고 수량
     @JsonFormat(pattern = "yyyy-MM-dd")// 입고 날짜 (purchaseDate)
     private Integer expiryDateInt;  // 유통기한 (expiryDate)
-
     private Long storeInventoryId;  // StoreInventory ID (어떤 재고인지)
 
     private Integer unitPrice;
@@ -37,5 +36,6 @@ import java.time.LocalDateTime;
                 .storeInventory(storeInventory)  // 해당 StoreInventory 객체를 연결
                 .build();
     }
+
 }
 
