@@ -2,6 +2,7 @@ package com.example.be12fin5verdosewmthisbe.market_management.market.model.dto;
 
 
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,11 +16,25 @@ public class InventorySaleDto {
 
     @Data
     public static class InventorySaleRequestDto {
+
+        @NotNull(message = "재고 ID는 필수입니다.")
         private Long storeInventoryId;
+
+        @NotNull(message = "수량은 필수입니다.")
+        @DecimalMin(value = "0.01", inclusive = true, message = "수량은 0보다 커야 합니다.")
         private BigDecimal quantity;
+
+        @Min(value = 1, message = "가격은 1 이상이어야 합니다.")
         private int price;
+
+        @NotBlank(message = "상품 설명은 필수입니다.")
         private String content;
-        private List<String> imageUrls;
+
+
+        @NotNull(message = "이미지 리스트는 필수입니다.")
+        @Size(min = 1, message = "이미지 리스트에는 최소 1개의 이미지가 포함되어야 합니다.")
+        private List<@NotBlank(message = "이미지 URL은 비어 있을 수 없습니다.") String> imageUrls;
+
     }
     @Data
     @Builder

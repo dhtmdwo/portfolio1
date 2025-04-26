@@ -5,6 +5,8 @@ import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryMenuUsageDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +18,9 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
     boolean existsByName(String name);
 
     List<StoreInventory> findByStore_Id(Long storeId);
+    Page<StoreInventory> findPageByStore_Id(Long storeId, Pageable pageable);
+
+
 
     @Query("""
         SELECT DISTINCT sm FROM StoreInventory sm

@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.market_management.market.model.dto;
 
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -9,11 +10,22 @@ import java.sql.Timestamp;
 public class InventoryPurchaseDto {
     @Data
     public static class InventoryPurchaseRequestDto {
-        private Long inventorySaleId;     // 어떤 판매에 연결할지
+        @NotNull(message = "판매 항목 ID는 필수입니다.")
+        private Long inventorySaleId;
+
+        @NotBlank(message = "재고 이름은 필수입니다.")
         private String inventoryName;
+
+        @NotNull(message = "수량은 필수입니다.")
+        @DecimalMin(value = "0.01", inclusive = true, message = "수량은 0보다 커야 합니다.")
         private BigDecimal quantity;
+
+        @Min(value = 1, message = "가격은 1 이상이어야 합니다.")
         private int price;
-        private String method;            // 예: "credit_card", "cash"
+
+        @NotBlank(message = "결제 방법은 필수입니다.")
+        @Pattern(regexp = "credit_card|kakaopay|cash", message = "결제 방법은 credit_card, kakaopay, cash 중 하나여야 합니다.")
+        private String method;
     }
     @Data
     public static class InventoryPurchaseResponseDto {
