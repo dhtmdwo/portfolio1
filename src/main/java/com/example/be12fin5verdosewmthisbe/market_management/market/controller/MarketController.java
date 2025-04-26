@@ -15,6 +15,7 @@ import com.example.be12fin5verdosewmthisbe.store.service.StoreService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,7 +39,7 @@ public class MarketController {
     private final InventoryService inventoryService;
 
     @PostMapping("/registerSale")
-    public BaseResponse<String> registerInventorySale(@RequestBody InventorySaleDto.InventorySaleRequestDto dto, HttpServletRequest request) {
+    public BaseResponse<String> registerInventorySale(@RequestBody @Valid InventorySaleDto.InventorySaleRequestDto dto, HttpServletRequest request) {
         Inventory inventory = inventoryService.getFirstInventoryToUse(dto.getStoreInventoryId());
         marketService.saleRegister(dto,getStoreId(request),inventory);
 
@@ -46,7 +47,7 @@ public class MarketController {
     }
 
     @PostMapping("/registerPurchase")
-    public BaseResponse<String> registerInventoryPurchase(@RequestBody InventoryPurchaseDto.InventoryPurchaseRequestDto dto, HttpServletRequest request) {
+    public BaseResponse<String> registerInventoryPurchase(@RequestBody @Valid InventoryPurchaseDto.InventoryPurchaseRequestDto dto, HttpServletRequest request) {
         marketService.purchaseRegister(dto, getStoreId(request));
         return BaseResponse.success("ok");
     }

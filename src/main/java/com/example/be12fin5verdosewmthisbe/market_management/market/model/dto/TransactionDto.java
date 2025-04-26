@@ -34,6 +34,4 @@ public class TransactionDto {
 
     private LocalDate createdAt;
 
-    
-
 }
