@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./src/assets/image/icon.png" alt="logo" width="550">
+  <img src="./readme-images/icon.png" alt="logo" width="550">
 </div>
 
 ---
@@ -26,10 +26,10 @@
       <th>김유진</th>
     </tr>
     <tr>
-      <td><img src="./src/assets/image/no.webp" width="100" height="100"/></td>
-      <td><img src="./src/assets/image/honoka.webp" width="100" height="100"/></td>
-      <td><img src="./src/assets/image/ni.webp" width="100" height="100"/></td>
-      <td><img src="./src/assets/image/eri.webp" width="100" height="100"/></td>
+      <td><img src="./readme-images/no.webp" width="100" height="100"/></td>
+       <td><img src="./readme-images/honoka.webp" width="100" height="100"/></td>
+       <td><img src="./readme-images/ni.webp" width="100" height="100"/></td>
+       <td><img src="./readme-images/eri.webp" width="100" height="100"/></td>
     </tr>
     <tr>
       <td><a href="https://github.com/chan0o0seo">@chan0o0seo</a></td>
@@ -46,7 +46,7 @@
 
 # 🔧 기술 스택
 
-### Frontend
+### Backend
 
 <img src="https://img.shields.io/badge/Vue.js-%2335495e?style=&logo=vuedotjs&logoColor=%234FC08D">&nbsp;
 <img src="https://img.shields.io/badge/Vuetify-purple">&nbsp;
@@ -249,7 +249,7 @@
 
 # 📜 프로젝트 설계
 
-[**🎨 화면설계서 바로가기**](https://www.figma.com/design/UhQdny2lyLYVBKfeSDM0ER/Untitled?node-id=0-1&p=f&t=BJpdqml8x7np3fWT-0)
+[**🎨 ERD 바로가기**](https://www.figma.com/design/UhQdny2lyLYVBKfeSDM0ER/Untitled?node-id=0-1&p=f&t=BJpdqml8x7np3fWT-0)
 
 [**📃 API 명세서 바로가기**](http://www.cheeeze.kro.kr/swagger-ui/index.html)
 
@@ -261,6 +261,6 @@
 
 > 자세한 내용은 Wiki에서 확인할 수 있습니다.
 
-### ▶ [**Wiki 바로가기**](https://github.com/beyond-sw-camp/be12-fin-5verdose-WMTHIS-FE/wiki)
+### ▶ [**Wiki 바로가기**](https://github.com/beyond-sw-camp/be12-fin-5verdose-WMTHIS-BE/wiki)
 
 <br>
