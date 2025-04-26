@@ -211,7 +211,7 @@
 휴대폰 인증의 경우, 여러 번 시도하면 요금이 발생할 수 있습니다.  
 임시로 콘솔 창에 **휴대폰 인증 번호**가 나타나도록 설정해두었습니다.
 
-<img src="./src/assets/image/phoneverify.png" width="500" height="300"/>
+<img src="./readme-images/phoneverify.png" width="500" height="300"/>
 
 ### 📦 **재고 관리 관련 설명**
 
