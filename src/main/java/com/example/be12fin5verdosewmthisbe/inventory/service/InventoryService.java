@@ -160,11 +160,9 @@ public class InventoryService {
             throw new CustomException(ErrorCode.INVENTORY_DELETE_FAIL);
         }
     }
-    public List<StoreInventoryDto.responseDto> getAllStoreInventories(Long storeId) {
-        return storeInventoryRepository.findByStore_Id(storeId)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    public Page<StoreInventoryDto.responseDto> getAllStoreInventories(Long storeId, Pageable pageable) {
+        return storeInventoryRepository.findPageByStore_Id(storeId, pageable)
+                .map(this::toDto);
     }
 
     private StoreInventoryDto.responseDto toDto(StoreInventory storeInventory) {
