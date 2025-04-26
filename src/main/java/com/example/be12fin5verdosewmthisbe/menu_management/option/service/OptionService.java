@@ -4,6 +4,7 @@ import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegisterDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.dto.OptionDto;
@@ -16,8 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +44,12 @@ public class OptionService {
         Optional<Option> duplicate = optionRepository.findByStoreIdAndName(storeId,request.getName());
         if(duplicate.isPresent()) {
             throw new CustomException(ErrorCode.OPTION_ALREADY_EXIST);
+        }
+        Set<Long> uniqueStoreInventoryIds = new HashSet<>();
+        for (OptionDto.InventoryQuantityDto ingredient : request.getInventoryQuantities()) {
+            if (!uniqueStoreInventoryIds.add(ingredient.getInventoryId())) {
+                throw new CustomException(ErrorCode.DUPLICATE_INGREDIENT_IN_RECIPE);
+            }
         }
 
         Option option = Option.builder()
@@ -81,6 +90,12 @@ public class OptionService {
         Optional<Option> duplicate = optionRepository.findByStoreIdAndName(storeId,request.getName());
         if(duplicate.isPresent() && !duplicate.get().getName().equals(request.getName())) {
             throw new CustomException(ErrorCode.OPTION_ALREADY_EXIST);
+        }
+        Set<Long> uniqueStoreInventoryIds = new HashSet<>();
+        for (OptionDto.InventoryQuantityDto ingredient : request.getInventoryQuantities()) {
+            if (!uniqueStoreInventoryIds.add(ingredient.getInventoryId())) {
+                throw new CustomException(ErrorCode.DUPLICATE_INGREDIENT_IN_RECIPE);
+            }
         }
 
         // 이름, 가격 업데이트
