@@ -19,5 +19,16 @@ public class InventoryDto {
     private Timestamp purchaseDate;
     private BigDecimal quantity;
 
+    @Data
+    public static class InventoryRegisterDto {
+        // 입고할 재고
+        private Long storeInventoryId;
+        // 입고할 재고의 수량
+        private BigDecimal quantity;
+        // 입고할 재고의 가격
+        private Integer price;
+
+    }
+
 }
         

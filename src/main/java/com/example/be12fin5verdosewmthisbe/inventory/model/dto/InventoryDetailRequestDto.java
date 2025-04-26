@@ -16,8 +16,7 @@ import java.sql.Timestamp;
 @Getter
 @Builder
 public class InventoryDetailRequestDto {
-
-    private Long inventoryId;
+    private Long storeInventoryId;
 
 
     @NotBlank(message = "재고명은 필수입니다.")
@@ -36,13 +35,5 @@ public class InventoryDetailRequestDto {
     @Schema(description = "용량/단위", required = true, example = "12kg")
     private String unit;
 
-    public StoreInventory toEntity() {
-        return StoreInventory.builder()
-                .storeinventoryId(this.inventoryId)
-                .name(this.name)
-                .expiryDate(this.expiryDate)
-                .miniquantity(this.miniquantity)
-                .unit(this.unit)
-                .build();
-    }
+
 }

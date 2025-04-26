@@ -5,6 +5,7 @@ import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryMenuUsageDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,10 +16,11 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public interface StoreInventoryRepository extends JpaRepository<StoreInventory, Long> {
-    boolean existsByName(String name);
+    boolean existsByStore_IdAndName(Long store_id, String name);
 
     List<StoreInventory> findByStore_Id(Long storeId);
-    Page<StoreInventory> findPageByStore_Id(Long storeId, Pageable pageable);
+    Page<StoreInventory> findByStore_IdAndNameContaining(Long storeId, String keyword, Pageable pageable);
+
 
 
 
@@ -73,7 +75,7 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
         si.name,
         SUM(CAST(r.quantity * om.quantity AS BIGDECIMAL)),
         si.unit,
-        si.storeinventoryId
+        si.id
     )
     FROM StoreInventory si
     JOIN si.recipeList r
@@ -82,7 +84,7 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
     JOIN om.order o
     WHERE si.store.id = :storeId
     AND o.createdAt BETWEEN :start AND :end
-    GROUP BY si.name, si.unit, si.storeinventoryId
+    GROUP BY si.name, si.unit, si.id
     ORDER BY SUM(r.quantity * om.quantity) DESC
 """)
     List<InventoryMenuUsageDto> findAllMenuSaleInventoryByStoreAndPeroid(
@@ -93,6 +95,7 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
 
     List<StoreInventory> findByStore_IdAndRecipeList(Long storeId, Recipe recipeList);
 
-    StoreInventory findStoreInventoryByStore_Id(Long id);
+
+    boolean existsByNameAndIdNot(@NotBlank(message = "재고명은 필수입니다.") String name, Long id);
 }
 

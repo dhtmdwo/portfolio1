@@ -21,7 +21,7 @@ public class InventoryUpdateResponseDto {
 
     public static InventoryUpdateResponseDto from(StoreInventory inventory) {
         return InventoryUpdateResponseDto.builder()
-                .storeInventoryid(inventory.getStoreinventoryId())
+                .storeInventoryid(inventory.getId())
                 .name(inventory.getName())
                 .miniquantity(inventory.getMiniquantity())
                 .unit(inventory.getUnit())

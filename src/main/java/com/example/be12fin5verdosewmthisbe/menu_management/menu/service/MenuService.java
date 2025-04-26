@@ -67,6 +67,13 @@ public class MenuService {
             throw new CustomException(ErrorCode.MENU_ALREADY_EXIST);
         }
 
+        Set<Long> uniqueStoreInventoryIds = new HashSet<>();
+        for (MenuRegisterDto.MenuCreateRequestDto.IngredientDto ingredient : dto.getIngredients()) {
+            if (!uniqueStoreInventoryIds.add(ingredient.getStoreInventoryId())) {
+                throw new CustomException(ErrorCode.DUPLICATE_INGREDIENT_IN_RECIPE);
+            }
+        }
+
 
         // 1. 카테고리 조회 (nullable 허용)
         Category category = null;
@@ -204,7 +211,7 @@ public class MenuService {
                 .map(recipe -> {
                     StoreInventory inventory = recipe.getStoreInventory();
                     return MenuDto.IngredientInfoDto.builder()
-                            .storeInventoryId(inventory.getStoreinventoryId())
+                            .storeInventoryId(inventory.getId())
                             .name(inventory.getName())
                             .quantity(recipe.getQuantity())
                             .unit(inventory.getUnit())
@@ -244,6 +251,12 @@ public class MenuService {
         Optional<Menu> duplicate = menuRepository.findByStoreIdAndName(storeId, dto.getName());
         if(duplicate.isPresent() && !duplicate.get().getId().equals(menuId)) {
             throw new CustomException(ErrorCode.MENU_ALREADY_EXIST);
+        }
+        Set<Long> uniqueStoreInventoryIds = new HashSet<>();
+        for (MenuRegisterDto.MenuCreateRequestDto.IngredientDto ingredient : dto.getIngredients()) {
+            if (!uniqueStoreInventoryIds.add(ingredient.getStoreInventoryId())) {
+                throw new CustomException(ErrorCode.DUPLICATE_INGREDIENT_IN_RECIPE);
+            }
         }
 
         // 1. 메뉴 조회

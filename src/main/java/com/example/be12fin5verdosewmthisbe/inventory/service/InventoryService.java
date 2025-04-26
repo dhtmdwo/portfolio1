@@ -24,6 +24,7 @@ import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -59,12 +60,12 @@ public class InventoryService {
     private final RecipeRepository recipeRepository;
     private final MenuRepository menuRepository;
 
-    public StoreInventory registerInventory(InventoryDetailRequestDto dto, Long storeId) {
+    public StoreInventory registerStoreInventory(InventoryDetailRequestDto dto, Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(()->
                 new CustomException(ErrorCode.STORE_NOT_EXIST));
 
         // 이름 중복 검사
-        if (storeInventoryRepository.existsByName(dto.getName())) {
+        if (storeInventoryRepository.existsByStore_IdAndName(storeId,dto.getName())) {
             throw new CustomException(ErrorCode.INVENTORY_DUPLICATE_NAME);
         }
 
@@ -82,6 +83,35 @@ public class InventoryService {
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INVENTORY_REGISTER_FAIL);
         }
+    }
+
+    public void registerInventory(InventoryDto.InventoryRegisterDto dto, Long storeId) {
+
+        // 1. StoreInventory 조회
+        StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
+
+        // 2. unitPrice 계산 (가격 ÷ 수량 → 올림 처리)
+        if (dto.getQuantity() == null || dto.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new CustomException(ErrorCode.INVALID_QUANTITY);
+        }
+        BigDecimal pricePerUnit = new BigDecimal(dto.getPrice())
+                .divide(dto.getQuantity(), 0, RoundingMode.CEILING); // 소수점 올림
+
+        // 3. Inventory 생성
+        Inventory inventory = Inventory.builder()
+                .purchaseDate(new Timestamp(System.currentTimeMillis()))
+                .expiryDate(LocalDate.now().plusDays(storeInventory.getExpiryDate()))
+                .unitPrice(pricePerUnit.intValue())
+                .quantity(dto.getQuantity())
+                .storeInventory(storeInventory)
+                .build();
+
+        inventoryRepository.save(inventory);
+
+        storeInventory.setQuantity(storeInventory.getQuantity().add(dto.getQuantity()));
+
+        storeInventoryRepository.save(storeInventory);
     }
 
 
@@ -123,7 +153,7 @@ public class InventoryService {
         Optional<Inventory> inventoryList = inventoryRepository.findById(storeId);
 
         return inventoryList.stream().map(inventory -> InventoryDto.builder()
-                .storeInventoryId(inventory.getStoreInventory().getStoreinventoryId())
+                .storeInventoryId(inventory.getStoreInventory().getId())
                 .totalPrice(inventory.getQuantity().multiply(BigDecimal.valueOf(inventory.getUnitPrice())).intValue())
                 .purchaseDate(inventory.getPurchaseDate())
                 .quantity(inventory.getQuantity())
@@ -131,17 +161,20 @@ public class InventoryService {
         ).collect(Collectors.toList());
     }
 
-    public StoreInventory updateInventory(Long inventoryId, InventoryDetailRequestDto dto) {
+    public void updateInventory(InventoryDetailRequestDto dto) {
         try {
-            StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
+            StoreInventory inventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
                     .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
-
+            boolean exists = storeInventoryRepository.existsByNameAndIdNot(dto.getName(), dto.getStoreInventoryId());
+            if (exists) {
+                throw new CustomException(ErrorCode.INVENTORY_DUPLICATE_NAME);
+            }
             inventory.setName(dto.getName());
             inventory.setMiniquantity(dto.getMiniquantity());
             inventory.setUnit(dto.getUnit());
             inventory.setExpiryDate(dto.getExpiryDate());
 
-            return storeInventoryRepository.save(inventory);
+            storeInventoryRepository.save(inventory);
 
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INVENTORY_UPDATE_FAIL);
@@ -150,24 +183,24 @@ public class InventoryService {
 
 
 
-    public void deleteById(Long inventoryId) {
-        StoreInventory inventory = storeInventoryRepository.findById(inventoryId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
-
+    @Transactional
+    public void deleteByIds(List<Long> inventoryIds) {
         try {
-            storeInventoryRepository.delete(inventory);
+            storeInventoryRepository.deleteAllById(inventoryIds);
+        } catch (EmptyResultDataAccessException e) {
+            throw new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND);
         } catch (DataIntegrityViolationException e) {
-            throw new CustomException(ErrorCode.INVENTORY_DELETE_FAIL);
+            throw new CustomException(ErrorCode.CANNOT_DELETE_INVENTORY);
         }
     }
-    public Page<StoreInventoryDto.responseDto> getAllStoreInventories(Long storeId, Pageable pageable) {
-        return storeInventoryRepository.findPageByStore_Id(storeId, pageable)
+    public Page<StoreInventoryDto.responseDto> getAllStoreInventories(Long storeId, Pageable pageable, String keyword) {
+        return storeInventoryRepository.findByStore_IdAndNameContaining(storeId,keyword, pageable)
                 .map(this::toDto);
     }
 
     private StoreInventoryDto.responseDto toDto(StoreInventory storeInventory) {
         return StoreInventoryDto.responseDto.builder()
-                .id(storeInventory.getStoreinventoryId())
+                .id(storeInventory.getId())
                 .name(storeInventory.getName())
                 .expiryDate(storeInventory.getExpiryDate())
                 .miniquantity(storeInventory.getMiniquantity())
@@ -313,7 +346,7 @@ public class InventoryService {
     @Transactional
     public void consumeInventory(Long storeInventoryId, BigDecimal requestedQuantity) {
         List<Inventory> inventories = inventoryRepository
-                .findByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId);
+                .findByStoreInventory_IdOrderByExpiryDateAsc(storeInventoryId);
 
         BigDecimal remaining = requestedQuantity;
 
@@ -340,12 +373,12 @@ public class InventoryService {
     }
     // 전체를 유통기한 빠른 순으로
     public List<Inventory> getSortedInventoriesByExpiry(Long storeInventoryId) {
-        return inventoryRepository.findByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId);
+        return inventoryRepository.findByStoreInventory_IdOrderByExpiryDateAsc(storeInventoryId);
     }
 
     // 가장 먼저 써야 하는 재고 1개
     public Inventory getFirstInventoryToUse(Long storeInventoryId) {
-        return inventoryRepository.findTopByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(storeInventoryId)
+        return inventoryRepository.findTopByStoreInventory_IdOrderByExpiryDateAsc(storeInventoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INSUFFICIENT_INVENTORY));
     }
 

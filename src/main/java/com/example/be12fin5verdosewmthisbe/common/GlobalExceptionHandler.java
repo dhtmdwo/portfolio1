@@ -24,14 +24,14 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .badRequest()
-                .body(new BaseResponse<>(400, "Validation Failed", errors));
+                .body(new BaseResponse<>(400, "다시 입력해주세요.", errors));
     }
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<BaseResponse<Void>> handleCustomException(CustomException ex) {
+    public ResponseEntity<BaseResponse<String>> handleCustomException(CustomException ex) {
         ErrorCode errorCode = ex.getErrorCode();
         return ResponseEntity
-                .status(errorCode.getStatus())
+                .badRequest()
                 .body(BaseResponse.error(errorCode));
     }
     @ExceptionHandler(Exception.class)
