@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -33,4 +34,16 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     List<Inventory> findAllByStoreInventory(StoreInventory storeInventory);
 
     List<Inventory> findByStoreInventory_Id(Long storeInventoryId);
+
+    @Query(value = """
+    SELECT si.name, SUM(i.quantity) AS totalQuantity
+    FROM inventory i
+    JOIN store_inventory si ON i.store_inventory_id = si.store_inventory_id
+    WHERE i.purchasedate BETWEEN :startDate AND :endDate
+    GROUP BY si.name
+    """, nativeQuery = true)
+    List<Object[]> findTotalQuantityByItemBetweenDates(@Param("startDate") Timestamp startDate,
+                                                       @Param("endDate") Timestamp endDate); 
+    // 기간동안 입고된 inventory 종류별 수
+
 }

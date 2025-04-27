@@ -266,7 +266,7 @@ public class InventoryController {
     }
 
     @GetMapping("/inventoryAmount")
-    public BaseResponse<Integer> getTotalUpdateNumber(HttpServletRequest request) {
+    public BaseResponse<InventoryUpdateDto.Response> getTotalUpdateNumber(HttpServletRequest request) {
 
         String token = null;
         if (request.getCookies() != null) {
@@ -281,7 +281,7 @@ public class InventoryController {
         // JWT 읽기
         String storeIdStr = claims.get("storeId", String.class);
         Long storeId = Long.parseLong(storeIdStr);
-        Integer result = inventoryService.getTotalUpdateNumber(storeId);
+        InventoryUpdateDto.Response result = inventoryService.getTotalUpdateNumber(storeId);
         return BaseResponse.success(result);
     }
     // 이번주 재료 보정 얼마나 발생했는지

@@ -21,7 +21,10 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
     List<StoreInventory> findByStore_Id(Long storeId);
     Page<StoreInventory> findByStore_IdAndNameContaining(Long storeId, String keyword, Pageable pageable);
 
+    @Query(value = "SELECT name FROM store_inventory", nativeQuery = true)
+    List<String> findAllItemNames();
 
+    List<StoreInventory> findAllByStoreId(Long storeId);
 
 
     @Query("""
@@ -52,23 +55,6 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
             @Param("start") Timestamp start,
             @Param("end") Timestamp end
     );
-
-//    @Query("""
-//        SELECT DISTINCT si FROM StoreInventory si
-//        JOIN FETCH si.store s
-//        JOIN FETCH si.recipeList r
-//        JOIN FETCH r.menu m
-//        JOIN FETCH m.orderMenuList om
-//        JOIN FETCH om.order o
-//        WHERE s.id = :storeId
-//        AND o.createdAt >= :start
-//        AND o.createdAt <= :end
-//    """)
-//    List<StoreInventory> findAllMenuSaleInventoryByStoreAndPeroid(
-//            @Param("storeId") Long storeId,
-//            @Param("start") Timestamp start,
-//            @Param("end") Timestamp end
-//    );
 
     @Query("""
     SELECT new com.example.be12fin5verdosewmthisbe.inventory.model.dto.InventoryMenuUsageDto(
