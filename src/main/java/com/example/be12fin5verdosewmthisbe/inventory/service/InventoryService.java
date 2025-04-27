@@ -661,6 +661,16 @@ public class InventoryService {
         inventory.setQuantity(afterQuantity);
         inventoryRepository.save(inventory);
 
+
+        StoreInventory storeInventory = inventory.getStoreInventory();
+
+        BigDecimal totalQuantity = storeInventory.getInventoryList().stream()
+                .map(Inventory::getQuantity)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        storeInventory.setQuantity(totalQuantity);
+        storeInventoryRepository.save(storeInventory);
+
         // 변경 이력 저장
         ModifyInventory modifyInventory = ModifyInventory.builder()
                 .modifyDate(new Timestamp(System.currentTimeMillis()))
