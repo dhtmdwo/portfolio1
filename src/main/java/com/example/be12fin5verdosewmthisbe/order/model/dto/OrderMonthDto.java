@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.order.model.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,7 +11,9 @@ public class OrderMonthDto {
     @Builder
     @Getter
     public static class TotalRequest{
+        @NotNull(message = "월은 필수 입니다")
         private int month;
+        @NotNull(message = "년도는 필수입니다")
         private int year;
     }
 
