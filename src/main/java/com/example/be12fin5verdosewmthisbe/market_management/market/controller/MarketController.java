@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.market_management.market.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
+import com.example.be12fin5verdosewmthisbe.common.CustomException;
 import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
@@ -41,6 +42,9 @@ public class MarketController {
     @PostMapping("/registerSale")
     public BaseResponse<String> registerInventorySale(@RequestBody @Valid InventorySaleDto.InventorySaleRequestDto dto, HttpServletRequest request) {
         Inventory inventory = inventoryService.getFirstInventoryToUse(dto.getStoreInventoryId());
+        if(inventory == null) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
+        }
         marketService.saleRegister(dto,getStoreId(request),inventory);
 
         return BaseResponse.success("ok");

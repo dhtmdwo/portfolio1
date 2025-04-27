@@ -72,7 +72,7 @@ public class InventoryService {
         try {
             StoreInventory newStoreInventory = StoreInventory.builder()
                     .name(dto.getName())
-                    .miniquantity(dto.getMiniquantity())
+                    .minQuantity(dto.getMinQuantity())
                     .unit(dto.getUnit())
                     .store(store)
                     .quantity(BigDecimal.ZERO)
@@ -148,19 +148,20 @@ public class InventoryService {
     }
 
 
-    @Transactional
-    public List<InventoryDto> getDetailInventoryList(Long storeId) {
-        Optional<Inventory> inventoryList = inventoryRepository.findById(storeId);
+    public List<InventoryDto> getInventoriesByStoreInventoryId(Long storeInventoryId) {
+        List<Inventory> inventories = inventoryRepository.findByStoreInventory_Id(storeInventoryId);
 
-        return inventoryList.stream().map(inventory -> InventoryDto.builder()
-                .storeInventoryId(inventory.getStoreInventory().getId())
-                .totalPrice(inventory.getQuantity().multiply(BigDecimal.valueOf(inventory.getUnitPrice())).intValue())
-                .purchaseDate(inventory.getPurchaseDate())
-                .quantity(inventory.getQuantity())
-                .build()
-        ).collect(Collectors.toList());
+        return inventories.stream()
+                .map(inventory -> {
+                    return InventoryDto.builder()
+                            .id(inventory.getInventoryId())
+                            .purchaseDate(inventory.getPurchaseDate())
+                            .expiryDate(inventory.getExpiryDate())
+                            .quantity(inventory.getQuantity())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
-
     public void updateInventory(InventoryDetailRequestDto dto) {
         try {
             StoreInventory inventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
@@ -170,7 +171,7 @@ public class InventoryService {
                 throw new CustomException(ErrorCode.INVENTORY_DUPLICATE_NAME);
             }
             inventory.setName(dto.getName());
-            inventory.setMiniquantity(dto.getMiniquantity());
+            inventory.setMinQuantity(dto.getMinQuantity());
             inventory.setUnit(dto.getUnit());
             inventory.setExpiryDate(dto.getExpiryDate());
 
@@ -203,7 +204,7 @@ public class InventoryService {
                 .id(storeInventory.getId())
                 .name(storeInventory.getName())
                 .expiryDate(storeInventory.getExpiryDate())
-                .miniquantity(storeInventory.getMiniquantity())
+                .minQuantity(storeInventory.getMinQuantity())
                 .quantity(storeInventory.getQuantity())
                 .unit(storeInventory.getUnit())
                 .build();
@@ -220,10 +221,21 @@ public class InventoryService {
             String name = inventory.getName();
             BigDecimal quantity = inventory.getQuantity();
             String unit = inventory.getUnit();
-            Integer expiryDate = inventory.getExpiryDate();  // expiryDate 필드 값 가져오기
+            Inventory firstInventory = getFirstInventoryToUse(inventory.getId());
+            LocalDate expiryDate = null;
+            if(firstInventory != null) {
+                expiryDate = firstInventory.getExpiryDate();
+            }
 
             // Response 객체 생성
-            InventoryInfoDto.Response inventoryResponse = InventoryInfoDto.Response.of(name, quantity, unit);
+            InventoryInfoDto.Response inventoryResponse = InventoryInfoDto.Response.builder()
+                    .id(inventory.getId())
+                    .name(name)
+                    .quantity(quantity)
+                    .unit(unit)
+                    .expiryDate(expiryDate)
+                    .minQuantity(inventory.getMinQuantity())
+                    .build();
 
             // 리스트에 추가
             inventoryResponseList.add(inventoryResponse);
@@ -379,7 +391,7 @@ public class InventoryService {
     // 가장 먼저 써야 하는 재고 1개
     public Inventory getFirstInventoryToUse(Long storeInventoryId) {
         return inventoryRepository.findTopByStoreInventory_IdOrderByExpiryDateAsc(storeInventoryId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INSUFFICIENT_INVENTORY));
+                .orElse(null);
     }
 
 
@@ -417,8 +429,7 @@ public class InventoryService {
             }
             // 만료 임박
 
-            Integer InteMinQuantity = storeInventory.getMiniquantity(); // 예시 Integer 값
-            BigDecimal minQuantity = BigDecimal.valueOf(Optional.ofNullable(InteMinQuantity).orElse(0));
+            BigDecimal minQuantity = storeInventory.getMinQuantity();
             BigDecimal quantity = storeInventory.getQuantity();
 
             if(minQuantity.compareTo(quantity) > 0){

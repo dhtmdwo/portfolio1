@@ -30,7 +30,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     """)
     List<Inventory> findByStoreInventoryStoreIdANDStoreInAndInventoryId(@Param("storeId") Long storeId, @Param("inventoryId") Long inventoryId);
 
-    Inventory findByStoreInventory(StoreInventory storeInventory);
-
     List<Inventory> findAllByStoreInventory(StoreInventory storeInventory);
+
+    List<Inventory> findByStoreInventory_Id(Long storeInventoryId);
 }

@@ -51,7 +51,7 @@ public class StoreInventory {
 
     @Column(name = "minimum_quantity")
     @Schema(description = "최소수량", example = "5(kg)")
-    private Integer miniquantity;
+    private BigDecimal minQuantity;
 
 
     @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
