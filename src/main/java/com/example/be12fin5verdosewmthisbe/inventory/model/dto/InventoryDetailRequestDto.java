@@ -4,6 +4,7 @@ package com.example.be12fin5verdosewmthisbe.inventory.model.dto;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,8 +17,7 @@ import java.sql.Timestamp;
 @Getter
 @Builder
 public class InventoryDetailRequestDto {
-
-    private Long inventoryId;
+    private Long storeInventoryId;
 
 
     @NotBlank(message = "재고명은 필수입니다.")
@@ -28,21 +28,13 @@ public class InventoryDetailRequestDto {
     @Schema(description = "유통기한", required = true, example = "2")
     private Integer expiryDate;
 
-    @Min(value = 1, message = "최소수량은 1 이상이어야 합니다.")
+    @DecimalMin(value = "0.1", inclusive = true, message = "최소수량은 0.1 이상이어야 합니다.")
     @Schema(description = "최소수량", required = true, example = "2")
-    private Integer miniquantity;
+    private BigDecimal minQuantity;
 
     @NotBlank(message = "단위는 필수입니다.")
     @Schema(description = "용량/단위", required = true, example = "12kg")
     private String unit;
 
-    public StoreInventory toEntity() {
-        return StoreInventory.builder()
-                .storeinventoryId(this.inventoryId)
-                .name(this.name)
-                .expiryDate(this.expiryDate)
-                .miniquantity(this.miniquantity)
-                .unit(this.unit)
-                .build();
-    }
+
 }

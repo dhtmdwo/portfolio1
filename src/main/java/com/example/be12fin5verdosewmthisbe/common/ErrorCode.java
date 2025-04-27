@@ -22,6 +22,7 @@ public enum ErrorCode {
     RECIPE_DUPLICATED_INVENTORY(3002, "중복된 재료를 추가할 수 없습니다."),
     RECIPE_QUANTITY_INVALID(3003, "재료의 수량은 0보다 같거나 작을 수 없습니다." ),
     MENU_ALREADY_EXIST(3004, "이미 존재하는 메뉴입니다." ),
+    DUPLICATE_INGREDIENT_IN_RECIPE(3005,"레시피에 중복된 재료가 존재합니다."),
 
     // 결제 관련 에러코드
     PAYMENT_VERIFICATION_FAILED(2001,"올바른 결제가 아닙니다."),
@@ -51,6 +52,7 @@ public enum ErrorCode {
     SAME_AS_CURRENT_PASSWORD(1015, "현재 비밀번호와 동일합니다."),
     TOKEN_NOT_FOUND(1015, "로그인 되지 않았습니다"),
 
+
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
     PURCHASE_NOT_FOUND(6002,"해당 구매 정보를 찾을 수 없습니다."),
@@ -68,7 +70,8 @@ public enum ErrorCode {
     STORE_INVENTORY_NOT_FOUND(7006, "재고 표준 정보가 존재하지않습니다."),
     STORE_INVENTORY_EXPIRY_NOT_FOUND(7007, "재고의 표준 유통기한이 존재하지 않습니다"),
     INSUFFICIENT_INVENTORY(7008, "재고가 부족합니다."),
-    INSUFFICIENT_OPTION_INVENTORY(7009, "옵션 재고가 부족합니다."),
+    CANNOT_DELETE_INVENTORY(7009, "재고를 삭제할 수 없습니다. 관련 데이터가 존재합니다."),
+    INVALID_QUANTITY(7010,"재고의 수량이 올바르지 않습니다."),
 
     // 매출 관련 에러코드
     INVALID_DATE_RANGE(9001, "날짜의 최대 범위는 1년까지 입니다");

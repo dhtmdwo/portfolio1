@@ -37,6 +37,8 @@ public class OptionDto {
     public static class RegisterRequestDto {
         @NotBlank(message = "옵션 이름은 필수입니다.")
         private String name;
+
+        @NotNull
         @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
         private int price;
 
@@ -77,7 +79,7 @@ public class OptionDto {
                     .price(option.getPrice())
                     .ingredients(option.getOptionValueList().stream()
                             .map(ov -> IngredientDto.builder()
-                                    .storeInventoryId(ov.getStoreInventory().getStoreinventoryId())
+                                    .storeInventoryId(ov.getStoreInventory().getId())
                                     .name(ov.getStoreInventory().getName())
                                     .quantity(ov.getQuantity())
                                     .unit(ov.getStoreInventory().getUnit())
@@ -99,7 +101,8 @@ public class OptionDto {
         @NotBlank(message = "옵션 이름은 필수입니다.")
         private String name;
 
-        @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
+        @NotNull
+        @Min(value = 1, message = "가격은 1 이상이어야 합니다.")
         private int price;
 
         @Valid

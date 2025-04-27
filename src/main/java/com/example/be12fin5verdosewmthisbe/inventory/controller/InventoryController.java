@@ -12,11 +12,13 @@ import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.List;
 @Tag(name = "Inventory", description = "재고 관련 API")
 @RequiredArgsConstructor
 @RestController
+@Validated
 @RequestMapping("/api/inventory")
 @Tag(name = "재고관리", description = "재고 관리 API") // 이 라인을 추가하여 CORS 허용
 public class InventoryController {
@@ -32,7 +35,28 @@ public class InventoryController {
 
     //dto로 정보 받아서 StoreInventory 저장
     @PostMapping("/registerStoreInventory")
-    public BaseResponse<String> registerStoreInventory(HttpServletRequest request, @RequestBody InventoryDetailRequestDto dto) {
+    public BaseResponse<String> registerStoreInventory(HttpServletRequest request, @Valid @RequestBody InventoryDetailRequestDto dto) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+
+        inventoryService.registerStoreInventory(dto, storeId);
+        return BaseResponse.success("ok");
+    }
+
+    //dto로 정보 받아서 Inventory 저장
+    @PostMapping("/registerInventory")
+    public BaseResponse<String> registerInventory(HttpServletRequest request, @Valid @RequestBody InventoryDto.InventoryRegisterDto dto) {
+
         String token = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -67,14 +91,12 @@ public class InventoryController {
         return BaseResponse.success("ok");
     }
 
-    //dto로 정보 받아서Inventory 저장
-    @GetMapping("/DetailInventory/{storeId}")
-    public BaseResponse<List<InventoryDto>> getDetailInventoryList(@PathVariable Long storeId) {
-        List<InventoryDto> list = inventoryService.getDetailInventoryList(storeId);
+    @GetMapping("/DetailInventory/{storeInventoryId}")
+    public BaseResponse<List<InventoryDto>> getDetailInventoryList(@PathVariable Long storeInventoryId) {
+        List<InventoryDto> list = inventoryService.getInventoriesByStoreInventoryId(storeInventoryId);
         return BaseResponse.success(list);
     }
 
-    //dto로 정보 받아서Inventory 저장
     @GetMapping("/totalInventory/{storeInventoryId}")
     public BaseResponse<List<TotalResponseDto.Response>> getDetailedTotalInventoryList(HttpServletRequest request, @PathVariable Long storeInventoryId) {
         String token = null;
@@ -96,25 +118,17 @@ public class InventoryController {
         return BaseResponse.success(list);
     }
 
-//    @GetMapping("/storeInventory/{storeinventoryId}")
-//    public BaseResponse<StoreInventory> getInventoryById(@PathVariable Long storeinventoryId) {
-//        StoreInventory inventory = inventoryService.findById(storeinventoryId);
-//        return BaseResponse.success(inventory);
-//    }
-    //
-
-    @PutMapping("/storeInventory/{storeinventoryId}")
-    public BaseResponse<StoreInventory> updateInventory(
-            @PathVariable Long storeinventoryId,
+    @PutMapping("/storeInventory")
+    public BaseResponse<String> updateInventory(
             @RequestBody InventoryDetailRequestDto dto) {
-        StoreInventory updatedInventory = inventoryService.updateInventory(storeinventoryId, dto);
-        return BaseResponse.success(updatedInventory);
+        inventoryService.updateInventory(dto);
+        return BaseResponse.success("수정되었습니다.");
     }
 
-    @DeleteMapping("/storeInventory/{storeinventoryId}")
-    public BaseResponse<String> deleteInventory(@PathVariable Long inventoryId) {
-        inventoryService.deleteById(inventoryId);
-        return BaseResponse.success("재고가 성공적으로 삭제되었습니다.");
+    @DeleteMapping("/storeInventory")
+    public BaseResponse<String> deleteInventories(@RequestBody List<Long> inventoryIds) {
+        inventoryService.deleteByIds(inventoryIds);
+        return BaseResponse.success("선택한 재고가 성공적으로 삭제되었습니다.");
     }
 
 
@@ -122,12 +136,14 @@ public class InventoryController {
     public BaseResponse<Page<StoreInventoryDto.responseDto>> getAllStoreInventories(
             HttpServletRequest request,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword  // ✅ 추가
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories(getStoreId(request), pageable);
+        Page<StoreInventoryDto.responseDto> result = inventoryService.getAllStoreInventories(getStoreId(request), pageable, keyword);
         return BaseResponse.success(result);
     }
+
 
     @GetMapping("/inventoryList")
     public BaseResponse<List<InventoryInfoDto.Response>> getInventoryList(HttpServletRequest request) {

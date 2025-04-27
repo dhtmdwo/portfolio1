@@ -15,10 +15,10 @@ import java.util.Optional;
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     // 유통기한 기준 오름차순 정렬된 리스트 반환
-    List<Inventory> findByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(Long storeInventoryId);
+    List<Inventory> findByStoreInventory_IdOrderByExpiryDateAsc(Long storeInventoryId);
 
     // 유통기한이 가장 짧은 것 하나만 반환
-    Optional<Inventory> findTopByStoreInventory_StoreinventoryIdOrderByExpiryDateAsc(Long storeInventoryId);
+    Optional<Inventory> findTopByStoreInventory_IdOrderByExpiryDateAsc(Long storeInventoryId);
     List<Inventory> findByStoreInventory_Store_Id(Long storeId);
 
     @Query("""
@@ -30,7 +30,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     """)
     List<Inventory> findByStoreInventoryStoreIdANDStoreInAndInventoryId(@Param("storeId") Long storeId, @Param("inventoryId") Long inventoryId);
 
-    Inventory findByStoreInventory(StoreInventory storeInventory);
-
     List<Inventory> findAllByStoreInventory(StoreInventory storeInventory);
+
+    List<Inventory> findByStoreInventory_Id(Long storeInventoryId);
 }
