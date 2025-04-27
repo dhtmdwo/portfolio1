@@ -2,7 +2,10 @@ package com.example.be12fin5verdosewmthisbe.payment.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 
@@ -10,6 +13,9 @@ import java.sql.Timestamp;
 @Table(name = "payment")
 @Data
 @Schema(description = "결제 정보")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Payment {
 
     @Id
