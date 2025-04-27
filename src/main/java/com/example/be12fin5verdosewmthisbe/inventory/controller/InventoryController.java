@@ -88,9 +88,9 @@ public class InventoryController {
         return BaseResponse.success("ok");
     }
 
-    @GetMapping("/DetailInventory/{storeId}")
-    public BaseResponse<List<InventoryDto>> getDetailInventoryList(@PathVariable Long storeId) {
-        List<InventoryDto> list = inventoryService.getDetailInventoryList(storeId);
+    @GetMapping("/DetailInventory/{storeInventoryId}")
+    public BaseResponse<List<InventoryDto>> getDetailInventoryList(@PathVariable Long storeInventoryId) {
+        List<InventoryDto> list = inventoryService.getInventoriesByStoreInventoryId(storeInventoryId);
         return BaseResponse.success(list);
     }
 

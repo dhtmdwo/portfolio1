@@ -19,7 +19,7 @@ public class StoreInventoryDto {
 
         private Integer expiryDate;
 
-        private Integer miniquantity;
+        private BigDecimal minQuantity;
 
         private BigDecimal quantity;
 
