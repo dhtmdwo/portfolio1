@@ -443,96 +443,65 @@ public class InventoryService {
     }
 
     @Transactional
-    public Integer getTotalUpdateNumber(Long storeId) {
-
+    public InventoryUpdateDto.Response getTotalUpdateNumber(Long storeId) {
         LocalDate today = LocalDate.now();
-        LocalDate monday = today.with(DayOfWeek.MONDAY);
+        LocalDate firstDayOfMonth = today.withDayOfMonth(1);
 
-        Timestamp startTimestamp = Timestamp.valueOf(monday.atStartOfDay());
+        Timestamp startTimestamp = Timestamp.valueOf(firstDayOfMonth.atStartOfDay());
         Timestamp endTimestamp = Timestamp.valueOf(LocalDateTime.now());
 
         int totalUpdateNumber = 0;
 
+        // 1. 수정된 재고 조회
         List<ModifyInventory> modifyInventoryList = modifyInventoryRepository.findUpdateListByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
 
-        for (ModifyInventory modifyInventory : modifyInventoryList) {
-                totalUpdateNumber++;
+        totalUpdateNumber = modifyInventoryList.size(); // 단순 사이즈로 수정
+
+        List<InventoryUpdateDto.ItemQuantityDto> highModifyItems = new ArrayList<>();
+
+        // 2. 매장(storeId)의 StoreInventory 가져오기
+        List<StoreInventory> storeInventories = storeInventoryRepository.findAllByStoreId(storeId);
+
+        for (StoreInventory storeInventory : storeInventories) {
+            BigDecimal totalStockedQuantity = BigDecimal.ZERO;
+            BigDecimal totalModifiedQuantity = BigDecimal.ZERO;
+
+            // 3. 해당 StoreInventory의 Inventory 리스트 가져오  기
+            List<Inventory> inventories = storeInventory.getInventoryList();
+
+            for (Inventory inventory : inventories) {
+                if (inventory.getPurchaseDate().after(startTimestamp) && inventory.getPurchaseDate().before(endTimestamp)) {
+                    totalStockedQuantity = totalStockedQuantity.add(
+                            inventory.getQuantity() != null ? inventory.getQuantity() : BigDecimal.ZERO
+                    );
+
+                    for (ModifyInventory modifyInventory : inventory.getModifyInventoryList()) {
+                        if (modifyInventory.getModifyDate().after(startTimestamp) && modifyInventory.getModifyDate().before(endTimestamp)) {
+                            // ❗ 수정된 양은 절대값으로 누적해야 한다!
+                            totalModifiedQuantity = totalModifiedQuantity.add(
+                                    modifyInventory.getModifyQuantity() != null ? modifyInventory.getModifyQuantity().abs() : BigDecimal.ZERO
+                            );
+                        }
+                    }
+                }
             }
 
+            if (totalStockedQuantity.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal ratio = totalModifiedQuantity.divide(totalStockedQuantity, 4, RoundingMode.HALF_UP);
+                if (ratio.compareTo(BigDecimal.valueOf(0.1)) >= 0) {
+                    highModifyItems.add(InventoryUpdateDto.ItemQuantityDto.builder()
+                            .itemName(storeInventory.getName())
+                            .totalQuantity(totalModifiedQuantity)
+                            .build());
+                }
+            }
+        }
 
-        return(totalUpdateNumber);
+        return InventoryUpdateDto.Response.builder()
+                .total(totalUpdateNumber)
+                .itemQuantityDtoList(highModifyItems)
+                .build();
     }
-
-//    @Transactional
-//    public String getMaximumMarketPurchase(Long storeId) {
-//
-//        LocalDate today = LocalDate.now();
-//        LocalDate monthAgo = today.minusMonths(1); // 한 달 전 날짜
-//
-//        Timestamp startTimestamp = Timestamp.valueOf(monthAgo.atStartOfDay()); // 한 달 전 00:00
-//        Timestamp endTimestamp = Timestamp.valueOf(LocalDateTime.now());
-//
-//        Map<String, BigDecimal> marketSale = new HashMap<String, BigDecimal>(); // 장터로 얼마 팔았니
-//        Map<String, BigDecimal> menuSale = new HashMap<String, BigDecimal>(); // 메뉴로 얼마 팔았니
-//
-//        List<StoreInventory> storeInventoryList = storeInventoryRepository.findByStore_Id(storeId);
-//        for(StoreInventory storeInventory : storeInventoryList){
-//            marketSale.put(storeInventory.getName(), BigDecimal.ZERO);
-//            menuSale.put(storeInventory.getName(), BigDecimal.ZERO);
-//        }
-//
-//
-//        List<StoreInventory> storeMarketInventoryList = storeInventoryRepository.findAllStoreInventoryByStoreAndPeroid(storeId,startTimestamp, endTimestamp);
-//        for (StoreInventory storeInventory : storeMarketInventoryList) {
-//            List<InventorySale> inventorySaleList = storeInventory.getInventorySaleList();
-//            String inventoryName = storeInventory.getName();
-//            for(InventorySale inventorySale : inventorySaleList){
-//                BigDecimal currentValue = marketSale.get(inventoryName);
-//                BigDecimal newValue = currentValue.add(inventorySale.getQuantity());
-//                marketSale.put(inventoryName, newValue);
-//            }
-//        }
-//
-//        List<StoreInventory> storeMenuInventoryList = storeInventoryRepository.findAllMenuSaleInventoryByStoreAndPeroid(storeId,startTimestamp, endTimestamp);
-//
-//        for(StoreInventory storeInventory : storeMenuInventoryList){
-//            List<Recipe> recipeList = storeInventory.getRecipeList();
-//            String inventoryName = storeInventory.getName();
-//            for(Recipe recipe : recipeList){
-//                Menu menu = recipe.getMenu();
-//                BigDecimal recipeQuantity = recipe.getQuantity(); // 메뉴당 얼마나씀?
-//
-//                List<OrderMenu> orderMenuList = menu.getOrderMenuList();
-//                for(OrderMenu orderMenu : orderMenuList){
-//                    int orderQuantity = orderMenu.getQuantity();
-//                    BigDecimal currentValue = marketSale.get(inventoryName);
-//                    BigDecimal newValue = currentValue.add(recipeQuantity.multiply(BigDecimal.valueOf(orderQuantity)));
-//                    menuSale.put(inventoryName, newValue);
-//                }
-//            }
-//        }
-//
-//        String bestInventory = null;
-//        BigDecimal highestRatio = BigDecimal.ZERO;
-//
-//        for (String name : marketSale.keySet()) {
-//            BigDecimal market = marketSale.getOrDefault(name, BigDecimal.ZERO);
-//            BigDecimal menu = menuSale.getOrDefault(name, BigDecimal.ZERO);
-//
-//            if (menu.compareTo(BigDecimal.ZERO) == 0) {
-//                continue; // ❗ 메뉴로 사용한 적 없으면 제외 (또는 처리 방식 정의)
-//            }
-//
-//            BigDecimal ratio = market.divide(menu, 4, RoundingMode.HALF_UP); // 소수점 4자리, 반올림
-//            if (ratio.compareTo(highestRatio) > 0) {
-//                highestRatio = ratio;
-//                bestInventory = name;
-//            }
-//        }
-//
-//        return bestInventory;
-//
-//    }
 
     @Transactional
     public InventoryNotUsed getMaximumMarketPurchase(Long storeId) {

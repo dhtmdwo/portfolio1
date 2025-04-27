@@ -30,5 +30,6 @@ public interface InventorySaleRepository extends JpaRepository<InventorySale, Lo
             @Param("end") Timestamp end
     );
 
+
 }
         
