@@ -9,6 +9,7 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -105,7 +106,7 @@ public class OrderController {
     }
 
     @PostMapping("/monthSales")
-    public BaseResponse<List<OrderMonthDto.TotalSaleResponse>> getMonthSales(HttpServletRequest request,@RequestBody OrderMonthDto.TotalRequest totalRequest) {
+    public BaseResponse<List<OrderMonthDto.TotalSaleResponse>> getMonthSales(HttpServletRequest request,@Valid @RequestBody OrderMonthDto.TotalRequest totalRequest) {
 
         String token = null;
         if (request.getCookies() != null) {
