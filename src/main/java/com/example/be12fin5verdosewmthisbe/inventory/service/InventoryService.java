@@ -16,6 +16,9 @@ import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.RecipeRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionValueRepository;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
@@ -53,6 +56,8 @@ public class InventoryService {
     private final StoreInventoryRepository storeInventoryRepository;
     private final OrderMenuRepository orderMenuRepository;
     private final InventorySaleRepository inventorySaleRepository;
+    private final OptionRepository optionRepository;
+    private final OptionValueRepository optionValueRepository;
     private final InventoryPurchaseRepository inventoryPurchaseRepository;
     private final ModifyInventoryRepository modifyInventoryRepository;
     private final StoreRepository storeRepository;
@@ -571,5 +576,54 @@ public class InventoryService {
             list.add(menu.getName());
         }
         return InventoryRecipes.Response.from(list);
+    }
+
+    @Transactional
+    public List<String> validateOrder(Long storeId, InventoryValidateOrderDto dto) {
+        List<String> insufficientItems = new ArrayList<>();
+
+        for (InventoryValidateOrderDto.OrderMenuRequest menuReq : dto.getOrderMenus()) {
+            Menu menu = menuRepository.findById(menuReq.getMenuId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
+
+            // 레시피 기반 재고 확인
+            List<Recipe> recipes = recipeRepository.findAllByMenu(menu);
+            for (Recipe recipe : recipes) {
+                List<StoreInventory> ingredients = storeInventoryRepository.findByStore_IdAndRecipeList(storeId, recipe);
+
+                BigDecimal requiredQuantity = recipe.getQuantity().multiply(BigDecimal.valueOf(menuReq.getQuantity()));
+                BigDecimal availableQuantity = ingredients.stream()
+                        .map(StoreInventory::getQuantity)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                if (availableQuantity.compareTo(requiredQuantity) < 0) {
+                    // 부족한 재고 항목을 리스트에 추가
+                    String ingredientName = recipe.getStoreInventory().getName(); // StoreInventory에서 재료 이름 가져오기
+                    insufficientItems.add("[" + ingredientName +"]" + " 재고 부족");
+                }
+            }
+
+            // 옵션 기반 재고 확인
+            if (menuReq.getOptionIds() != null) {
+                for (Long optionId : menuReq.getOptionIds()) {
+                    Option option = optionRepository.findById(optionId)
+                            .orElseThrow(() -> new CustomException(ErrorCode.OPTION_NOT_FOUND));
+
+                    List<OptionValue> optionValues = optionValueRepository.findAllByOption(option);
+                    for (OptionValue optionValue : optionValues) {
+                        StoreInventory optionInventory = optionValue.getStoreInventory();
+                        BigDecimal requiredOptionQuantity = optionValue.getQuantity().multiply(BigDecimal.valueOf(menuReq.getQuantity()));
+
+                        if (optionInventory.getQuantity().compareTo(requiredOptionQuantity) < 0) {
+                            // 옵션 재고 부족 항목 추가
+                            insufficientItems.add("["+ option.getName() +"]" + " 옵션 구성 재료 부족");
+                        }
+                    }
+                }
+            }
+        }
+
+        // 부족한 항목들을 리스트로 반환
+        return insufficientItems;
     }
 }

@@ -1,6 +1,8 @@
 package com.example.be12fin5verdosewmthisbe.inventory.controller;
 
 import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
+import com.example.be12fin5verdosewmthisbe.common.CustomException;
+import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 
 import com.example.be12fin5verdosewmthisbe.inventory.model.dto.*;
@@ -291,7 +293,6 @@ public class InventoryController {
 
     @PostMapping("/getRecipes")
     public BaseResponse<InventoryRecipes.Response> getRecipes(HttpServletRequest request, @RequestBody InventoryRecipes.Request req) {
-
         String token = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -309,4 +310,32 @@ public class InventoryController {
         return BaseResponse.success(result);
     }
 
+    @PostMapping("/validateOrder")
+    public BaseResponse<String> validateOrder(HttpServletRequest request, @RequestBody InventoryValidateOrderDto dto) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+
+        List<String> insufficientItems = inventoryService.validateOrder(storeId, dto);
+
+        if (!insufficientItems.isEmpty()) {
+            // 부족한 재고가 있으면 해당 메시지를 포함하여 반환
+            String message = "해당 재고를 확인해주세요 \n" + String.join(", ", insufficientItems);
+
+            return new BaseResponse<>(ErrorCode.INSUFFICIENT_INVENTORY.getStatus(), message, null);
+        }
+
+        // 부족한 재고가 없으면 정상 처리
+        return BaseResponse.success("모든 재고가 충분합니다.");
+    }
 }

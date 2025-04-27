@@ -68,6 +68,7 @@ public enum ErrorCode {
     STORE_INVENTORY_NOT_FOUND(7006, "재고 표준 정보가 존재하지않습니다."),
     STORE_INVENTORY_EXPIRY_NOT_FOUND(7007, "재고의 표준 유통기한이 존재하지 않습니다"),
     INSUFFICIENT_INVENTORY(7008, "재고가 부족합니다."),
+    INSUFFICIENT_OPTION_INVENTORY(7009, "옵션 재고가 부족합니다."),
 
     // 매출 관련 에러코드
     INVALID_DATE_RANGE(9001, "날짜의 최대 범위는 1년까지 입니다");
