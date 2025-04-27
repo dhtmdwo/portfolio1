@@ -185,10 +185,6 @@ public class OrderService {
         storeInventoryRepository.save(storeInventory);
     }
 
-
-
-
-
     public List<OrderDto.AllOrderList> getOrdersByStoreId(Long storeId) {
         List<Order> orders = orderRepository.findByStoreId(storeId);
         List<OrderDto.AllOrderList> allOrders = new ArrayList<>();
