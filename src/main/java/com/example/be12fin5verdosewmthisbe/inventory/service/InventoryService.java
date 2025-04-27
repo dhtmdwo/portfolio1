@@ -447,7 +447,7 @@ public class InventoryService {
         return(response);
     }
 
-    @Transactional
+   /* @Transactional
     public InventoryUpdateDto.Response getTotalUpdateNumber(Long storeId) {
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfMonth = today.withDayOfMonth(1);
@@ -506,7 +506,7 @@ public class InventoryService {
                 .total(totalUpdateNumber)
                 .itemQuantityDtoList(highModifyItems)
                 .build();
-    }
+    }*/
 
     @Transactional
     public InventoryNotUsed getMaximumMarketPurchase(Long storeId) {
@@ -639,4 +639,36 @@ public class InventoryService {
         // 부족한 항목들을 리스트로 반환
         return insufficientItems;
     }
+    @Transactional
+    public void updateInventory(InventoryDto.InventoryUpdateDto dto) {
+        Inventory inventory = inventoryRepository.findById(dto.getInventoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+
+        LocalDate start = inventory.getPurchaseDate().toLocalDateTime().toLocalDate();
+        LocalDate end = dto.getExpiryDate();
+
+        if (end.isBefore(start)) {
+            throw new CustomException(ErrorCode.INVALID_EXPIRY_DATE);
+        }
+
+        // 변경량 계산
+        BigDecimal beforeQuantity = inventory.getQuantity();
+        BigDecimal afterQuantity = dto.getQuantity();
+        BigDecimal changeQuantity = afterQuantity.subtract(beforeQuantity); // (수정 후 - 수정 전)
+
+        // 기존 재고 수정
+        inventory.setExpiryDate(dto.getExpiryDate());
+        inventory.setQuantity(afterQuantity);
+        inventoryRepository.save(inventory);
+
+        // 변경 이력 저장
+        ModifyInventory modifyInventory = ModifyInventory.builder()
+                .modifyDate(new Timestamp(System.currentTimeMillis()))
+                .modifyQuantity(changeQuantity)
+                .inventory(inventory)
+                .build();
+
+        modifyInventoryRepository.save(modifyInventory);
+    }
+
 }

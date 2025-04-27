@@ -72,6 +72,7 @@ public enum ErrorCode {
     INSUFFICIENT_INVENTORY(7008, "재고가 부족합니다."),
     CANNOT_DELETE_INVENTORY(7009, "재고를 삭제할 수 없습니다. 관련 데이터가 존재합니다."),
     INVALID_QUANTITY(7010,"재고의 수량이 올바르지 않습니다."),
+    INVALID_EXPIRY_DATE(7011, "유통기한은 입고날짜 이후여야 합니다." ),
 
     // 매출 관련 에러코드
     INVALID_DATE_RANGE(9001, "날짜의 최대 범위는 1년까지 입니다");
