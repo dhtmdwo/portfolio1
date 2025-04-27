@@ -98,8 +98,8 @@ pipeline {
                         name: wmthis-secret
                   volumeMounts:
                     - name: config-volume
-                        mountPath: /config
-                        readOnly: true
+                      mountPath: /config
+                      readOnly: true
               volumes:
                 - name: config-volume
                   configMap:
