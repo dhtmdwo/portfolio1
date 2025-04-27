@@ -6,6 +6,7 @@ import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.ModifyInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
+import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.Images;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
@@ -35,7 +36,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MarketService {
-    private final ImagesRepository imagesRepository;
     private final InventoryPurchaseRepository inventoryPurchaseRepository;
     private final InventorySaleRepository inventorySaleRepository;
     private final StoreInventoryRepository storeInventoryRepository;
@@ -49,6 +49,11 @@ public class MarketService {
 
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
+
+        if (dto.getQuantity().compareTo(storeInventory.getQuantity()) > 0) {
+            throw new CustomException(ErrorCode.INVALID_SALE_QUANTITY);
+        }
+
 
         InventorySale inventorySale = InventorySale.builder()
                 .inventoryName(storeInventory.getName())
@@ -197,12 +202,17 @@ public class MarketService {
         boolean found = false;
         for (InventoryPurchase purchase : purchases) {
             if (purchase.getId().equals(purchaseId)) {
-                purchase.setStatus(InventoryPurchase.purchaseStatus.isPaymentInProgress);
 
                 sale.setPrice(purchase.getPrice());
                 sale.setQuantity(purchase.getQuantity());
                 sale.setBuyerStoreName(purchase.getStore().getName());
-                sale.setStatus(InventorySale.saleStatus.isPaymentPending);
+                if(purchase.getMethod().equals(InventoryPurchase.purchaseMethod.cash)) {
+                    sale.setStatus(InventorySale.saleStatus.delivery);
+                    purchase.setStatus(InventoryPurchase.purchaseStatus.confirmDelivery);
+                } else {
+                    sale.setStatus(InventorySale.saleStatus.isPaymentPending);
+                    purchase.setStatus(InventoryPurchase.purchaseStatus.isPaymentInProgress);
+                }
                 sale.setInventoryPurchaseId(purchaseId);
                 inventorySaleRepository.save(sale);
                 found = true;

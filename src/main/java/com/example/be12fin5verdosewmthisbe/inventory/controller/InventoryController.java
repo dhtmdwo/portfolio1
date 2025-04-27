@@ -265,7 +265,7 @@ public class InventoryController {
         return BaseResponse.success(inventoryCall);
     }
 
-    @GetMapping("/inventoryAmount")
+    /*@GetMapping("/inventoryAmount")
     public BaseResponse<InventoryUpdateDto.Response> getTotalUpdateNumber(HttpServletRequest request) {
 
         String token = null;
@@ -283,7 +283,7 @@ public class InventoryController {
         Long storeId = Long.parseLong(storeIdStr);
         InventoryUpdateDto.Response result = inventoryService.getTotalUpdateNumber(storeId);
         return BaseResponse.success(result);
-    }
+    }*/
     // 이번주 재료 보정 얼마나 발생했는지
 
     @GetMapping("/marketAmount")
@@ -353,5 +353,11 @@ public class InventoryController {
 
         // 부족한 재고가 없으면 정상 처리
         return BaseResponse.success("모든 재고가 충분합니다.");
+    }
+
+    @PutMapping("/inventory")
+    public BaseResponse<String> updateInventory(@RequestBody @Valid InventoryDto.InventoryUpdateDto dto) {
+        inventoryService.updateInventory(dto);
+        return BaseResponse.success("재고 보정 완료");
     }
 }

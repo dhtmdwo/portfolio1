@@ -28,6 +28,7 @@ public class InventoryDetailRequestDto {
     @Schema(description = "유통기한", required = true, example = "2")
     private Integer expiryDate;
 
+    @NotNull(message = "수량은 필수입니다.")
     @DecimalMin(value = "0.1", inclusive = true, message = "최소수량은 0.1 이상이어야 합니다.")
     @Schema(description = "최소수량", required = true, example = "2")
     private BigDecimal minQuantity;

@@ -56,6 +56,7 @@ public enum ErrorCode {
     // 장터 관련 에러코드
     SALE_NOT_FOUND(6001,"해당 판매 정보를 찾을 수 없습니다."),
     PURCHASE_NOT_FOUND(6002,"해당 구매 정보를 찾을 수 없습니다."),
+    INVALID_SALE_QUANTITY(6003, "판매 수량이 보유 수량을 초과했습니다." ),
 
 
     // 상점 관련 에러코드
@@ -72,6 +73,7 @@ public enum ErrorCode {
     INSUFFICIENT_INVENTORY(7008, "재고가 부족합니다."),
     CANNOT_DELETE_INVENTORY(7009, "재고를 삭제할 수 없습니다. 관련 데이터가 존재합니다."),
     INVALID_QUANTITY(7010,"재고의 수량이 올바르지 않습니다."),
+    INVALID_EXPIRY_DATE(7011, "유통기한은 입고날짜 이후여야 합니다." ),
 
     // 매출 관련 에러코드
     INVALID_DATE_RANGE(9001, "날짜의 최대 범위는 1년까지 입니다");
