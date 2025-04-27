@@ -19,6 +19,7 @@ import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionValueRepository;
+import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
@@ -64,6 +65,7 @@ public class InventoryService {
     private final StoreRepository storeRepository;
     private final RecipeRepository recipeRepository;
     private final MenuRepository menuRepository;
+    private final OrderRepository orderRepository;
 
     public StoreInventory registerStoreInventory(InventoryDetailRequestDto dto, Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(()->
@@ -277,6 +279,7 @@ public class InventoryService {
         List<OrderMenu> saleList = orderMenuRepository.findSaleMenusForInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
         List<InventoryChangeDto.Response> menuSaleList = new ArrayList<>();
 
+
         for (OrderMenu orderMenu : saleList) {
             Timestamp date = orderMenu.getOrder().getCreatedAt();
             List<Recipe> RecipeList = orderMenu.getMenu().getRecipeList();
@@ -284,9 +287,9 @@ public class InventoryService {
             int menuQuantity = orderMenu.getQuantity();
             for(Recipe recipe : RecipeList ) {
                 String stockName = recipe.getStoreInventory().getName();
-                BigDecimal quantity = recipe.getPrice().multiply(BigDecimal.valueOf(menuQuantity));
+                BigDecimal quantity = recipe.getQuantity().multiply(BigDecimal.valueOf(menuQuantity));
                 String unit = recipe.getStoreInventory().getUnit();
-                InventoryChangeDto.Response menuSale = InventoryChangeDto.Response.of(date, stockName, changeReason, quantity, unit);
+                InventoryChangeDto.Response menuSale = InventoryChangeDto.Response.of(date, stockName, changeReason, quantity.negate(), unit);
                 menuSaleList.add(menuSale);
             }
         }
@@ -447,7 +450,7 @@ public class InventoryService {
         return(response);
     }
 
-   /* @Transactional
+    @Transactional
     public InventoryUpdateDto.Response getTotalUpdateNumber(Long storeId) {
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfMonth = today.withDayOfMonth(1);
@@ -506,7 +509,7 @@ public class InventoryService {
                 .total(totalUpdateNumber)
                 .itemQuantityDtoList(highModifyItems)
                 .build();
-    }*/
+    }
 
     @Transactional
     public InventoryNotUsed getMaximumMarketPurchase(Long storeId) {

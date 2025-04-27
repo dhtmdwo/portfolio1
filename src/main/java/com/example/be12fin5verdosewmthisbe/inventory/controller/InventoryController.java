@@ -265,7 +265,7 @@ public class InventoryController {
         return BaseResponse.success(inventoryCall);
     }
 
-    /*@GetMapping("/inventoryAmount")
+    @GetMapping("/inventoryAmount")
     public BaseResponse<InventoryUpdateDto.Response> getTotalUpdateNumber(HttpServletRequest request) {
 
         String token = null;
@@ -283,7 +283,7 @@ public class InventoryController {
         Long storeId = Long.parseLong(storeIdStr);
         InventoryUpdateDto.Response result = inventoryService.getTotalUpdateNumber(storeId);
         return BaseResponse.success(result);
-    }*/
+    }
     // 이번주 재료 보정 얼마나 발생했는지
 
     @GetMapping("/marketAmount")
