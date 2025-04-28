@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.http.HttpRequest;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -83,8 +85,19 @@ public class MenuController {
     }
 
     @GetMapping("/getPOSList")
-    public BaseResponse<List<MenuDto.POSMenuListResponseDto>> getAllMenus() {
-        List<MenuDto.POSMenuListResponseDto> menus = menuService.findAllPOSMenus();
+    public BaseResponse<List<MenuDto.POSMenuListResponseDto>> getAllMenus(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        Long storeId = Long.valueOf(claims.get("storeId", String.class));
+        List<MenuDto.POSMenuListResponseDto> menus = menuService.findAllPOSMenus(storeId);
         return BaseResponse.success(menus);
     }
 
