@@ -51,6 +51,7 @@ public enum ErrorCode {
     TOKEN_EMAIL_NOT_FOUND(1017, "토큰에 이메일 정보가 존재하지 않습니다."),
     SAME_AS_CURRENT_PASSWORD(1015, "현재 비밀번호와 동일합니다."),
     TOKEN_NOT_FOUND(1015, "로그인 되지 않았습니다"),
+    EMAIL_NOT_FOUND(1016, "해당 이메일로 가입된 계정이 없습니다."),
 
 
     // 장터 관련 에러코드
