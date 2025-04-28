@@ -9,19 +9,13 @@ public class PhoneVerificationDto {
     @Getter
     public static class SmsSendRequestDto{
         @NotBlank(message = "전화번호는 필수입니다.")
-        @Pattern(
-                regexp = "^010-\\d{4}-\\d{4}$",
-                message = "전화번호는 010-XXXX-XXXX 형식이어야 합니다."
-        )
+        @Pattern(regexp = "^(01[0-9])([0-9]{8})$", message = "전화번호는 010xxxxxxxx 형식이어야 합니다.")
         private String phoneNum;
     }
     @Getter
     public static class VerifyRequestDto{
         @NotBlank(message = "전화번호는 필수입니다.")
-        @Pattern(
-                regexp = "^010-\\d{4}-\\d{4}$",
-                message = "전화번호는 010-XXXX-XXXX 형식이어야 합니다."
-        )
+        @Pattern(regexp = "^(01[0-9])([0-9]{8})$", message = "전화번호는 010xxxxxxxx 형식이어야 합니다.")
         private String phoneNum;
 
         @NotBlank(message = "인증번호는 필수입니다.")
