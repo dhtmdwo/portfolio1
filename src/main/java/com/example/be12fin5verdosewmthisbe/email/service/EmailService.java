@@ -5,6 +5,8 @@ import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
 import com.example.be12fin5verdosewmthisbe.email.model.Email;
 import com.example.be12fin5verdosewmthisbe.email.model.dto.EmailDto;
 import com.example.be12fin5verdosewmthisbe.email.repository.EmailRepository;
+import com.example.be12fin5verdosewmthisbe.user.model.User;
+import com.example.be12fin5verdosewmthisbe.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
@@ -27,6 +29,7 @@ public class EmailService {
 
     private final JavaMailSender javaMailSender;
     private final EmailRepository emailRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public void AuthRequest(EmailDto.EmailRequest dto) {
@@ -49,6 +52,29 @@ public class EmailService {
 
         sendHtmlEmail(emailUrl, code);
 
+    }
+
+    @Transactional
+    public void sendCodeifpwfind(EmailDto.EmailRequest dto) {
+        String emailUrl = dto.getEmailUrl();
+        String code = generateVerificationCode();
+
+        Optional<User> userExisting = userRepository.findByEmail(emailUrl);
+
+        if (!userExisting.isPresent()) {
+            return;
+        }
+
+        Optional<Email> existingEmail = emailRepository.findByEmailUrl(emailUrl);
+        if (existingEmail.isPresent()) {
+            Email email = existingEmail.get();
+            email.setCode(code);
+            email.setCreatedAt(LocalDateTime.now());
+            email.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+            email.setVerified(false);
+            emailRepository.save(email);
+            sendHtmlEmail(emailUrl, code);
+        }
     }
 
     public void sendHtmlEmail(String to, String code) {
