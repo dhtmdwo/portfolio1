@@ -100,10 +100,15 @@ pipeline {
                     - name: config-volume
                       mountPath: /config
                       readOnly: true
+                    - name: upload-volume
+                      mountPath: /uploads
               volumes:
                 - name: config-volume
                   configMap:
                     name: spring-config
+                - name: upload-volume
+                  persistentVolumeClaim:
+                    claimName: wmthis-upload-pvc
         """
                             writeFile file: 'wmthis-deployment.yaml', text: deploymentYaml
                             sh 'kubectl apply -f wmthis-deployment.yaml'
