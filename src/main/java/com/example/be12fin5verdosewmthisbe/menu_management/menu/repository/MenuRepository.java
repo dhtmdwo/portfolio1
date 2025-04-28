@@ -30,4 +30,6 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     Page<Menu> findByStoreId(Long storeId, Pageable pageable);
 
     Optional<Menu> findByStoreIdAndName(Long attr2, String name);
+
+    List<Menu> findAllByStoreId(Long storeId);
 }

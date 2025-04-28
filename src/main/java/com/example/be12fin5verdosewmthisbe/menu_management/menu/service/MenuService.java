@@ -131,8 +131,8 @@ public class MenuService {
         return result.map(this::convertToMenuListResponseDto);
     }
 
-    public List<MenuDto.POSMenuListResponseDto> findAllPOSMenus() {
-        List<Menu> result = menuRepository.findAll();
+    public List<MenuDto.POSMenuListResponseDto> findAllPOSMenus(Long storeId) {
+        List<Menu> result = menuRepository.findAllByStoreId(storeId);
         if (result.isEmpty()) {
             throw new CustomException(ErrorCode.MENU_NOT_FOUND);
         }
