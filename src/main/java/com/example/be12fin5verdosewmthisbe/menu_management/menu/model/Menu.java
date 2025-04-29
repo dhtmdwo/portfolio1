@@ -48,4 +48,6 @@ public class Menu {
     @OneToMany(mappedBy = "menu")
     private List<OrderMenu> orderMenuList = new ArrayList<>();
 
+    @Column(nullable = false)
+    private boolean deleted = false;
 }
