@@ -119,9 +119,9 @@ public class MenuService {
 
         Page<Menu> result = null;
         if (keyword == null || keyword.trim().isEmpty()) {
-            result = menuRepository.findByStoreId(storeId,pageable);
+            result = menuRepository.findByStoreIdAndDeletedFalse(storeId, pageable);
         } else {
-            result = menuRepository.findByStoreIdAndNameContaining(storeId, keyword, pageable);
+            result = menuRepository.findByStoreIdAndNameContainingAndDeletedFalse(storeId, keyword, pageable);
         }
 
 
@@ -133,7 +133,7 @@ public class MenuService {
     }
 
     public List<MenuDto.POSMenuListResponseDto> findAllPOSMenus(Long storeId) {
-        List<Menu> result = menuRepository.findAllByStoreId(storeId);
+        List<Menu> result = menuRepository.findAllByStoreIdAndDeletedFalse(storeId);
         if (result.isEmpty()) {
             throw new CustomException(ErrorCode.MENU_NOT_FOUND);
         }
