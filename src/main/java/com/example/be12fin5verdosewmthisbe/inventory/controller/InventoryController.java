@@ -360,4 +360,11 @@ public class InventoryController {
         inventoryService.updateInventory(dto);
         return BaseResponse.success("재고 보정 완료");
     }
+    @DeleteMapping("/inventory")
+    public BaseResponse<String> deleteInventory(@RequestBody List<Long> inventoryid) {
+        inventoryService.deleteById(inventoryid);
+        return BaseResponse.success("선택한 재고가 성공적으로 삭제되었습니다.");
+    }
+
+
 }
