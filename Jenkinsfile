@@ -60,61 +60,57 @@ pipeline {
                 }
             }
         }
-                stage('Deploy to Kubernetes') {
-                    when {
-                        expression {
-                            return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                        }
-                    }
-                    steps {
-                        script {
-                            def deploymentYaml = """
+        stage('Deploy to Kubernetes') {
+            when {
+                expression {
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
+            steps {
+                script {
+                    def deploymentYaml = """
         apiVersion: apps/v1
         kind: Deployment
         metadata:
-          name: wmthis-back
-          labels:
-            app: wmthis-back
+          name: wmthis-backend
         spec:
           replicas: 2
           selector:
             matchLabels:
-              app: wmthis-back
+              app: wmthis-backend
           template:
             metadata:
               labels:
-                app: wmthis-back
+                app: wmthis-backend
             spec:
               containers:
-                - name: wmthis-back
+                - name: backend
                   image: ${IMAGE_NAME}:${IMAGE_TAG}
                   ports:
                     - containerPort: 8080
-                  imagePullPolicy: Always
                   envFrom:
                     - configMapRef:
                         name: wmthis-config
                     - secretRef:
                         name: wmthis-secret
-                  volumeMounts:
-                    - name: config-volume
-                      mountPath: /config
-                      readOnly: true
-                    - name: upload-volume
-                      mountPath: /uploads
-              volumes:
-                - name: config-volume
-                  configMap:
-                    name: spring-config
-                - name: upload-volume
-                  persistentVolumeClaim:
-                    claimName: wmthis-upload-pvc
+                  livenessProbe:
+                    httpGet:
+                      path: /api/actuator/health
+                      port: 8080
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                  readinessProbe:
+                    httpGet:
+                      path: /api/actuator/health
+                      port: 8080
+                    initialDelaySeconds: 10
+                    periodSeconds: 5
         """
-                            writeFile file: 'wmthis-deployment.yaml', text: deploymentYaml
-                            sh 'kubectl apply -f wmthis-deployment.yaml'
-                        }
-                    }
+                    writeFile file: 'wmthis-deployment.yaml', text: deploymentYaml
+                    sh 'kubectl apply -f wmthis-deployment.yaml'
                 }
+            }
+        }
 
     }
 }
