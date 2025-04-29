@@ -218,6 +218,24 @@ public class InventoryService {
     }
 
     @Transactional
+    public void deleteById(List<Long> inventoryid) {
+        // 먼저 주어진 inventoryIds를 기준으로 해당하는 Inventory 목록을 조회
+        List<Inventory> inventories = inventoryRepository.findAllById(inventoryid);
+
+        if (inventories.isEmpty()) {
+            throw new CustomException(ErrorCode.INVENTORY_NOT_FOUND);  // 조회된 재고가 없으면 예외 처리
+        }
+
+        try {
+            // 해당 재고들을 삭제
+            inventoryRepository.deleteAll(inventories);  // 삭제
+        } catch (DataIntegrityViolationException e) {
+            throw new CustomException(ErrorCode.CANNOT_DELETE_INVENTORY);  // 삭제할 수 없는 경우 예외 처리
+        }
+    }
+
+
+    @Transactional
     public List<InventoryInfoDto.Response> getInventoryList(Long storeId) {
         // StoreInventory 리스트를 가져옵니다.
         List<StoreInventory> inventoryList = storeInventoryRepository.findInventoryListByStore(storeId);
