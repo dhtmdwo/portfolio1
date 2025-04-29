@@ -66,4 +66,5 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenu, Long> {
                 @Param("end") Timestamp end
         );
 
+        boolean existsByMenuId(Long menuId);
 }
