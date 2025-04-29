@@ -615,7 +615,7 @@ public class InventoryService {
                 if (availableQuantity.compareTo(requiredQuantity) < 0) {
                     // 부족한 재고 항목을 리스트에 추가
                     String ingredientName = recipe.getStoreInventory().getName(); // StoreInventory에서 재료 이름 가져오기
-                    insufficientItems.add("[" + ingredientName +"]" + " 재고 부족");
+                    insufficientItems.add("[" + ingredientName +"]");
                 }
             }
 
@@ -632,7 +632,7 @@ public class InventoryService {
 
                         if (optionInventory.getQuantity().compareTo(requiredOptionQuantity) < 0) {
                             // 옵션 재고 부족 항목 추가
-                            insufficientItems.add("["+ option.getName() +"]" + " 옵션 구성 재료 부족");
+                            insufficientItems.add("\n["+ option.getName() +"]" + " 옵션 구성 재료가 부족할 수도 있어요.\n");
                         }
                     }
                 }

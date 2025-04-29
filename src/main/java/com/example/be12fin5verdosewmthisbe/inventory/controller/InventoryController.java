@@ -349,7 +349,7 @@ public class InventoryController {
         Set<String> uniqueItems = new LinkedHashSet<>(insufficientItems);
 
         if (!uniqueItems.isEmpty()) {
-            String message = "해당 재고를 확인해주세요 \n" + String.join(", ", uniqueItems);
+            String message = "해당 재고가 부족할 수도 있어요. 조리 전 확인해주세요. \n" + String.join("", uniqueItems);
             return new BaseResponse<>(ErrorCode.INSUFFICIENT_INVENTORY.getStatus(), message, null);
         }
 
