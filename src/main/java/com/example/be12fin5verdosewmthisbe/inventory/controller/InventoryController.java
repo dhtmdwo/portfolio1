@@ -21,7 +21,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Tag(name = "Inventory", description = "재고 관련 API")
 @RequiredArgsConstructor
@@ -344,10 +346,10 @@ public class InventoryController {
 
         List<String> insufficientItems = inventoryService.validateOrder(storeId, dto);
 
-        if (!insufficientItems.isEmpty()) {
-            // 부족한 재고가 있으면 해당 메시지를 포함하여 반환
-            String message = "해당 재고를 확인해주세요 \n" + String.join(", ", insufficientItems);
+        Set<String> uniqueItems = new LinkedHashSet<>(insufficientItems);
 
+        if (!uniqueItems.isEmpty()) {
+            String message = "해당 재고를 확인해주세요 \n" + String.join(", ", uniqueItems);
             return new BaseResponse<>(ErrorCode.INSUFFICIENT_INVENTORY.getStatus(), message, null);
         }
 
