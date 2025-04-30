@@ -74,6 +74,7 @@ pipeline {
         metadata:
           name: wmthis-backend
         spec:
+          revisionHistoryLimit: 4
           replicas: 2
           selector:
             matchLabels:
