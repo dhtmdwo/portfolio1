@@ -87,6 +87,9 @@ pipeline {
               containers:
                 - name: backend
                   image: ${IMAGE_NAME}:${IMAGE_TAG}
+                  # 외부 application.yml 로드
+                  args:
+                    - "--spring.config.location=/config/application.yml"
                   ports:
                     - containerPort: 8080
                   envFrom:
@@ -94,23 +97,24 @@ pipeline {
                         name: wmthis-config
                     - secretRef:
                         name: wmthis-secret
-                  livenessProbe:
-                    httpGet:
-                      path: /api/actuator/health
-                      port: 8080
-                    initialDelaySeconds: 30
-                    periodSeconds: 10
-                  readinessProbe:
-                    httpGet:
-                      path: /api/actuator/health
-                      port: 8080
-                    initialDelaySeconds: 10
-                    periodSeconds: 5
+                  volumeMounts:
+                    - name: config-volume
+                      mountPath: /config/application.yml
+                      subPath: application.yml
+              volumes:
+                - name: config-volume
+                  configMap:
+                    name: wmthis-yml     # application.yml 이 담긴 ConfigMap 이름
+                    items:
+                      - key: application.yml
+                        path: application.yml
         """
                     writeFile file: 'wmthis-deployment.yaml', text: deploymentYaml
                     sh 'kubectl apply -f wmthis-deployment.yaml'
                 }
             }
+        }
+
         }
 
     }
