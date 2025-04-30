@@ -77,5 +77,9 @@ public class StoreInventory {
     @JsonIgnore
     private List<InventorySale> inventorySaleList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<UsedInventory> usedInventorylist = new ArrayList<>();
+
 }
 
