@@ -87,7 +87,6 @@ public class MenuService {
                 .price(dto.getPrice())
                 .store(store)
                 .category(category)  // null일 수도 있음
-                .deleted(false)
                 .build();
 
         menuRepository.save(menu);
@@ -111,19 +110,20 @@ public class MenuService {
         return menuRepository.findById(menuId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
     }
-    public Page<MenuDto.MenuListResponseDto> findAllMenus(Pageable pageable, String keyword,Long storeId) {
+
+    public Page<MenuDto.MenuListResponseDto> findAllMenus(Pageable pageable, String keyword, Long storeId) {
 
         // 가게 정보 체크
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
 
-        Page<Menu> result = null;
-        if (keyword == null || keyword.trim().isEmpty()) {
-            result = menuRepository.findByStoreIdAndDeletedFalse(storeId, pageable);
-        } else {
-            result = menuRepository.findByStoreIdAndNameContainingAndDeletedFalse(storeId, keyword, pageable);
-        }
+        Page<Menu> result;
 
+        if (keyword == null || keyword.trim().isEmpty()) {
+            result = menuRepository.findByStoreId(storeId, pageable);
+        } else {
+            result = menuRepository.findByStoreIdAndNameContaining(storeId, keyword, pageable);
+        }
 
         if (result.isEmpty()) {
             throw new CustomException(ErrorCode.MENU_NOT_FOUND);
@@ -133,7 +133,7 @@ public class MenuService {
     }
 
     public List<MenuDto.POSMenuListResponseDto> findAllPOSMenus(Long storeId) {
-        List<Menu> result = menuRepository.findAllByStoreIdAndDeletedFalse(storeId);
+        List<Menu> result = menuRepository.findAllByStoreId(storeId);
         if (result.isEmpty()) {
             throw new CustomException(ErrorCode.MENU_NOT_FOUND);
         }
@@ -233,24 +233,17 @@ public class MenuService {
     @Transactional
     public void deleteMenus(List<Long> menuIds) {
         if (menuIds == null || menuIds.isEmpty()) {
-            throw new IllegalArgumentException("메뉴 ID 리스트가 비어있습니다.");
+            throw new CustomException(ErrorCode.MENU_NOT_FOUND);
         }
 
-        for (Long menuId : menuIds) {
-            Menu menu = menuRepository.findById(menuId)
-                    .orElseThrow(() -> new RuntimeException("해당 메뉴를 찾을 수 없습니다."));
+            for (Long menuId : menuIds) {
+                Menu menu = menuRepository.findById(menuId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
 
-            boolean isReferenced = orderMenuRepository.existsByMenuId(menuId);
-
-            if (isReferenced) {
-                // 참조 중이면 soft delete
-                menu.setDeleted(true);
-            } else {
-                // 참조 없으면 진짜 삭제
                 menuRepository.delete(menu);
             }
-        }
     }
+
     @Transactional
     public void updateMenu(Long menuId, MenuUpdateDto.RequestDto dto,Long storeId) {
 
