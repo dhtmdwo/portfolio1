@@ -46,10 +46,6 @@ public class Order {
     @JoinColumn(name = "store_id")
     private Store store;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Schema(description = "주문에 대한 재고 사용 내역")
-    private List<UsedInventory> usedInventories = new ArrayList<>();
-
     public enum OrderType {
         hall,
         coupang,
