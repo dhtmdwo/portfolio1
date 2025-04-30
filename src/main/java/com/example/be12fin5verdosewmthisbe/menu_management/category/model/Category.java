@@ -37,7 +37,7 @@ public class Category {
     @Builder.Default
     private List<CategoryOption> categoryOptions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "category")
     private List<Menu> menuList = new ArrayList<>();
     public void addCategoryOption(CategoryOption categoryOption) {
         this.categoryOptions.add(categoryOption);

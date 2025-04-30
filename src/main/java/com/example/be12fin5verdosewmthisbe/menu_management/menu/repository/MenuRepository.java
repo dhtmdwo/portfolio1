@@ -26,10 +26,10 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     """)
     List<Menu> findMenuBystore(@Param("storeId") Long storeId);
 
-    Page<Menu> findByStoreIdAndDeletedFalse(Long storeId, Pageable pageable);
-    Page<Menu> findByStoreIdAndNameContainingAndDeletedFalse(Long storeId, String keyword, Pageable pageable);
+    Page<Menu> findByStoreId(Long storeId, Pageable pageable);
+    Page<Menu> findByStoreIdAndNameContaining(Long storeId, String keyword, Pageable pageable);
 
     Optional<Menu> findByStoreIdAndName(Long attr2, String name);
 
-    List<Menu> findAllByStoreIdAndDeletedFalse(Long storeId);
+    List<Menu> findAllByStoreId(Long storeId);
 }

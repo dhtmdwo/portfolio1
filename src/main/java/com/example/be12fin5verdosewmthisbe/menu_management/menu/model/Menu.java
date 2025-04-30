@@ -45,11 +45,8 @@ public class Menu {
     @Schema(description = "메뉴 레시피 목록")
     private List<Recipe> recipeList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "menu")
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderMenu> orderMenuList = new ArrayList<>();
-
-    @Column(nullable = false)
-    private boolean deleted = false;
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "사용된 메뉴 건수")
