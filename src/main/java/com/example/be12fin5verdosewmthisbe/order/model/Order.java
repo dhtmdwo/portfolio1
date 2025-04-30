@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.order.model;
 
+import com.example.be12fin5verdosewmthisbe.inventory.model.UsedInventory;
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,8 +45,6 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "store_id")
     private Store store;
-
-
 
     public enum OrderType {
         hall,

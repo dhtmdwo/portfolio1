@@ -50,4 +50,8 @@ public class Menu {
 
     @Column(nullable = false)
     private boolean deleted = false;
+
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Schema(description = "사용된 메뉴 건수")
+    private List<MenuCount> menuCounts = new ArrayList<>();
 }
