@@ -113,7 +113,7 @@ pipeline {
                     sh 'kubectl apply -f wmthis-deployment.yaml'
                 }
             }
-        }
+
 
         }
 
