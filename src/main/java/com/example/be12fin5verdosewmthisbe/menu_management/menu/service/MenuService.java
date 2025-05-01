@@ -177,7 +177,8 @@ public class MenuService {
         if (maxRecipe != null) {
             String name = maxRecipe.getStoreInventory().getName();
             BigDecimal quantity = maxRecipe.getQuantity();
-            String unit = maxRecipe.getStoreInventory().getUnit();
+            String rawUnit = maxRecipe.getStoreInventory().getUnit();
+            String unit = "unit".equals(rawUnit) ? "개" : rawUnit;
 
             int otherCount = (int) recipes.stream()
                     .filter(r -> r.getStoreInventory() != null)
