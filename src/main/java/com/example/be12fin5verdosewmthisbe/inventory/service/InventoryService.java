@@ -299,21 +299,20 @@ public class InventoryService {
         List<InventoryChangeDto.Response> inventoryChangeList = new ArrayList<>();
         List<UsedInventory> usedInventoryList = usedInventoryRepository.findUsedInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
 
-        for(UsedInventory usedInventory : usedInventoryList) {
+        for (UsedInventory usedInventory : usedInventoryList) {
             Timestamp date = usedInventory.getUsedDate();
             String stockName = usedInventory.getStoreInventory().getName();
             String changeReason;
             Boolean isMenu = usedInventory.getStatus();
             BigDecimal quantity = usedInventory.getTotalquantity();
             String unit = usedInventory.getStoreInventory().getUnit();
-            if(isMenu == true){
+            if (isMenu == true) {
                 changeReason = "메뉴";
                 quantity = quantity.negate();
-            }else{
-                if(quantity.compareTo(BigDecimal.ZERO) >0){
+            } else {
+                if (quantity.compareTo(BigDecimal.ZERO) > 0) {
                     changeReason = "장터 구매";
-                }
-                else {
+                } else {
                     changeReason = "장터 판매";
                 }
             }
@@ -346,10 +345,8 @@ public class InventoryService {
             updateSoloList.add(saleResponse);
         }
 
-        return(updateSoloList);
+        return (updateSoloList);
     }
-
-
 
 
     @Transactional
