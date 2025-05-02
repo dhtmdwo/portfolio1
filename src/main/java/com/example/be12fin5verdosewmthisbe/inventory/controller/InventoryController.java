@@ -190,6 +190,29 @@ public class InventoryController {
     }
     // 메뉴로 재고가 얼마나 사용됐나 조회
 
+    @PostMapping("/menuMarket")
+    public BaseResponse<List<InventoryChangeDto.Response>> getInventoryChangeList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("ATOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        Claims claims = jwtTokenProvider.getClaims(token);
+        // JWT 읽기
+        String storeIdStr = claims.get("storeId", String.class);
+        Long storeId = Long.parseLong(storeIdStr);
+        List<InventoryChangeDto.Response> SaleList = inventoryService.getInventoryChangeList(storeId, dto);
+        return BaseResponse.success(SaleList);
+    }
+    // 메뉴, 장터로 재고 얼마나 사용됐나
+
+
+
     @PostMapping("/marketSale")
     public BaseResponse<List<InventoryChangeDto.Response>> getMarketList(HttpServletRequest request, @RequestBody InventoryChangeDto.DateRequest dto) {
 
@@ -230,7 +253,7 @@ public class InventoryController {
         List<InventoryChangeDto.Response> SaleList = inventoryService.getUpdateList(storeId, dto);
         return BaseResponse.success(SaleList);
     }
-    // 수정으로로 재고가 얼마나 변동했나 조회
+    // 수정으로 재고가 얼마나 변동했나 조회
 
     private Long getStoreId(HttpServletRequest request) {
         String token = null;
