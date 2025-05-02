@@ -7,6 +7,7 @@ import com.example.be12fin5verdosewmthisbe.inventory.model.dto.*;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.ModifyInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
+import com.example.be12fin5verdosewmthisbe.inventory.repository.UsedInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventoryPurchaseRepository;
@@ -69,6 +70,7 @@ public class InventoryService {
     private final MenuRepository menuRepository;
     private final OrderRepository orderRepository;
     private final OrderOptionRepository orderOptionRepository;
+    private final UsedInventoryRepository usedInventoryRepository;
 
     public StoreInventory registerStoreInventory(InventoryDetailRequestDto dto, Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(()->
@@ -287,127 +289,40 @@ public class InventoryService {
         return responseTotalInventoryList;
     }
 
-
-//    @Transactional
-//    public List<InventoryChangeDto.Response> getSaleList(Long storeId, InventoryChangeDto.DateRequest dto) {
-//
-//        LocalDate startDate = dto.getStartDate();
-//        LocalDate endDate = dto.getEndDate();
-//        Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
-//        Timestamp endTimestamp = Timestamp.valueOf(endDate.plusDays(1).atStartOfDay());
-//
-//
-//        List<OrderMenu> saleList = orderMenuRepository.findSaleMenusForInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
-//        List<InventoryChangeDto.Response> menuSaleList = new ArrayList<>();
-//
-//
-//        for (OrderMenu orderMenu : saleList) {
-//            Timestamp date = orderMenu.getOrder().getCreatedAt();
-//            List<Recipe> RecipeList = orderMenu.getMenu().getRecipeList();
-//            String changeReason = orderMenu.getMenu().getName();
-//            int menuQuantity = orderMenu.getQuantity();
-//            for(Recipe recipe : RecipeList ) {
-//                String stockName = recipe.getStoreInventory().getName();
-//                BigDecimal quantity = recipe.getQuantity().multiply(BigDecimal.valueOf(menuQuantity));
-//                String unit = recipe.getStoreInventory().getUnit();
-//                InventoryChangeDto.Response menuSale = InventoryChangeDto.Response.of(date, stockName, changeReason, quantity.negate(), unit);
-//                menuSaleList.add(menuSale);
-//            }
-//        }
-//        return(menuSaleList);
-//    }
-@Transactional
-public List<InventoryChangeDto.Response> getSaleList(Long storeId, InventoryChangeDto.DateRequest dto) {
-    LocalDate startDate = dto.getStartDate();
-    LocalDate endDate = dto.getEndDate();
-    Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
-    Timestamp endTimestamp = Timestamp.valueOf(endDate.plusDays(1).atStartOfDay());
-
-    List<OrderMenu> saleList = orderMenuRepository.findSaleMenusForInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
-
-    List<Long> orderMenuIds = new ArrayList<>();
-    for (OrderMenu orderMenu : saleList) {
-        orderMenuIds.add(orderMenu.getId());
-    }
-
-    List<OrderOption> optionList = orderOptionRepository.findOrderOptionsByOrderMenuIds(orderMenuIds);
-
-    List<InventoryChangeDto.Response> menuSaleList = new ArrayList<>();
-
-    for (OrderMenu orderMenu : saleList) {
-        Timestamp date = orderMenu.getOrder().getCreatedAt();
-        List<Recipe> recipeList = orderMenu.getMenu().getRecipeList();
-        String changeReason = orderMenu.getMenu().getName();
-        int menuQuantity = orderMenu.getQuantity();
-
-        // 1. 기본 메뉴 재고 사용
-        for (Recipe recipe : recipeList) {
-            String stockName = recipe.getStoreInventory().getName();
-            BigDecimal quantity = recipe.getQuantity().multiply(BigDecimal.valueOf(menuQuantity));
-            String unit = recipe.getStoreInventory().getUnit();
-            InventoryChangeDto.Response menuSale = InventoryChangeDto.Response.of(date, stockName, changeReason, quantity.negate(), unit);
-            menuSaleList.add(menuSale);
-        }
-
-        // 2. 옵션 재고 추가 사용
-        for (OrderOption orderOption : optionList) {
-            // 현재 OrderMenu에 해당하는 옵션만 처리
-            if (orderOption.getOrderMenu().getId().equals(orderMenu.getId())) {
-                for (OptionValue optionValue : orderOption.getOption().getOptionValueList()) {
-                    String stockName = optionValue.getStoreInventory().getName();
-                    BigDecimal quantity = optionValue.getQuantity().multiply(BigDecimal.valueOf(menuQuantity));
-                    String unit = optionValue.getStoreInventory().getUnit();
-                    String optionChangeReason = changeReason + " - 옵션: " + orderOption.getOption().getName();
-
-                    InventoryChangeDto.Response optionSale = InventoryChangeDto.Response.of(date, stockName, optionChangeReason, quantity.negate(), unit);
-                    menuSaleList.add(optionSale);
-                }
-            }
-        }
-    }
-
-    return menuSaleList;
-}
-
-
-
     @Transactional
-    public List<InventoryChangeDto.Response> getMarketList(Long storeId, InventoryChangeDto.DateRequest dto) {
-
+    public List<InventoryChangeDto.Response> getInventoryChangeList(Long storeId, InventoryChangeDto.DateRequest dto) {
         LocalDate startDate = dto.getStartDate();
         LocalDate endDate = dto.getEndDate();
         Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
         Timestamp endTimestamp = Timestamp.valueOf(endDate.plusDays(1).atStartOfDay());
 
-        List<InventoryChangeDto.Response> MarketSaleList = new ArrayList<>();
-        List<InventorySale> saleList = inventorySaleRepository.findMarketSaleForInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
-        InventoryPurchase.purchaseStatus status = InventoryPurchase.purchaseStatus.end;
-        List<InventoryPurchase> purchaseList = inventoryPurchaseRepository.findMarketPurchaseForInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp, status);
+        List<InventoryChangeDto.Response> inventoryChangeList = new ArrayList<>();
+        List<UsedInventory> usedInventoryList = usedInventoryRepository.findUsedInventoryByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
 
+        for(UsedInventory usedInventory : usedInventoryList) {
+            Timestamp date = usedInventory.getUsedDate();
+            String stockName = usedInventory.getStoreInventory().getName();
+            String changeReason;
+            Boolean isMenu = usedInventory.getStatus();
+            BigDecimal quantity = usedInventory.getTotalquantity();
+            String unit = usedInventory.getStoreInventory().getUnit();
+            if(isMenu == true){
+                changeReason = "메뉴";
+                quantity = quantity.negate();
+            }else{
+                if(quantity.compareTo(BigDecimal.ZERO) >0){
+                    changeReason = "장터 구매";
+                }
+                else {
+                    changeReason = "장터 판매";
+                }
+            }
+            InventoryChangeDto.Response inventoryChange = InventoryChangeDto.Response.of(date, stockName, changeReason, quantity, unit);
+            inventoryChangeList.add(inventoryChange);
 
-        for (InventorySale inventorySale : saleList) {
-            Timestamp date = inventorySale.getCreatedAt();
-            String stockName = inventorySale.getStoreInventory().getName();
-            String changeReasonq = "판매";
-            BigDecimal quantity = inventorySale.getQuantity().negate();
-            String unit = inventorySale.getStoreInventory().getUnit();
-            InventoryChangeDto.Response saleResponse = InventoryChangeDto.Response.of(date, stockName, changeReasonq, quantity, unit);
-            MarketSaleList.add(saleResponse);
         }
-        // 장터에서 판매
 
-        for (InventoryPurchase inventoryPurchase : purchaseList) {
-            Timestamp date = inventoryPurchase.getCreatedAt();
-            String stockName = inventoryPurchase.getInventorySale().getStoreInventory().getName();
-            String changeReasonq = "구매";
-            BigDecimal quantity = inventoryPurchase.getQuantity();
-            String unit = inventoryPurchase.getInventorySale().getStoreInventory().getUnit();
-            InventoryChangeDto.Response purchaseResponse = InventoryChangeDto.Response.of(date, stockName, changeReasonq, quantity, unit);
-            MarketSaleList.add(purchaseResponse);
-        }
-        // 장터에서 구매
-
-        return(MarketSaleList);
+        return inventoryChangeList;
     }
 
     @Transactional

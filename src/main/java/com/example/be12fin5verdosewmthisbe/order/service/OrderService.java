@@ -152,6 +152,7 @@ public class OrderService {
                     .totalquantity(totalUsed)
                     .name(storeInventory.getName())
                     .usedDate(now)
+                    .status(true)
                     .build());
         }
 
