@@ -354,6 +354,17 @@ public class InventoryService {
         List<Inventory> inventories = inventoryRepository
                 .findByStoreInventory_IdOrderByExpiryDateAsc(storeInventoryId);
 
+        StoreInventory storeInventory = storeInventoryRepository.findById(storeInventoryId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
+
+        BigDecimal changeQuantity = storeInventory.getQuantity().subtract(requestedQuantity);
+
+        if(changeQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
+        }
+        storeInventory.setQuantity(changeQuantity);
+        storeInventoryRepository.save(storeInventory);
+
         BigDecimal remaining = requestedQuantity;
 
         for (Inventory inventory : inventories) {
@@ -374,7 +385,7 @@ public class InventoryService {
         }
 
         if (remaining.compareTo(BigDecimal.ZERO) > 0) {
-            throw new IllegalArgumentException("재고가 부족하여 요청 수량만큼 차감할 수 없습니다.");
+            throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
         }
     }
     // 전체를 유통기한 빠른 순으로

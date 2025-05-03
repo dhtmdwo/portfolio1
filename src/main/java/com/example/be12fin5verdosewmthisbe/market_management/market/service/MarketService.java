@@ -8,6 +8,7 @@ import com.example.be12fin5verdosewmthisbe.inventory.model.ModifyInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
+import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.Images;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
@@ -40,6 +41,8 @@ public class MarketService {
     private final InventorySaleRepository inventorySaleRepository;
     private final StoreInventoryRepository storeInventoryRepository;
     private final StoreRepository storeRepository;
+
+    private final InventoryService inventoryService;
 
     public void saleRegister(InventorySaleDto.InventorySaleRequestDto dto, Long storeId, Inventory inventory) {
 
@@ -188,6 +191,7 @@ public class MarketService {
         InventorySale inventorySale = inventoryPurchase.getInventorySale();
         inventoryPurchase.setStatus(InventoryPurchase.purchaseStatus.end);
         inventorySale.setStatus(InventorySale.saleStatus.sold);
+
         inventorySaleRepository.save(inventorySale);
         inventoryPurchaseRepository.save(inventoryPurchase);
     }
@@ -198,11 +202,11 @@ public class MarketService {
                 .orElseThrow(() -> new CustomException(ErrorCode.SALE_NOT_FOUND));
 
         List<InventoryPurchase> purchases = sale.getPurchaseList();
+        StoreInventory storeInventory = sale.getStoreInventory();
 
         boolean found = false;
         for (InventoryPurchase purchase : purchases) {
             if (purchase.getId().equals(purchaseId)) {
-
                 sale.setPrice(purchase.getPrice());
                 sale.setQuantity(purchase.getQuantity());
                 sale.setBuyerStoreName(purchase.getStore().getName());
@@ -213,6 +217,8 @@ public class MarketService {
                     sale.setStatus(InventorySale.saleStatus.isPaymentPending);
                     purchase.setStatus(InventoryPurchase.purchaseStatus.isPaymentInProgress);
                 }
+                // 재고 차감 로직 추가해야함
+                inventoryService.consumeInventory(storeInventory.getId(),purchase.getQuantity());
                 sale.setInventoryPurchaseId(purchaseId);
                 inventorySaleRepository.save(sale);
                 found = true;
