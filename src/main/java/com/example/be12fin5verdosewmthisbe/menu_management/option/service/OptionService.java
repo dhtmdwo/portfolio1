@@ -88,8 +88,13 @@ public class OptionService {
 
         // 중복 체크
         Optional<Option> duplicate = optionRepository.findByStoreIdAndName(storeId,request.getName());
-        if(duplicate.isPresent() && !duplicate.get().getName().equals(request.getName())) {
-            throw new CustomException(ErrorCode.OPTION_ALREADY_EXIST);
+        if(duplicate.isPresent() && duplicate.get().getName().equals(request.getName())) {
+            Option option1 = duplicate.get();
+            if(option1.getId().equals(request.getOptionId())) {  // 같은 옵션이 duplicate에 들어옴 = 이름이 같아도 상관 X
+
+            } else {
+                throw new CustomException(ErrorCode.OPTION_ALREADY_EXIST);
+            }
         }
         Set<Long> uniqueStoreInventoryIds = new HashSet<>();
         for (OptionDto.InventoryQuantityDto ingredient : request.getInventoryQuantities()) {
