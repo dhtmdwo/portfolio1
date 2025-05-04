@@ -87,14 +87,9 @@ public class OptionService {
                 .orElseThrow(() -> new IllegalArgumentException("옵션을 찾을 수 없습니다. ID: " + request.getOptionId()));
 
         // 중복 체크
-        Optional<Option> duplicate = optionRepository.findByStoreIdAndName(storeId,request.getName());
-        if(duplicate.isPresent() && duplicate.get().getName().equals(request.getName())) {
-            Option option1 = duplicate.get();
-            if(option1.getId().equals(request.getOptionId())) {  // 같은 옵션이 duplicate에 들어옴 = 이름이 같아도 상관 X
-
-            } else {
-                throw new CustomException(ErrorCode.OPTION_ALREADY_EXIST);
-            }
+        Optional<Option> duplicate = optionRepository.findByStoreIdAndName(storeId, request.getName());
+        if (duplicate.isPresent() && !duplicate.get().getId().equals(request.getOptionId())) {
+            throw new CustomException(ErrorCode.OPTION_ALREADY_EXIST);
         }
         Set<Long> uniqueStoreInventoryIds = new HashSet<>();
         for (OptionDto.InventoryQuantityDto ingredient : request.getInventoryQuantities()) {
