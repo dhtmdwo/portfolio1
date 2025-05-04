@@ -239,7 +239,6 @@ public class InventoryService {
         }
     }
 
-
     @Transactional
     public List<InventoryInfoDto.Response> getInventoryList(Long storeId) {
         // StoreInventory 리스트를 가져옵니다.
@@ -251,9 +250,16 @@ public class InventoryService {
             String name = inventory.getName();
             BigDecimal quantity = inventory.getQuantity();
             String unit = inventory.getUnit();
-            Inventory firstInventory = getFirstInventoryToUse(inventory.getId());
+
+            // 남은 수량이 0보다 큰 입고 항목 중 가장 빠른 유통기한을 가진 항목 가져오기
+            Inventory firstInventory = inventoryRepository.findByStoreInventory_Id(inventory.getId()).stream()
+                    .filter(i -> i.getQuantity() != null && i.getQuantity().compareTo(BigDecimal.ZERO) > 0)
+                    .sorted(Comparator.comparing(Inventory::getExpiryDate))
+                    .findFirst()
+                    .orElse(null);
+
             LocalDate expiryDate = null;
-            if(firstInventory != null) {
+            if (firstInventory != null) {
                 expiryDate = firstInventory.getExpiryDate();
             }
 
