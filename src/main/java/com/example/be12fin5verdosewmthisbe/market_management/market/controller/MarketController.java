@@ -134,7 +134,7 @@ public class MarketController {
     public BaseResponse<List<InventorySaleDto.InventorySaleListDto>> getList(HttpServletRequest request) {
         Long storeId = getStoreId(request);
         List<Long> storeIdList = storeService.getNearbyStoreIds(storeId);
-        return BaseResponse.success(marketService.getNearbyAvailableSalesDto(storeIdList));
+        return BaseResponse.success(marketService.getNearbyAvailableSalesDto(storeIdList,storeId));
     }
 
     private Long getStoreId(HttpServletRequest request) {

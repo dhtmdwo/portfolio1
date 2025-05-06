@@ -97,7 +97,7 @@ public class InventoryService {
         }
     }
 
-    public void registerInventory(InventoryDto.InventoryRegisterDto dto, Long storeId) {
+    public void registerInventory(InventoryDto.InventoryRegisterDto dto) {
 
         // 1. StoreInventory 조회
         StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
@@ -365,7 +365,7 @@ public class InventoryService {
 
         BigDecimal changeQuantity = storeInventory.getQuantity().subtract(requestedQuantity);
 
-        if(changeQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+        if(changeQuantity.compareTo(BigDecimal.ZERO) < 0) {
             throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
         }
         storeInventory.setQuantity(changeQuantity);
