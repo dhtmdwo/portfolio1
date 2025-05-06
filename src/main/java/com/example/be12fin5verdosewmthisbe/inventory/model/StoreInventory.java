@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.inventory.model;
 
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventoryPurchase;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
@@ -78,8 +79,13 @@ public class StoreInventory {
     private List<InventorySale> inventorySaleList = new ArrayList<>();
 
     @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InventoryPurchase> inventoryPurchaseList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<UsedInventory> usedInventorylist = new ArrayList<>();
+
+
 
 }
 

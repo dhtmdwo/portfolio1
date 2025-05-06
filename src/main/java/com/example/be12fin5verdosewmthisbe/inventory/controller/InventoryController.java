@@ -71,7 +71,7 @@ public class InventoryController {
         Claims claims = jwtTokenProvider.getClaims(token);
         Long storeId = Long.valueOf(claims.get("storeId", String.class));
 
-        inventoryService.registerInventory(dto, storeId);
+        inventoryService.registerInventory(dto);
         return BaseResponse.success("ok");
     }
 
