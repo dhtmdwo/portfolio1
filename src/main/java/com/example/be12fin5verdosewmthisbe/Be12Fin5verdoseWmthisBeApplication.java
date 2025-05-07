@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 @EnableScheduling
 @AllArgsConstructor
 public class Be12Fin5verdoseWmthisBeApplication {
-    private final StoreInventoryRepository storeInventoryRepository;
+    /*private final StoreInventoryRepository storeInventoryRepository;
     private final InventoryRepository inventoryRepository;
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
@@ -66,7 +66,7 @@ public class Be12Fin5verdoseWmthisBeApplication {
     private final CategoryOptionRepository categoryOptionRepository;
     private final OrderService orderService;
     private final OrderRepository orderRepository;
-
+*/
     public static void main(String[] args) {
         SpringApplication.run(Be12Fin5verdoseWmthisBeApplication.class, args);
     }
@@ -77,7 +77,7 @@ public class Be12Fin5verdoseWmthisBeApplication {
         long randomTime = ThreadLocalRandom.current().nextLong(twoMonthsAgo, now);
         return new Timestamp(randomTime);
     }
-    @Bean
+    /*@Bean
     CommandLineRunner generateDummyData(UserRepository userRepository, StoreRepository storeRepository) {
         return args -> {
             Faker faker = new Faker(new Locale("ko"));
@@ -123,11 +123,8 @@ public class Be12Fin5verdoseWmthisBeApplication {
                             double x = Double.parseDouble(xStr);
                             double y = Double.parseDouble(yStr);
 
-                            log.info(String.valueOf(x) + "," + String.valueOf(y));
-
                             double[] latLon = CoordinateConverter.convertToLatLon(x, y);
 
-                            log.info(String.valueOf(latLon[0]) + "," + String.valueOf(latLon[1]));
 
                             validStores.add(new ParsedStore(name, addr, latLon[1], latLon[0]));
                         } catch (Exception e) {
@@ -370,7 +367,7 @@ public class Be12Fin5verdoseWmthisBeApplication {
     private String getTagValue(Element element, String tagName) {
         NodeList nodeList = element.getElementsByTagName(tagName);
         return (nodeList.getLength() > 0 && nodeList.item(0) != null) ? nodeList.item(0).getTextContent().trim() : null;
-    }
+    }*/
 
 
 }
