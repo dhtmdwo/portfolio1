@@ -29,7 +29,7 @@ public class Category {
     @JoinColumn(name = "store_id")
     private Store store;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     @Schema(description = "카테고리 이름", example = "메인 요리")
     private String name;
 
