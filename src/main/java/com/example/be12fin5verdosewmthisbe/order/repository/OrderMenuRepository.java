@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.order.repository;
 
+import com.example.be12fin5verdosewmthisbe.inventory.model.UsedInventory;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
@@ -15,25 +16,6 @@ import java.util.List;
 public interface OrderMenuRepository extends JpaRepository<OrderMenu, Long> {
 
         @Query("""
-        SELECT m.name, SUM(om.quantity) as totalSold
-        FROM OrderMenu om
-        JOIN om.order o
-        JOIN o.store s
-        JOIN om.menu m
-        JOIN m.category c
-        JOIN c.store store
-        WHERE store.id = :storeId
-        AND o.createdAt BETWEEN :start AND :end
-        GROUP BY m.name
-        ORDER BY totalSold DESC
-        """)
-        List<Object[]> findBestSellingMenusByStoreAndPeriod(
-                @Param("storeId") Long storeId,
-                @Param("start") Timestamp start,
-                @Param("end") Timestamp end
-        );
-
-        @Query("""
         SELECT DISTINCT om FROM OrderMenu om
         JOIN FETCH om.order o
         JOIN FETCH om.menu m
@@ -45,22 +27,6 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenu, Long> {
         
     """)
         List<OrderMenu> findSaleMenusByStoreAndPeriod(
-                @Param("storeId") Long storeId,
-                @Param("start") Timestamp start,
-                @Param("end") Timestamp end
-        );
-
-        @Query("""
-            SELECT DISTINCT om FROM OrderMenu om
-            JOIN FETCH om.order o
-            JOIN FETCH om.menu m
-            JOIN FETCH m.recipeList r
-            JOIN FETCH r.storeInventory si
-            WHERE o.store.id = :storeId
-            AND o.createdAt >= :start
-            AND o.createdAt < :end
-        """)
-        List<OrderMenu> findSaleMenusForInventoryByStoreAndPeriod(
                 @Param("storeId") Long storeId,
                 @Param("start") Timestamp start,
                 @Param("end") Timestamp end

@@ -428,7 +428,7 @@ public class InventoryService {
                 int daysBetween = (int) ChronoUnit.DAYS.between(today, eachExpiryDate);
                 int daysTodayBetween = (int) ChronoUnit.DAYS.between(today, purchaseDate);
 
-                if (daysBetween >= 0 && daysBetween <= expiryDate / 10) {
+                if (daysBetween >= 0 && daysBetween <= 2) {
                     expiringCount++;
                 }
 

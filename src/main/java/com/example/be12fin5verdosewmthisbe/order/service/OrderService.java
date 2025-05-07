@@ -286,30 +286,12 @@ public class OrderService {
         Timestamp startTimestamp = Timestamp.valueOf(startOfWeek.atStartOfDay());
         Timestamp endTimestamp = Timestamp.valueOf(endOfWeek.plusDays(1).atStartOfDay());
 
-        List<Object[]> result = orderMenuRepository.findBestSellingMenusByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
-        int temp = 0;
-        String first ="";
-        String second ="";
-        String third ="";
-        for (Object[] row : result) {
-            String menuName = (String) row[0];
-            if(temp>2){
-                break;
-            }
-            if(temp ==0){
-                first = menuName;
-            }
-            else if(temp ==1){
-                second = menuName;
-            }
-            else if(temp ==2){
-                third = menuName;
-            }
-            else{
-                break;
-            }
-            temp++;
-        }
+        List<Object[]> topMenus = menuCountRepository.findTopMenusByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
+
+        String first = topMenus.size() > 0 ? (String) topMenus.get(0)[0] : "";
+        String second = topMenus.size() > 1 ? (String) topMenus.get(1)[0] : "";
+        String third = topMenus.size() > 2 ? (String) topMenus.get(2)[0] : "";
+
         return OrderTopMenuDto.TopWeekResponse.of(first, second, third);
     }
 
