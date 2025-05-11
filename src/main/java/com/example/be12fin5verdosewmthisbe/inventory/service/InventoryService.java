@@ -792,10 +792,20 @@ public class InventoryService {
         storeInventory.setQuantity(totalQuantity);
         storeInventoryRepository.save(storeInventory);
 
+        BigDecimal modifyRate;
+        if (beforeQuantity.compareTo(BigDecimal.ZERO) == 0) {
+            modifyRate = BigDecimal.valueOf(100); // 0 → X 로 변경: 100% 증가로 간주
+        } else {
+            modifyRate = changeQuantity
+                    .divide(beforeQuantity, 4, RoundingMode.HALF_UP)  // 소수점 4자리
+                    .multiply(BigDecimal.valueOf(100));                // % 환산
+        }
+
         // 변경 이력 저장
         ModifyInventory modifyInventory = ModifyInventory.builder()
                 .modifyDate(new Timestamp(System.currentTimeMillis()))
                 .modifyQuantity(changeQuantity)
+                .modifyRate(modifyRate)
                 .inventory(inventory)
                 .build();
 

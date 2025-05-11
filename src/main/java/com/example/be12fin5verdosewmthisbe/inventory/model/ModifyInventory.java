@@ -36,6 +36,10 @@ public class ModifyInventory {
     @Schema(description = "수정한 수량", example = "3")
     private BigDecimal modifyQuantity;
 
+    @Column(name = "modify_rate")
+    @Schema(description = "변경 비율 (변경량 / 기존 수량 * 100)", example = "25.0")
+    private BigDecimal modifyRate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_id")// 외래 키 설정
     private Inventory inventory;
