@@ -23,4 +23,13 @@ public interface OptionRepository extends JpaRepository<Option, Long> {
     Optional<Option> findByIdWithOptionValues(@Param("optionId") Long optionId);
 
     Optional<Option> findByStoreIdAndName(Long storeId, String name);
+
+
+    @Query("""
+SELECT DISTINCT o FROM Option o
+LEFT JOIN FETCH o.optionValueList ov
+LEFT JOIN FETCH ov.storeInventory si
+WHERE o.id IN :ids
+    """)
+    List<Option> findAllByIdInFetchOptionValues(@Param("ids") List<Long> ids);
 }

@@ -8,11 +8,7 @@ import com.example.be12fin5verdosewmthisbe.menu_management.category.model.Catego
 import com.example.be12fin5verdosewmthisbe.menu_management.category.repository.CategoryRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuInfoDto;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuSaleDto;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuDto;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuRegisterDto;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.MenuUpdateDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.*;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.RecipeRepository;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
@@ -204,7 +200,7 @@ public class MenuService {
     }
 
     public MenuDto.MenuDetailResponseDto getMenuDetail(Long menuId) {
-        Menu menu = menuRepository.findById(menuId)
+        Menu menu = menuRepository.findMenuWithRecipesAndInventories(menuId)
                 .orElseThrow(() -> new RuntimeException("해당 메뉴를 찾을 수 없습니다."));
 
         List<Recipe> recipes = menu.getRecipeList();
@@ -230,6 +226,7 @@ public class MenuService {
                 .ingredients(ingredients)
                 .build();
     }
+
 
     @Transactional
     public void deleteMenus(List<Long> menuIds) {
