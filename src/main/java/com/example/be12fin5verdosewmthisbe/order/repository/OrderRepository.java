@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.order.repository;
 
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.payment.model.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;

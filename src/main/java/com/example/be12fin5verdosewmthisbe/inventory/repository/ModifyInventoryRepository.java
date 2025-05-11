@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface ModifyInventoryRepository extends JpaRepository<ModifyInventory, Integer> {
 
+
     @Query("""
         SELECT DISTINCT mi FROM ModifyInventory mi
         JOIN FETCH mi.inventory i
@@ -25,4 +26,7 @@ public interface ModifyInventoryRepository extends JpaRepository<ModifyInventory
             @Param("start") Timestamp start,
             @Param("end") Timestamp end
     );
+
+
+    List<ModifyInventory> findByInventory_inventoryIdIn(List<Long> inventoryIds);
 }

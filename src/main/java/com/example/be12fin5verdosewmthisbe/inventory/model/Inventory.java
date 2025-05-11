@@ -51,7 +51,7 @@ public class Inventory {
     @JoinColumn(name = "store_inventory_id")  // 외래 키 설정
     private StoreInventory storeInventory;  // 필드 이름을 storeInventory로 설정
 
-    @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     @Schema(description = "수정된 재고 목록")
     private List<ModifyInventory> modifyInventoryList;

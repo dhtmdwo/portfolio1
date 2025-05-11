@@ -10,6 +10,7 @@ import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryReposit
 import com.example.be12fin5verdosewmthisbe.inventory.repository.ModifyInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
 import com.example.be12fin5verdosewmthisbe.inventory.repository.UsedInventoryRepository;
+import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.MenuCount;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
@@ -31,6 +32,7 @@ import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.aspectj.weaver.ast.Or;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,7 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.example.be12fin5verdosewmthisbe.order.model.dto.OrderDto.OrderCreateResponse.toOrderCreateResponse;
@@ -63,11 +66,34 @@ public class OrderService {
     private final UsedInventoryRepository usedInventoryRepository;
     private final MenuCountRepository menuCountRepository;
 
+    private final InventoryService inventoryService;
+
     @Transactional
-    public OrderDto.OrderCreateResponse createOrder(OrderDto.OrderCreateRequest request, Long storeId) {
+    public OrderDto.OrderCreateResponse createOrder(
+            OrderDto.OrderCreateRequest request,
+            Long storeId) {
+
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
 
+        // 1) 요청에서 menuId, optionId, recipeId 수집
+        List<Long> menuIds   = request.getOrderMenus().stream()
+                .map(OrderDto.OrderMenuRequest::getMenuId)
+                .distinct().toList();
+        List<Long> optionIds = request.getOrderMenus().stream()
+                .flatMap(m -> m.getOptionIds().stream())
+                .distinct().toList();
+
+        // 2) 메뉴, 레시피, 재고, 옵션, 옵션값을 한 번에 배치 조회
+        List<Menu> menus = menuRepository.load(menuIds);
+        Map<Long, Menu> menuMap = menus.stream()
+                .collect(Collectors.toMap(Menu::getId, Function.identity()));
+
+        List<Option> options = optionRepository.findAllById(optionIds);
+        Map<Long, Option> optionMap = options.stream()
+                .collect(Collectors.toMap(Option::getId, Function.identity()));
+
+        // 3) 주문 엔티티 생성
         Order order = Order.builder()
                 .tableNumber(request.getTableNumber())
                 .status(Order.OrderStatus.PAID)
@@ -78,15 +104,19 @@ public class OrderService {
                 .build();
 
         int totalPrice = 0;
-        Map<Long, BigDecimal> usedInventoryMap = new HashMap<>();  // Key를 Long으로 수정
-        Map<Menu, Integer> menuCountMap = new HashMap<>();
-        Map<Inventory, BigDecimal> modifyInventoryMap = new HashMap<>(); // <- 추가
+        // 임시 누적 맵: StoreInventory.id → 총 사용량
+        Map<Long, BigDecimal> usedInventoryQty = new HashMap<>();
+        // 임시 누적 맵: Inventory.id → 총 수정량 (음수)
+        Map<Long, BigDecimal> modifyInventoryQty = new HashMap<>();
+        // 메뉴 카운트 누적
+        Map<Long, Integer> menuCountMap = new HashMap<>();
 
+        // 4) 각 OrderMenu 처리
         for (OrderDto.OrderMenuRequest menuReq : request.getOrderMenus()) {
-            Menu menu = menuRepository.findById(menuReq.getMenuId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
+            Menu menu = menuMap.get(menuReq.getMenuId());
+            if (menu == null) throw new CustomException(ErrorCode.MENU_NOT_FOUND);
 
-            OrderMenu orderMenu = OrderMenu.builder()
+            OrderMenu om = OrderMenu.builder()
                     .order(order)
                     .price(menuReq.getPrice())
                     .quantity(menuReq.getQuantity())
@@ -96,92 +126,88 @@ public class OrderService {
 
             int menuTotal = menuReq.getPrice() * menuReq.getQuantity();
 
-            // 레시피 차감
-            List<Recipe> recipes = recipeRepository.findAllByMenu(menu);
-            for (Recipe recipe : recipes) {
-                List<StoreInventory> ingredients = storeInventoryRepository.findByStore_IdAndRecipeList(storeId, recipe);
-                for (StoreInventory storeInventory : ingredients) {
-                    BigDecimal quantityToDeduct = recipe.getQuantity().multiply(BigDecimal.valueOf(menuReq.getQuantity()));
-                    BigDecimal used = deductInventory(storeInventory, quantityToDeduct, modifyInventoryMap); // <- 수정
-                    usedInventoryMap.merge(storeInventory.getId(), used, BigDecimal::add);  // Key를 storeInventory.getId()로 수정
-                }
+            // 4-a) 레시피별 재고 차감량 누적
+            for (Recipe recipe : menu.getRecipeList()) {
+                Long invId = recipe.getStoreInventory().getId();
+                BigDecimal deduct = recipe.getQuantity()
+                        .multiply(BigDecimal.valueOf(menuReq.getQuantity()));
+                usedInventoryQty.merge(invId, deduct, BigDecimal::add);
+                modifyInventoryQty.merge(invId, deduct.negate(), BigDecimal::add);
             }
 
-            // 옵션 차감
-            for (Long optionId : menuReq.getOptionIds()) {
-                Option option = optionRepository.findById(optionId)
-                        .orElseThrow(() -> new RuntimeException("Option not found"));
+            // 4-b) 옵션별 처리
+            for (Long optId : menuReq.getOptionIds()) {
+                Option opt = optionMap.get(optId);
+                if (opt == null) throw new RuntimeException("Option not found");
 
-                OrderOption orderOption = OrderOption.builder()
-                        .orderMenu(orderMenu)
-                        .option(option)
+                OrderOption oo = OrderOption.builder()
+                        .orderMenu(om)
+                        .option(opt)
                         .build();
+                om.getOrderOptionList().add(oo);
+                menuTotal += opt.getPrice() * menuReq.getQuantity();
 
-                orderMenu.getOrderOptionList().add(orderOption);
-                menuTotal += option.getPrice() * menuReq.getQuantity();
-
-                List<OptionValue> optionValues = optionValueRepository.findAllByOption(option);
-                for (OptionValue optionValue : optionValues) {
-                    StoreInventory optionInventory = optionValue.getStoreInventory();
-                    BigDecimal quantityToDeduct = optionValue.getQuantity().multiply(BigDecimal.valueOf(menuReq.getQuantity()));
-                    BigDecimal used = deductInventory(optionInventory, quantityToDeduct, modifyInventoryMap); // <- 수정
-                    usedInventoryMap.merge(optionInventory.getId(), used, BigDecimal::add);  // Key를 optionInventory.getId()로 수정
+                // 옵션값 재고 차감
+                for (OptionValue ov : opt.getOptionValueList()) {
+                    Long invId = ov.getStoreInventory().getId();
+                    BigDecimal deduct = ov.getQuantity()
+                            .multiply(BigDecimal.valueOf(menuReq.getQuantity()));
+                    usedInventoryQty.merge(invId, deduct, BigDecimal::add);
+                    modifyInventoryQty.merge(invId, deduct.negate(), BigDecimal::add);
                 }
             }
 
-            order.getOrderMenuList().add(orderMenu);
+            order.getOrderMenuList().add(om);
             totalPrice += menuTotal;
-
-            menuCountMap.merge(menu, menuReq.getQuantity(), Integer::sum);
+            menuCountMap.merge(menu.getId(), menuReq.getQuantity(), Integer::sum);
         }
 
         order.setTotalPrice(totalPrice);
-        Order savedOrder = orderRepository.save(order);
+        orderRepository.save(order); // orderMenu, orderOption은 cascade로 저장
 
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
 
-        // UsedInventory 저장
-        for (Map.Entry<Long, BigDecimal> entry : usedInventoryMap.entrySet()) {  // Key를 Long으로 수정
-            Long storeInventoryId = entry.getKey();  // key -> storeInventory의 ID
-            BigDecimal totalUsed = entry.getValue();
-            StoreInventory storeInventory = storeInventoryRepository.findById(storeInventoryId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
+        inventoryService.consumeInventories(usedInventoryQty);
 
-            usedInventoryRepository.save(UsedInventory.builder()
-                    .storeInventory(storeInventory)
-                    .totalquantity(totalUsed)
-                    .name(storeInventory.getName())
-                    .usedDate(now)
-                    .status(true)
-                    .build());
-        }
+        // 5) UsedInventory 배치 저장
+        List<UsedInventory> usedList = usedInventoryQty.entrySet().stream()
+                .map(e -> {
+                    StoreInventory si = storeInventoryRepository.getReferenceById(e.getKey());
+                    return UsedInventory.builder()
+                            .storeInventory(si)
+                            .totalquantity(e.getValue())
+                            .name(si.getName())
+                            .usedDate(now)
+                            .status(true)
+                            .build();
+                }).toList();
+        usedInventoryRepository.saveAll(usedList);
 
-        // ModifyInventory 저장 (중복 제거한 inventory 단위)
-        for (Map.Entry<Inventory, BigDecimal> entry : modifyInventoryMap.entrySet()) {
-            Inventory inventory = entry.getKey();
-            BigDecimal deficit = entry.getValue(); // 이미 음수임
+        // 6) ModifyInventory 배치 저장
+        List<ModifyInventory> modList = modifyInventoryQty.entrySet().stream()
+                .map(e -> ModifyInventory.builder()
+                        .inventory(inventoryRepository.getReferenceById(e.getKey()))
+                        .modifyQuantity(e.getValue())
+                        .modifyDate(now)
+                        .build())
+                .toList();
+        modifyInventoryRepository.saveAll(modList);
 
-            ModifyInventory modify = ModifyInventory.builder()
-                    .inventory(inventory)
-                    .modifyQuantity(deficit)
-                    .modifyDate(now)
-                    .build();
+        // 7) MenuCount 배치 저장
+        List<MenuCount> countList = menuCountMap.entrySet().stream()
+                .map(e -> {
+                    MenuCount mc = new MenuCount();
+                    mc.setStore(store);
+                    mc.setMenu(menuMap.get(e.getKey()));
+                    mc.setCount(e.getValue());
+                    mc.setUsedDate(now);
+                    return mc;
+                }).toList();
+        menuCountRepository.saveAll(countList);
 
-            modifyInventoryRepository.save(modify);
-        }
-
-        // MenuCount 저장
-        for (Map.Entry<Menu, Integer> entry : menuCountMap.entrySet()) {
-            MenuCount menuCount = new MenuCount();
-            menuCount.setStore(store);
-            menuCount.setMenu(entry.getKey());
-            menuCount.setCount(entry.getValue());
-            menuCount.setUsedDate(now);
-            menuCountRepository.save(menuCount);
-        }
-
-        return toOrderCreateResponse(savedOrder);
+        return toOrderCreateResponse(order);
     }
+
 
     // 수정된 deductInventory
     private BigDecimal deductInventory(StoreInventory storeInventory, BigDecimal requestedQuantity, Map<Inventory, BigDecimal> modifyInventoryMap) {
@@ -283,33 +309,20 @@ public class OrderService {
         LocalDate startOfWeek = today.with(DayOfWeek.MONDAY);
         LocalDate endOfWeek = today.with(DayOfWeek.SUNDAY);
 
-        Timestamp startTimestamp = Timestamp.valueOf(startOfWeek.atStartOfDay());
-        Timestamp endTimestamp = Timestamp.valueOf(endOfWeek.plusDays(1).atStartOfDay());
+        Timestamp start = Timestamp.valueOf(startOfWeek.atStartOfDay());
+        Timestamp end = Timestamp.valueOf(endOfWeek.plusDays(1).atStartOfDay());
 
-        List<Object[]> result = orderMenuRepository.findBestSellingMenusByStoreAndPeriod(storeId, startTimestamp, endTimestamp);
-        int temp = 0;
-        String first ="";
-        String second ="";
-        String third ="";
-        for (Object[] row : result) {
-            String menuName = (String) row[0];
-            if(temp>2){
-                break;
-            }
-            if(temp ==0){
-                first = menuName;
-            }
-            else if(temp ==1){
-                second = menuName;
-            }
-            else if(temp ==2){
-                third = menuName;
-            }
-            else{
-                break;
-            }
-            temp++;
-        }
+        // PageRequest.of(0, 3) → 첫 페이지(0)에서 3개만
+        List<Object[]> rows = orderMenuRepository
+                .findBestSellingMenusByStoreAndPeriod(
+                        storeId, start, end,
+                        PageRequest.of(0, 3)
+                );
+
+        String first  = rows.size() > 0 ? (String) rows.get(0)[0] : "";
+        String second = rows.size() > 1 ? (String) rows.get(1)[0] : "";
+        String third  = rows.size() > 2 ? (String) rows.get(2)[0] : "";
+
         return OrderTopMenuDto.TopWeekResponse.of(first, second, third);
     }
 
