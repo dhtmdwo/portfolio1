@@ -38,7 +38,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             ,@Param("end") Timestamp end
     );
 
-
+    @Query("""
+        SELECT o.store.id, SUM(o.totalPrice)
+        FROM Order o
+        WHERE o.createdAt BETWEEN :start AND :end
+          AND o.status = 'PAID'
+        GROUP BY o.store.id
+    """)
+    List<Object[]> findSalesByStoreBetween(@Param("start") Timestamp start, @Param("end") Timestamp end);
 
 }
         

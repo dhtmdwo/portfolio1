@@ -27,6 +27,15 @@ public interface ModifyInventoryRepository extends JpaRepository<ModifyInventory
             @Param("end") Timestamp end
     );
 
+    @Query("""
+    SELECT mi
+    FROM ModifyInventory mi
+    WHERE mi.modifyDate BETWEEN :start AND :end
+    AND mi.inventory.storeInventory.store.id IS NOT NULL
+    ORDER BY mi.inventory.storeInventory.store.id ASC, ABS(mi.modifyRate) DESC
+    """)
+    List<ModifyInventory> findTopModifiedInventories(@Param("start") Timestamp start, @Param("end") Timestamp end);
+
 
     List<ModifyInventory> findByInventory_inventoryIdIn(List<Long> inventoryIds);
 }
