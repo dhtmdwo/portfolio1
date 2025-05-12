@@ -37,12 +37,19 @@ public class Store {
     private String phoneNumber;
 
     @Column(
-            nullable = false,
-           updatable = false,
+            columnDefinition = """
+        POINT
+        GENERATED ALWAYS AS (
+          ST_GeomFromText(
+            CONCAT('POINT(', longitude, ' ', latitude, ')')
+          )
+        ) STORED
+        """,
+            nullable = true,      // Hibernate가 NOT NULL 자동 추가를 방지
+            updatable = false,
             insertable = false
     )
     private byte[] location;
-
 
 
     @Column(nullable = false)
