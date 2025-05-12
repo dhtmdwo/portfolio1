@@ -29,8 +29,8 @@ public class TopModifiedInventory {
     private Store store;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inventory_id")
-    private Inventory inventory;
+    @JoinColumn(name = "store_inventory_id")
+    private StoreInventory storeInventory;
 
     private BigDecimal modifyQuantity;
 

@@ -14,8 +14,7 @@ public interface ModifyInventoryRepository extends JpaRepository<ModifyInventory
 
     @Query("""
         SELECT DISTINCT mi FROM ModifyInventory mi
-        JOIN FETCH mi.inventory i
-        JOIN FETCH i.storeInventory si
+        JOIN FETCH mi.storeInventory si
         JOIN FETCH si.store s
         WHERE s.id = :storeId
         AND mi.modifyDate >= :start
@@ -31,11 +30,11 @@ public interface ModifyInventoryRepository extends JpaRepository<ModifyInventory
     SELECT mi
     FROM ModifyInventory mi
     WHERE mi.modifyDate BETWEEN :start AND :end
-    AND mi.inventory.storeInventory.store.id IS NOT NULL
-    ORDER BY mi.inventory.storeInventory.store.id ASC, ABS(mi.modifyRate) DESC
+    AND mi.storeInventory.store.id IS NOT NULL
+    ORDER BY mi.storeInventory.store.id ASC, ABS(mi.modifyRate) DESC
     """)
     List<ModifyInventory> findTopModifiedInventories(@Param("start") Timestamp start, @Param("end") Timestamp end);
 
 
-    List<ModifyInventory> findByInventory_inventoryIdIn(List<Long> inventoryIds);
+    List<ModifyInventory> findByStoreInventory_IdIn(List<Long> storeInventoryIds);
 }

@@ -167,7 +167,7 @@ public class InventoryService {
         return inventories.stream()
                 .map(inventory -> {
                     return InventoryDto.builder()
-                            .id(inventory.getInventoryId())
+                            .id(inventory.getId())
                             .purchaseDate(inventory.getPurchaseDate())
                             .expiryDate(inventory.getExpiryDate())
                             .quantity(inventory.getQuantity())
@@ -345,10 +345,10 @@ public class InventoryService {
 
         for (ModifyInventory modifyInventory : updateList) {
             Timestamp date = modifyInventory.getModifyDate(); // 수정 날짜
-            String stockName = modifyInventory.getInventory().getStoreInventory().getName();
+            String stockName = modifyInventory.getStoreInventory().getName();
             String changeReasonq = "수정";
             BigDecimal quantity = modifyInventory.getModifyQuantity();
-            String unit = modifyInventory.getInventory().getStoreInventory().getUnit();
+            String unit = modifyInventory.getStoreInventory().getUnit();
             InventoryChangeDto.Response saleResponse = InventoryChangeDto.Response.of(date, stockName, changeReasonq, quantity, unit);
             updateSoloList.add(saleResponse);
         }
@@ -391,7 +391,16 @@ public class InventoryService {
             BigDecimal toConsume = usedInventoryQty.get(siId);
             BigDecimal newTotal = si.getQuantity().subtract(toConsume);
             if (newTotal.compareTo(BigDecimal.ZERO) < 0) {
-                throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
+                modifyInventoriesToSave.add(
+                        ModifyInventory.builder()
+                                .modifyDate(new Timestamp(System.currentTimeMillis()))
+                                .modifyQuantity(newTotal)
+                                .modifyRate(BigDecimal.valueOf(100))  // 전량 시도
+                                .storeInventory(si)
+                                .build()
+                );
+                // storeinventory 아래있는 inventory 다 삭제
+                continue;
             }
             // 남은 총 재고 반영
             si.setQuantity(newTotal);
@@ -413,19 +422,6 @@ public class InventoryService {
                     inventoriesToSaveDetail.add(inv);
                     remaining = BigDecimal.ZERO;
                 }
-            }
-            if (remaining.compareTo(BigDecimal.ZERO) > 0) {
-                Inventory latestInv = group.isEmpty() ? null : group.get(group.size() - 1); // 아무거나 하나 연결
-                modifyInventoriesToSave.add(
-                        ModifyInventory.builder()
-                                .modifyDate(new Timestamp(System.currentTimeMillis()))
-                                .modifyQuantity(remaining)
-                                .modifyRate(si.getQuantity().compareTo(BigDecimal.ZERO) > 0 ?
-                                        remaining.divide(si.getQuantity(), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100))
-                                        : BigDecimal.ZERO)
-                                .inventory(latestInv)  // 연관된 inventory 아무거나 기록
-                                .build()
-                );
             }
         }
 
@@ -546,18 +542,17 @@ public class InventoryService {
         // 2) StoreInventory + Inventory 한 번에 조회 (1쿼리)
         List<StoreInventory> sis = storeInventoryRepository.findAllWithInventories(storeId);
 
-        // 3) 모든 Inventory.id 수집
-        List<Long> invIds = sis.stream()
-                .flatMap(si -> si.getInventoryList().stream())
-                .map(Inventory::getInventoryId)
+        // 3) 모든 id 수집
+        List<Long> storeInventoryIds = sis.stream()
+                .map(StoreInventory::getId)
                 .toList();
 
         // 4) ModifyInventory 일괄 조회 (1쿼리)
-        List<ModifyInventory> allMods = modifyInventoryRepository.findByInventory_inventoryIdIn(invIds);
+        List<ModifyInventory> allMods = modifyInventoryRepository.findByStoreInventory_IdIn(storeInventoryIds);
 
-        // 5) inventoryId → List<ModifyInventory> 그룹핑
+        // 5) storeInventoryId → List<ModifyInventory> 그룹핑
         Map<Long, List<ModifyInventory>> modsByInv = allMods.stream()
-                .collect(Collectors.groupingBy(mi -> mi.getInventory().getInventoryId()));
+                .collect(Collectors.groupingBy(mi -> mi.getStoreInventory().getId()));
 
         // 6) 집계 로직
         int expiringCount = 0;
@@ -579,7 +574,7 @@ public class InventoryService {
                     );
 
                     // 이전에 로드해 둔 맵에서 꺼내기
-                    List<ModifyInventory> mods = modsByInv.getOrDefault(inv.getInventoryId(), List.of());
+                    List<ModifyInventory> mods = modsByInv.getOrDefault(si.getId(), List.of());
                     for (ModifyInventory mi : mods) {
                         Timestamp modTs = mi.getModifyDate();
                         if (!modTs.before(start) && !modTs.after(end)) {
@@ -817,7 +812,7 @@ public class InventoryService {
                 .modifyDate(new Timestamp(System.currentTimeMillis()))
                 .modifyQuantity(changeQuantity)
                 .modifyRate(modifyRate)
-                .inventory(inventory)
+                .storeInventory(storeInventory)
                 .build();
 
         modifyInventoryRepository.save(modifyInventory);

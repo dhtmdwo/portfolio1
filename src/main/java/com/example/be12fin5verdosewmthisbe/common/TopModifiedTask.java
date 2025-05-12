@@ -36,7 +36,7 @@ public class TopModifiedTask {
 
         Map<Long, ModifyInventory> topByStore = new HashMap<>();
         for (ModifyInventory mi : list) {
-            Long storeId = mi.getInventory().getStoreInventory().getStore().getId();
+            Long storeId = mi.getStoreInventory().getStore().getId();
             if (!topByStore.containsKey(storeId)) {
                 topByStore.put(storeId, mi); // 가장 먼저 나오는(변경률 높은) 것만 저장
             }
@@ -44,11 +44,11 @@ public class TopModifiedTask {
 
         List<TopModifiedInventory> result = new ArrayList<>();
         for (ModifyInventory mi : topByStore.values()) {
-            Store store = mi.getInventory().getStoreInventory().getStore();
+            Store store = mi.getStoreInventory().getStore();
             result.add(TopModifiedInventory.builder()
                     .recordDate(yesterday)
                     .store(store)
-                    .inventory(mi.getInventory())
+                    .storeInventory(mi.getStoreInventory())
                     .modifyQuantity(mi.getModifyQuantity())
                     .modifyRate(mi.getModifyRate())
                     .build());
