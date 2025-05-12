@@ -25,7 +25,7 @@ public class TopModifiedTask {
     private final TopModifiedInventoryRepository topModifiedInventoryRepository;
     private final ModifyInventoryRepository modifyInventoryRepository;
 
-    @Scheduled(cron = "0 5 1 * * *")
+    @Scheduled(cron = "0 0/10 * * * *")
     @Transactional
     public void analyzeTopModifiedInventory() {
         LocalDate yesterday = LocalDate.now().minusDays(1);

@@ -38,7 +38,7 @@ public class Store {
 
     @Column(
             columnDefinition = """
-        POINT 
+        POINT NOT NULL
         GENERATED ALWAYS AS (
           ST_GeomFromText(
             CONCAT('POINT(', longitude, ' ', latitude, ')')
@@ -50,6 +50,7 @@ public class Store {
             insertable = false
     )
     private byte[] location;
+
 
     @Column(nullable = false)
     private Double latitude;
