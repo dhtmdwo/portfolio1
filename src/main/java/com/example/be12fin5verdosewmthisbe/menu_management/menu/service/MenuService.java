@@ -335,7 +335,7 @@ public class MenuService {
     }
 
     public List<StoreMenuDto> getMenusByStore(Long storeId) {
-        return menuRepository.findDtoByStoreId(storeId);
+        return menuRepository.findStoreMenuDtosByStoreId(storeId);
     }
 
 
