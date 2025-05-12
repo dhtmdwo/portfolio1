@@ -11,6 +11,7 @@ import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.*;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.RecipeRepository;
+import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
 import com.example.be12fin5verdosewmthisbe.order.model.Order;
 import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
 import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
@@ -48,6 +49,7 @@ public class MenuService {
     private final StoreInventoryRepository storeInventoryRepository;
     private final StoreRepository storeRepository;
     private final OrderMenuRepository orderMenuRepository;
+    private final OptionRepository optionRepository;
 
     @Transactional
     public void registerMenu(MenuRegisterDto.MenuCreateRequestDto dto,Long storeId) {
@@ -335,7 +337,17 @@ public class MenuService {
     }
 
     public List<StoreMenuDto> getMenusByStore(Long storeId) {
-        return menuRepository.findStoreMenuDtosByStoreId(storeId);
+        List<Menu> menus = menuRepository.findAllByStoreId(storeId);
+        List<Long> optionIds = optionRepository.findOptionIdsByStoreId(storeId);
+
+        return menus.stream()
+                .map(m -> StoreMenuDto.builder()
+                        .menuId(m.getId())
+                        .menuName(m.getName())
+                        .price(m.getPrice())
+                        .optionIds(optionIds)
+                        .build())
+                .collect(Collectors.toList());
     }
 
 
