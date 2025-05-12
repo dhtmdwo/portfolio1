@@ -37,19 +37,12 @@ public class Store {
     private String phoneNumber;
 
     @Column(
-            columnDefinition = """
-        POINT NOT NULL
-        GENERATED ALWAYS AS (
-          ST_GeomFromText(
-            CONCAT('POINT(', longitude, ' ', latitude, ')')
-          )
-        ) STORED
-        """,
-            nullable = false,
+            columnDefinition = "POINT NOT NULL GENERATED ALWAYS AS (ST_GeomFromText(CONCAT('POINT(', longitude, ' ', latitude, ')'))) STORED",
             updatable = false,
             insertable = false
     )
     private byte[] location;
+
 
 
     @Column(nullable = false)
