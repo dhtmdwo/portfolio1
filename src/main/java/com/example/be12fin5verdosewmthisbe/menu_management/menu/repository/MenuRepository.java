@@ -2,6 +2,7 @@ package com.example.be12fin5verdosewmthisbe.menu_management.menu.repository;
 
 import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
 import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.StoreMenuDto;
 import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,15 @@ import java.util.Optional;
 
 @Repository
 public interface MenuRepository extends JpaRepository<Menu, Long> {
+
+    @Query("SELECT new com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.StoreMenuDto(" +
+            "m.id, m.name, m.price, " +
+            "COALESCE( (SELECT LIST(o.id) FROM Option o WHERE o.menu.id = m.id), '' )" +
+            ") " +
+            "FROM Menu m " +
+            "JOIN m.store s " +
+            "WHERE s.id = :storeId")
+    List<StoreMenuDto> findDtoByStoreId(@Param("storeId") Long storeId);
 
 
     @Query("""

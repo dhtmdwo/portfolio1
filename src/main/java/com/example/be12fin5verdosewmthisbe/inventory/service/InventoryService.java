@@ -383,6 +383,7 @@ public class InventoryService {
         List<StoreInventory> inventoriesToSave = new ArrayList<>();
         List<Inventory> inventoriesToSaveDetail = new ArrayList<>();
         List<Inventory> inventoriesToDelete = new ArrayList<>();
+        List<ModifyInventory> modifyInventoriesToSave = new ArrayList<>();
 
         // 4) 각 StoreInventory별로 소비 로직 실행
         for (StoreInventory si : storeInventories) {
@@ -414,8 +415,17 @@ public class InventoryService {
                 }
             }
             if (remaining.compareTo(BigDecimal.ZERO) > 0) {
-                // 그룹화된 개별 Inventory 총합으로도 부족한 경우
-                throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
+                Inventory latestInv = group.isEmpty() ? null : group.get(group.size() - 1); // 아무거나 하나 연결
+                modifyInventoriesToSave.add(
+                        ModifyInventory.builder()
+                                .modifyDate(new Timestamp(System.currentTimeMillis()))
+                                .modifyQuantity(remaining)
+                                .modifyRate(si.getQuantity().compareTo(BigDecimal.ZERO) > 0 ?
+                                        remaining.divide(si.getQuantity(), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100))
+                                        : BigDecimal.ZERO)
+                                .inventory(latestInv)  // 연관된 inventory 아무거나 기록
+                                .build()
+                );
             }
         }
 
@@ -423,6 +433,7 @@ public class InventoryService {
         storeInventoryRepository.saveAll(inventoriesToSave);
         inventoryRepository.saveAll(inventoriesToSaveDetail);
         inventoryRepository.deleteAll(inventoriesToDelete);
+        modifyInventoryRepository.saveAll(modifyInventoriesToSave);
     }
 
     @Transactional

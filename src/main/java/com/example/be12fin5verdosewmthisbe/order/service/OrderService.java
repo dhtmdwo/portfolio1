@@ -294,8 +294,6 @@ public class OrderService {
                     .mapToInt(Order::getTotalPrice)
                     .sum();
 
-
-
             timeList.add(OrderTodayDto.OrderTodayTime.of(hour, hallSales, deliverySales));
         }
         return(OrderTodayDto.OrderTodayResponse.of(

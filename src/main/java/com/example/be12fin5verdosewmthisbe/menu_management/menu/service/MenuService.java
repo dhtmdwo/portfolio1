@@ -334,5 +334,9 @@ public class MenuService {
         return(menuSaleList);
     }
 
+    public List<StoreMenuDto> getMenusByStore(Long storeId) {
+        return menuRepository.findDtoByStoreId(storeId);
+    }
+
 
 }
