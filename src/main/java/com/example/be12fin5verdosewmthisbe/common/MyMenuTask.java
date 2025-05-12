@@ -33,7 +33,7 @@ public class MyMenuTask {
 
 
     // 매일 새벽 1시에 각 가게에 전날 하루동안 가장 많이 팔린 메뉴 저장
-    @Scheduled(cron = "0 0 1 * * *")
+    @Scheduled(cron = "0 0/10 * * * *")
     @Transactional
     public void runTask() {
         LocalDate yesterday = LocalDate.now().minusDays(1);

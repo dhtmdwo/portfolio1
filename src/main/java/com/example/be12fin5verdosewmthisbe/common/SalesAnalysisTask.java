@@ -24,7 +24,7 @@ public class SalesAnalysisTask {
     private final StoreRepository storeRepository;
     private final SalesComparisonRepository salesComparisonRepository;
 
-    @Scheduled(cron = "0 10 1 * * *")
+    @Scheduled(cron = "0 0/10 * * * *")
     @Transactional
     public void analyzeSalesComparison() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
