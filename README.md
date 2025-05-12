@@ -15,7 +15,7 @@
 
 ---
 
-# <img src="https://i.namu.wiki/i/pUSVyUCiN_NvwLXMZIvgzvr9XCAGZSzDzPm1_ypZRXSKaMEQ2_L9lYT-m2d-d8LF7cOUVPc1PLK5U37qLyNgUeWJ8OL70GyWxx4bQfGDZTrQbasowkpjGTbHdCi5gY3V3KO47CvdI9oK1q4QPZDh5Q.svg" alt="logo" width="30"> 팀원 구성
+# <img src="https://i.namu.wiki/i/i4lq7xgSiZoHNJFK7Zcon9-4AJtQMNsCoezqrOcBIgoIst9dfGMn863K0Qmru8prJDtUvOLHky_uuVwGqkuE6MhHGBwrLeMP7cc72-XSaHUdmz8r11xhxCo-pKesnUfavCgH9etSvzhKezlFQ37MIg.svg" alt="logo" width="30"> 팀원 구성
 
 <div align="center">
   <table>
