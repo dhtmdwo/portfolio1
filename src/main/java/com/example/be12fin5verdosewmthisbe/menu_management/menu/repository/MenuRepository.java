@@ -22,7 +22,7 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     @Query("SELECT new com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.StoreMenuDto(" +
             "m.id, m.name, m.price, " +
-            "(SELECT COALESCE(CAST(COLLECT(o.id) AS list), '[]') FROM Option o WHERE o.menu.id = m.id)" +
+            "(SELECT o.id FROM Option o WHERE o.store.id = m.store.id)" +
             ") " +
             "FROM Menu m " +
             "WHERE m.store.id = :storeId")
