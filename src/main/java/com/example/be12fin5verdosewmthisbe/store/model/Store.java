@@ -37,8 +37,8 @@ public class Store {
     private String phoneNumber;
 
     @Column(
-            columnDefinition = "POINT NOT NULL GENERATED ALWAYS AS (ST_GeomFromText(CONCAT('POINT(', longitude, ' ', latitude, ')'))) STORED",
-            updatable = false,
+            nullable = false,
+           updatable = false,
             insertable = false
     )
     private byte[] location;
