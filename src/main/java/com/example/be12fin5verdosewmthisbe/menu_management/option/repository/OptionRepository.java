@@ -14,6 +14,9 @@ import java.util.Optional;
 
 @Repository
 public interface OptionRepository extends JpaRepository<Option, Long> {
+    @Query("SELECT o.id FROM Option o WHERE o.store.id = :storeId")
+    List<Long> findOptionIdsByStoreId(@Param("storeId") Long storeId);
+
     Page<Option> findByStoreId(Long storeId, Pageable pageable);
     Page<Option> findByStoreIdAndNameContaining(Long storeId, String keyword, Pageable pageable);
     @Query("SELECT o FROM Option o " +
