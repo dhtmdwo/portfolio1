@@ -19,8 +19,7 @@ import java.util.List;
 @NoArgsConstructor  // JPA에서 필요
 @AllArgsConstructor // Builder 내부에서 사용
 @Builder
-@Schema(description = "수정한 재고"
-)
+@Schema(description = "수정한 재고")
 public class ModifyInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,7 +40,7 @@ public class ModifyInventory {
     private BigDecimal modifyRate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inventory_id")// 외래 키 설정
-    private Inventory inventory;
+    @JoinColumn(name = "store_inventory_id")// 외래 키 설정
+    private StoreInventory storeInventory;
 
 }

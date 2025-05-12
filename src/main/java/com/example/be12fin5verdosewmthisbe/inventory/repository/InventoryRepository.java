@@ -28,7 +28,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
         JOIN FETCH i.storeInventory si
         JOIN FETCH si.store s
         WHERE s.id = :storeId       
-        AND i.inventoryId = :inventoryId
+        AND i.id = :inventoryId
     """)
     List<Inventory> findByStoreInventoryStoreIdANDStoreInAndInventoryId(@Param("storeId") Long storeId, @Param("inventoryId") Long inventoryId);
 
