@@ -26,6 +26,8 @@ public class TransactionDto {
 
     private BigDecimal quantity;
 
+    private String unit;
+
     private int price;
 
     private String status;
