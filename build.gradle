@@ -53,6 +53,8 @@ dependencies {
     implementation 'net.datafaker:datafaker:2.4.2'
     implementation 'org.locationtech.proj4j:proj4j:1.1.0'
     implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {
