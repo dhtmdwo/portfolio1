@@ -1,31 +1,22 @@
 package com.example.orderservice.order.service;
 
-import com.example.be12fin5verdosewmthisbe.common.CustomException;
-import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
-import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
-import com.example.be12fin5verdosewmthisbe.inventory.model.ModifyInventory;
-import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
-import com.example.be12fin5verdosewmthisbe.inventory.model.UsedInventory;
-import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
-import com.example.be12fin5verdosewmthisbe.inventory.repository.ModifyInventoryRepository;
-import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
-import com.example.be12fin5verdosewmthisbe.inventory.repository.UsedInventoryRepository;
-import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.MenuCount;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuCountRepository;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
-import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
-import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
-import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
-import com.example.be12fin5verdosewmthisbe.order.model.Order;
-import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
-import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
-import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
-import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
-import com.example.be12fin5verdosewmthisbe.store.model.Store;
-import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
+
+
+import com.example.common.CustomException;
+import com.example.common.ErrorCode;
+import com.example.orderservice.menu_management.menu.model.Menu;
+import com.example.orderservice.menu_management.menu.model.Recipe;
+import com.example.orderservice.menu_management.menu.repository.MenuCountRepository;
+import com.example.orderservice.menu_management.menu.repository.MenuRepository;
+import com.example.orderservice.menu_management.option.model.Option;
+import com.example.orderservice.menu_management.option.model.OptionValue;
+import com.example.orderservice.menu_management.option.repository.OptionRepository;
+import com.example.orderservice.order.model.Order;
+import com.example.orderservice.order.model.OrderMenu;
+import com.example.orderservice.order.model.OrderOption;
+import com.example.orderservice.order.model.dto.OrderDto;
+import com.example.orderservice.order.repository.OrderMenuRepository;
+import com.example.orderservice.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -43,30 +34,19 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.example.be12fin5verdosewmthisbe.order.model.dto.OrderDto.OrderCreateResponse.toOrderCreateResponse;
-
 @Service
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OptionRepository optionRepository;
     private final OrderMenuRepository orderMenuRepository;
-    private final StoreRepository storeRepository;
-    private final StoreInventoryRepository storeInventoryRepository;
     private final MenuRepository menuRepository;
-    private final InventoryRepository inventoryRepository;
-    private final ModifyInventoryRepository modifyInventoryRepository;
-    private final UsedInventoryRepository usedInventoryRepository;
     private final MenuCountRepository menuCountRepository;
-    private final InventoryService inventoryService;
 
     @Transactional
     public OrderDto.OrderCreateResponse createOrder(
             OrderDto.OrderCreateRequest request,
             Long storeId) {
-
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_EXIST));
 
         // 1) 요청에서 menuId, optionId, recipeId 수집
         List<Long> menuIds   = request.getOrderMenus().stream()
@@ -76,7 +56,7 @@ public class OrderService {
                 .flatMap(m -> m.getOptionIds().stream())
                 .distinct().toList();
 
-        // 2) 메뉴, 레시피, 재고, 옵션, 옵션값을 한 번에 배치 조회
+        // 2) 메뉴, 레시피, 옵션, 옵션값을 한 번에 배치 조회
         List<Menu> menus = menuRepository.load(menuIds);
         Map<Long, Menu> menuMap = menus.stream()
                 .collect(Collectors.toMap(Menu::getId, Function.identity()));
@@ -90,7 +70,7 @@ public class OrderService {
                 .tableNumber(request.getTableNumber())
                 .status(Order.OrderStatus.PAID)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
-                .store(store)
+                .storeId(storeId)
                 .orderType(Order.OrderType.valueOf(request.getOrderType()))
                 .orderMenuList(new ArrayList<>())
                 .build();
@@ -120,7 +100,7 @@ public class OrderService {
 
             // 4-a) 레시피별 재고 차감량 누적
             for (Recipe recipe : menu.getRecipeList()) {
-                Long invId = recipe.getStoreInventory().getId();
+                Long invId = recipe.getStoreInventoryId();
                 BigDecimal deduct = recipe.getQuantity()
                         .multiply(BigDecimal.valueOf(menuReq.getQuantity()));
                 usedInventoryQty.merge(invId, deduct, BigDecimal::add);
@@ -141,7 +121,7 @@ public class OrderService {
 
                 // 옵션값 재고 차감
                 for (OptionValue ov : opt.getOptionValueList()) {
-                    Long invId = ov.getStoreInventory().getId();
+                    Long invId = ov.getStoreInventoryId();
                     BigDecimal deduct = ov.getQuantity()
                             .multiply(BigDecimal.valueOf(menuReq.getQuantity()));
                     usedInventoryQty.merge(invId, deduct, BigDecimal::add);
@@ -157,47 +137,7 @@ public class OrderService {
         order.setTotalPrice(totalPrice);
         orderRepository.save(order); // orderMenu, orderOption은 cascade로 저장
 
-        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
-
-        inventoryService.consumeInventories(usedInventoryQty);
-
-        // 5) UsedInventory 배치 저장
-        List<UsedInventory> usedList = usedInventoryQty.entrySet().stream()
-                .map(e -> {
-                    StoreInventory si = storeInventoryRepository.getReferenceById(e.getKey());
-                    return UsedInventory.builder()
-                            .storeInventory(si)
-                            .totalquantity(e.getValue())
-                            .name(si.getName())
-                            .usedDate(now)
-                            .status(true)
-                            .build();
-                }).toList();
-        usedInventoryRepository.saveAll(usedList);
-
-        // 6) ModifyInventory 배치 저장
-        List<ModifyInventory> modList = modifyInventoryQty.entrySet().stream()
-                .map(e -> ModifyInventory.builder()
-                        .storeInventory(storeInventoryRepository.getReferenceById(e.getKey()))
-                        .modifyQuantity(e.getValue())
-                        .modifyDate(now)
-                        .build())
-                .toList();
-        modifyInventoryRepository.saveAll(modList);
-
-        // 7) MenuCount 배치 저장
-        List<MenuCount> countList = menuCountMap.entrySet().stream()
-                .map(e -> {
-                    MenuCount mc = new MenuCount();
-                    mc.setStore(store);
-                    mc.setMenu(menuMap.get(e.getKey()));
-                    mc.setCount(e.getValue());
-                    mc.setUsedDate(now);
-                    return mc;
-                }).toList();
-        menuCountRepository.saveAll(countList);
-
-        return toOrderCreateResponse(order);
+        return OrderDto.OrderCreateResponse.toOrderCreateResponse(order);
     }
 
 

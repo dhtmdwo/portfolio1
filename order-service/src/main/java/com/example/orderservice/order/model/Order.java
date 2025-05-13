@@ -1,7 +1,6 @@
 package com.example.orderservice.order.model;
 
-import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
-import com.example.be12fin5verdosewmthisbe.store.model.Store;
+import com.example.orderservice.order.model.OrderMenu;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -41,9 +40,10 @@ public class Order {
     @ToString.Exclude
     private List<OrderMenu> orderMenuList = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "store_id")
-    private Store store;
+
+    // 외래키
+
+    private Long storeId;
 
     public enum OrderType {
         hall,

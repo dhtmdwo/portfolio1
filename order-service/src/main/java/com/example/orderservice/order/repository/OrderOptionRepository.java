@@ -1,6 +1,6 @@
 package com.example.orderservice.order.repository;
 
-import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
+import com.example.orderservice.order.model.OrderOption;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -1,7 +1,7 @@
 package com.example.orderservice.order.model.dto;
 
 
-import com.example.be12fin5verdosewmthisbe.order.model.Order;
+import com.example.orderservice.order.model.Order;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;

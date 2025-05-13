@@ -1,6 +1,6 @@
 package com.example.orderservice.order.repository;
 
-import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
+import com.example.orderservice.order.model.OrderMenu;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -1,8 +1,7 @@
 package com.example.orderservice.order.model;
 
 
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
-import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
+import com.example.orderservice.menu_management.menu.model.Menu;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;

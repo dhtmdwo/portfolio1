@@ -1,7 +1,7 @@
-package com.example.orderservice.order.model;
+package com.example.orderservice.menu_management.category.model;
 
+import com.example.orderservice.menu_management.category.model.Category;
 import com.example.orderservice.menu_management.option.model.Option;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,23 +9,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
 @Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderOption {
+public class CategoryOption {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_menu_id")
-    @Schema(description = "주문에 속한 메뉴")
-    private OrderMenu orderMenu;
+    private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "option_id")
-    @Schema(description = "메뉴의 선택된 옵션")
     private Option option;
-
 }

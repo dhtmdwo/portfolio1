@@ -1,37 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.order.service;
 
-import com.example.be12fin5verdosewmthisbe.common.CustomException;
-import com.example.be12fin5verdosewmthisbe.common.ErrorCode;
-import com.example.be12fin5verdosewmthisbe.inventory.model.Inventory;
-import com.example.be12fin5verdosewmthisbe.inventory.model.ModifyInventory;
-import com.example.be12fin5verdosewmthisbe.inventory.model.StoreInventory;
-import com.example.be12fin5verdosewmthisbe.inventory.model.UsedInventory;
-import com.example.be12fin5verdosewmthisbe.inventory.repository.InventoryRepository;
-import com.example.be12fin5verdosewmthisbe.inventory.repository.ModifyInventoryRepository;
-import com.example.be12fin5verdosewmthisbe.inventory.repository.StoreInventoryRepository;
-import com.example.be12fin5verdosewmthisbe.inventory.repository.UsedInventoryRepository;
-import com.example.be12fin5verdosewmthisbe.inventory.service.InventoryService;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Menu;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.MenuCount;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.Recipe;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuCountRepository;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.MenuRepository;
-import com.example.be12fin5verdosewmthisbe.menu_management.menu.repository.RecipeRepository;
-import com.example.be12fin5verdosewmthisbe.menu_management.option.model.Option;
-import com.example.be12fin5verdosewmthisbe.menu_management.option.model.OptionValue;
-import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionRepository;
-import com.example.be12fin5verdosewmthisbe.menu_management.option.repository.OptionValueRepository;
-import com.example.be12fin5verdosewmthisbe.order.model.Order;
-import com.example.be12fin5verdosewmthisbe.order.model.OrderMenu;
-import com.example.be12fin5verdosewmthisbe.order.model.OrderOption;
-import com.example.be12fin5verdosewmthisbe.order.model.dto.*;
-import com.example.be12fin5verdosewmthisbe.order.repository.OrderMenuRepository;
-import com.example.be12fin5verdosewmthisbe.order.repository.OrderRepository;
-import com.example.be12fin5verdosewmthisbe.store.model.Store;
-import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
+
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,8 +26,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OptionRepository optionRepository;
     private final OrderMenuRepository orderMenuRepository;
-    private final StoreRepository storeRepository;
-    private final StoreInventoryRepository storeInventoryRepository;
     private final MenuRepository menuRepository;
     private final InventoryRepository inventoryRepository;
     private final ModifyInventoryRepository modifyInventoryRepository;
@@ -162,7 +130,7 @@ public class OrderService {
         order.setTotalPrice(totalPrice);
         orderRepository.save(order); // orderMenu, orderOption은 cascade로 저장
 
-        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        /*Timestamp now = Timestamp.valueOf(LocalDateTime.now());
 
         inventoryService.consumeInventories(usedInventoryQty);
 
@@ -200,7 +168,7 @@ public class OrderService {
                     mc.setUsedDate(now);
                     return mc;
                 }).toList();
-        menuCountRepository.saveAll(countList);
+        menuCountRepository.saveAll(countList);*/
 
         return toOrderCreateResponse(order);
     }

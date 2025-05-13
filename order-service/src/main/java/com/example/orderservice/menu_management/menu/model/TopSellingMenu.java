@@ -1,4 +1,4 @@
-package com.example.orderservice.order.model;
+package com.example.orderservice.menu_management.menu.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "sales_comparison")
+@Table(name = "top_selling_menu")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SalesComparison {
+public class TopSellingMenu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,13 +22,13 @@ public class SalesComparison {
 
     private Long storeId;
 
-    private LocalDate targetDate; // 어제 날짜
+    @ManyToOne
+    private Menu menu;
 
-    private Integer yesterdaySales;
+    @Column(name = "record_date")
+    private LocalDate recordDate;
 
-    private Integer weekAgoSales;
-
-    private Integer difference;
-
-    private Double percentageChange; // ((어제 - 1주전) / 1주전) * 100
+    @Column(name = "total_count")
+    private Long totalCount;
 }
+

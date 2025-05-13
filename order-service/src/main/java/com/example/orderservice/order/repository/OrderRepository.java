@@ -1,6 +1,6 @@
 package com.example.orderservice.order.repository;
 
-import com.example.be12fin5verdosewmthisbe.order.model.Order;
+import com.example.orderservice.order.model.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +15,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByStoreId(Long storeId);
 
     @Query("SELECT DISTINCT o FROM Order o " +
-            "JOIN FETCH o.store s " +
+            "JOIN FETCH o.storeId s " +
             "WHERE s.id = :storeId " +
             "AND FUNCTION('DATE', o.createdAt) = :today")
     List<Order> findTodayOrderByStoreIdx(
@@ -26,7 +26,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("""
         SELECT o FROM Order o
-        WHERE o.store.id = :storeId
+        WHERE o.storeId = :storeId
         AND o.createdAt >= :start
         AND o.createdAt <= :end
     """)
@@ -36,11 +36,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     @Query("""
-        SELECT o.store.id, SUM(o.totalPrice)
+        SELECT o.storeId, SUM(o.totalPrice)
         FROM Order o
         WHERE o.createdAt BETWEEN :start AND :end
           AND o.status = 'PAID'
-        GROUP BY o.store.id
+        GROUP BY o.storeId
     """)
     List<Object[]> findSalesByStoreBetween(@Param("start") Timestamp start, @Param("end") Timestamp end);
 
