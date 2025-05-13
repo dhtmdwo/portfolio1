@@ -4,6 +4,8 @@ import com.example.be12fin5verdosewmthisbe.common.BaseResponse;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.service.MarketService;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.model.dto.StoreMenuDto;
+import com.example.be12fin5verdosewmthisbe.menu_management.menu.service.MenuService;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import com.example.be12fin5verdosewmthisbe.store.model.dto.StoreDto;
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +37,7 @@ import java.util.Map;
 public class StoreController {
     // Your code here
     private final StoreService storeService;
-    private final UserService userService;
+    private final MenuService menuService;
     private final JwtTokenProvider jwtTokenProvider;
     private final MarketService marketService;
 
@@ -120,6 +123,12 @@ public class StoreController {
                             .build();
                 })
                 .toList();
+    }
+
+    @GetMapping("/{storeId}/menus")
+    public ResponseEntity<List<StoreMenuDto>> getMenusByStore(@PathVariable Long storeId) {
+        List<StoreMenuDto> menus = menuService.getMenusByStore(storeId);
+        return ResponseEntity.ok(menus);
     }
 
 }

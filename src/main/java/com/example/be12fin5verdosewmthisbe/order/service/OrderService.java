@@ -59,13 +59,10 @@ public class OrderService {
     private final StoreRepository storeRepository;
     private final StoreInventoryRepository storeInventoryRepository;
     private final MenuRepository menuRepository;
-    private final RecipeRepository recipeRepository;
-    private final OptionValueRepository optionValueRepository;
     private final InventoryRepository inventoryRepository;
     private final ModifyInventoryRepository modifyInventoryRepository;
     private final UsedInventoryRepository usedInventoryRepository;
     private final MenuCountRepository menuCountRepository;
-
     private final InventoryService inventoryService;
 
     @Transactional
@@ -186,7 +183,7 @@ public class OrderService {
         // 6) ModifyInventory 배치 저장
         List<ModifyInventory> modList = modifyInventoryQty.entrySet().stream()
                 .map(e -> ModifyInventory.builder()
-                        .inventory(inventoryRepository.getReferenceById(e.getKey()))
+                        .storeInventory(storeInventoryRepository.getReferenceById(e.getKey()))
                         .modifyQuantity(e.getValue())
                         .modifyDate(now)
                         .build())
@@ -293,8 +290,6 @@ public class OrderService {
                     .filter(order -> order.getOrderType() != Order.OrderType.hall)
                     .mapToInt(Order::getTotalPrice)
                     .sum();
-
-
 
             timeList.add(OrderTodayDto.OrderTodayTime.of(hour, hallSales, deliverySales));
         }

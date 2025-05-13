@@ -169,6 +169,7 @@ public class MarketService {
                             .inventorySaleId(sale.getId())
                             .name(sale.getInventoryName())
                             .price(sale.getPrice())
+                            .unit(sale.getUnit())
                             .type(true)
                             .quantity(sale.getQuantity())
                             .status(String.valueOf(sale.getStatus()))
@@ -182,6 +183,7 @@ public class MarketService {
                             .inventoryPurchaseId(sale.getId())
                             .name(sale.getInventorySale().getInventoryName()) // n+1예상
                             .price(sale.getPrice())
+                            .unit(sale.getUnit())
                             .type(false)
                             .quantity(sale.getQuantity())
                             .status(String.valueOf(sale.getStatus()))
