@@ -2,6 +2,8 @@ package com.example.be12fin5verdosewmthisbe.payment.model.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -35,7 +37,8 @@ public class PaymentDto {
         @Schema(description = "가맹점 주문 번호", example = "order-123")
         private String merchantUid;
 
-        @NotBlank(message = "inventoryPurchaseId는 필수입니다.")
+        @NotNull(message = "inventoryPurchaseId는 필수입니다.")
+        @Positive(message = "inventoryPurchaseId는 양수여야 합니다.")
         @Schema(description = "재고 구매 ID (DB)", example = "456")
         private Long inventoryPurchaseId;
     }
