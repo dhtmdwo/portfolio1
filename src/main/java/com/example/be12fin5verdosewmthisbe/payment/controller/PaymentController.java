@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +40,7 @@ public class PaymentController {
     @ApiResponse(responseCode = "2003", description = "api 오류", content = @Content(schema = @Schema(implementation = BaseResponse.class, example = "{\"success\": false, \"data\": null, \"error\": {\"code\": \"PAYMENT_VERIFICATION_FAILED\", \"message\": \"결제 api의 Body가 비어있습니다.\"}}")))
     @ApiResponse(responseCode = "2004", description = "Access Token 발급 실패", content = @Content(schema = @Schema(implementation = BaseResponse.class, example = "{\"success\": false, \"data\": null, \"error\": {\"code\": \"PAYMENT_VERIFICATION_FAILED\", \"message\": \"Access Token 발급이 실패했습니다.\"}}")))
     @PostMapping("/verify")
+    @Transactional
     public BaseResponse<String> verifyPayment(@Parameter(description = "결제 검증 요청 정보", required = true) @RequestBody @Valid PaymentDto.PaymentVerifyRequest request) {
 
 
