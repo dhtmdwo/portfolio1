@@ -15,11 +15,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByStoreId(Long storeId);
 
     @Query("SELECT DISTINCT o FROM Order o " +
-            "JOIN FETCH o.storeId s " +
-            "WHERE s.id = :storeId " +
+            "WHERE o.storeId = :storeId " +
             "AND FUNCTION('DATE', o.createdAt) = :today")
     List<Order> findTodayOrderByStoreIdx(
-            @Param("storeId") String storeId,
+            @Param("storeId") Long storeId,
             @Param("today") LocalDate today
     );
 

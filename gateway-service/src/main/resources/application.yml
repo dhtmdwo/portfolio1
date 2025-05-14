@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: order-service-route
+          uri: http://order-service.order.svc.cluster.local:8080
+          predicates:
+            - Path=/api/order/**,/api/menu/**,/api/category/**,/api/option/**
+
+        - id: inventory-service-route
+          uri: http://inventory-service.inventory.svc.cluster.local:8080
+          predicates:
+            - Path=/api/inventory/**
+
+        - id: user-service-route
+          uri: http://user-service.user.svc.cluster.local:8080
+          predicates:
+            - Path=/api/user/**,/api/store/**
+
+jwt:
+  secret: ${JWT_SECRET:defaultSecretKeyHere}
+  expiration: ${JWT_EXPIRATION:3600000}

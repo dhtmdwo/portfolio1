@@ -17,11 +17,9 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenu, Long> {
     SELECT m.name, SUM(om.quantity) as totalSold
     FROM OrderMenu om
     JOIN om.order o
-    JOIN o.store s
     JOIN om.menu m
     JOIN m.category c
-    JOIN c.store store
-    WHERE store.id = :storeId
+    WHERE c.storeId = :storeId
       AND o.createdAt BETWEEN :start AND :end
     GROUP BY m.name
     ORDER BY totalSold DESC
@@ -39,11 +37,9 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenu, Long> {
         JOIN FETCH om.order o
         JOIN FETCH om.menu m
         JOIN FETCH m.category c
-        JOIN FETCH c.store s
-        WHERE s.id = :storeId
+        WHERE c.storeId = :storeId
         AND o.createdAt >= :start
         AND o.createdAt <= :end
-        
     """)
         List<OrderMenu> findSaleMenusByStoreAndPeriod(
                 @Param("storeId") Long storeId,

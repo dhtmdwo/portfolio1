@@ -2,6 +2,8 @@ package com.example.orderservice.menu_management.menu.service;
 
 import com.example.common.CustomException;
 import com.example.common.ErrorCode;
+import com.example.orderservice.inventory.model.StoreInventory;
+import com.example.orderservice.inventory.repository.StoreInventoryRepository;
 import com.example.orderservice.menu_management.category.model.Category;
 import com.example.orderservice.menu_management.category.repository.CategoryRepository;
 import com.example.orderservice.menu_management.menu.model.Menu;
@@ -37,6 +39,7 @@ public class MenuService {
     private final RecipeRepository recipeRepository;
     private final OrderMenuRepository orderMenuRepository;
     private final OptionRepository optionRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
 
     @Transactional
     public void registerMenu(MenuRegisterDto.MenuCreateRequestDto dto, Long storeId) {
@@ -73,10 +76,12 @@ public class MenuService {
 
         // 3. 재료(Recipe) 연결
         List<Recipe> recipes = dto.getIngredients().stream().map(ingredientDto -> {
+            StoreInventory storeInventory = storeInventoryRepository.findById(ingredientDto.getStoreInventoryId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
 
             return Recipe.builder()
                     .menu(menu)
-                    .storeInventoryId(ingredientDto.getStoreInventoryId())
+                    .storeInventory(storeInventory)
                     .quantity(ingredientDto.getQuantity())
                     .build();
         }).collect(Collectors.toList());
@@ -257,10 +262,12 @@ public class MenuService {
 
         // 5. 새 레시피 추가
         for (MenuRegisterDto.MenuCreateRequestDto.IngredientDto ingredientDto : dto.getIngredients()) {
+            StoreInventory storeInventory = storeInventoryRepository.findById(ingredientDto.getStoreInventoryId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
 
             Recipe recipe = Recipe.builder()
                     .menu(menu)
-                    .storeInventoryId(ingredientDto.getStoreInventoryId())
+                    .storeInventory(storeInventory)
                     .quantity(ingredientDto.getQuantity())
                     .build();
 

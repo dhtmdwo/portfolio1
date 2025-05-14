@@ -1,22 +1,18 @@
 package com.example.orderservice.order.controller;
 
-import com.example.be12fin5verdosewmthisbe.order.model.dto.OrderMonthDto;
+import com.example.common.ErrorCode;
+import com.example.orderservice.order.model.dto.*;
 import com.example.common.BaseResponse;
 import com.example.orderservice.order.model.Order;
-import com.example.orderservice.order.model.dto.OrderDto;
-import com.example.orderservice.order.model.dto.OrderSaleDetailDto;
-import com.example.orderservice.order.model.dto.OrderTodayDto;
-import com.example.orderservice.order.model.dto.OrderTopMenuDto;
 import com.example.orderservice.order.service.OrderService;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -61,7 +57,6 @@ public class OrderController {
         List<OrderMonthDto.TotalSaleResponse> monthSaleList = orderService.getMonthSales(storeId, year, month);
         return BaseResponse.success(monthSaleList);
     }
-    //매출 분석 리스트
 
     @PostMapping("/saleDetail")
     public BaseResponse<List<OrderSaleDetailDto.TotalResponse>> getSalesDetail(@RequestHeader("X-Store-Id") Long storeId, @RequestBody OrderSaleDetailDto.OrderSaleDetailRequest dto) {
@@ -70,7 +65,21 @@ public class OrderController {
         List<OrderSaleDetailDto.TotalResponse> detailSaleList = orderService.getSalesDetail(storeId, startDate, endDate);
         return BaseResponse.success(detailSaleList);
     }
-    // 매출 분석 상세
+    @PostMapping("/validateOrder")
+    public BaseResponse<String> validateOrder(@RequestHeader("X-Store-Id") Long storeId, @RequestBody InventoryValidateOrderDto dto) {
+        List<String> insufficientItems = orderService.validateOrder(storeId, dto);
+
+        Set<String> uniqueItems = new LinkedHashSet<>(insufficientItems);
+
+        if (!uniqueItems.isEmpty()) {
+            String message = "해당 재고가 부족할 수도 있어요. 조리 전 확인해주세요. \n" + String.join("", uniqueItems);
+            return new BaseResponse<>(ErrorCode.INSUFFICIENT_INVENTORY.getStatus(), message, null);
+        }
+
+        // 부족한 재고가 없으면 정상 처리
+        return BaseResponse.success("모든 재고가 충분합니다.");
+    }
+
 
 }
         

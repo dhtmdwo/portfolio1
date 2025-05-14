@@ -131,7 +131,7 @@ public class MenuController {
     }
 
     @GetMapping("/menuList")
-    public BaseResponse<List<MenuInfoDto.MenuResponse>> getmenuList(@RequestHeader("X-Store-Id") Long storeId) {
+    public BaseResponse<List<MenuInfoDto.MenuResponse>> getMenuList(@RequestHeader("X-Store-Id") Long storeId) {
 
         List<MenuInfoDto.MenuResponse> menuList = menuService.getmenuList(storeId);
         return BaseResponse.success(menuList);

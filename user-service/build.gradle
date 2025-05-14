@@ -1,0 +1,27 @@
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springCloudVersion', "2024.0.0")
+}
+
+dependencies {
+
+    implementation project(':common')
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'net.nurigo:sdk:4.3.0'
+}
+
+
+dependencyManagement {
+
+}

@@ -1,5 +1,6 @@
 package com.example.orderservice.menu_management.option.model;
 
+import com.example.orderservice.inventory.model.StoreInventory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,7 +21,10 @@ public class OptionValue {
     @Schema(description = " ID (자동 생성)", example = "1")
     private Long id;
 
-    private Long storeInventoryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_inventory_id")
+    @Schema(description = "레시피가 속한 메뉴에 들어가는 재료 정보")
+    private StoreInventory storeInventory;
 
     @Schema(description = "사용 수량", example = "2.0")
     private BigDecimal quantity;

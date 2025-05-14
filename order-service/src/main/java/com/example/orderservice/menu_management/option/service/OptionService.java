@@ -2,6 +2,8 @@ package com.example.orderservice.menu_management.option.service;
 
 import com.example.common.CustomException;
 import com.example.common.ErrorCode;
+import com.example.orderservice.inventory.model.StoreInventory;
+import com.example.orderservice.inventory.repository.StoreInventoryRepository;
 import com.example.orderservice.menu_management.option.model.Option;
 import com.example.orderservice.menu_management.option.model.OptionValue;
 import com.example.orderservice.menu_management.option.model.dto.OptionDto;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 public class OptionService {
 
     private final OptionRepository optionRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
 
     @Transactional
     public void registerOption(OptionDto.RegisterRequestDto request,Long storeId) {
@@ -48,10 +51,12 @@ public class OptionService {
 
         List<OptionValue> optionValues = request.getInventoryQuantities().stream()
                 .map(iq -> {
+                    StoreInventory storeInventory = storeInventoryRepository.findById(iq.getInventoryId())
+                            .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
 
                     return OptionValue.builder()
                             .option(option)
-                            .storeInventoryId(iq.getInventoryId())
+                            .storeInventory(storeInventory)
                             .quantity(iq.getQuantity())
                             .build();
                 })
@@ -89,10 +94,11 @@ public class OptionService {
         // 새 OptionValue 리스트 생성
         List<OptionValue> newValues = request.getInventoryQuantities().stream()
                 .map(iq -> {
-
+                    StoreInventory storeInventory = storeInventoryRepository.findById(iq.getInventoryId())
+                            .orElseThrow(() -> new CustomException(ErrorCode.STORE_INVENTORY_NOT_FOUND));
                     return OptionValue.builder()
                             .option(option)
-                            .storeInventoryId(iq.getInventoryId())
+                            .storeInventory(storeInventory)
                             .quantity(iq.getQuantity())
                             .build();
                 })

@@ -5,13 +5,10 @@ import com.example.common.ErrorCode;
 import com.example.orderservice.menu_management.category.model.Category;
 import com.example.orderservice.menu_management.category.model.dto.CategoryDto;
 import com.example.orderservice.menu_management.category.service.CategoryService;
-import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +23,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/category")
 @RequiredArgsConstructor
-// TODO: 가게 ID 추가하면 가게 ID에 해당 하는 목록에서만 조회해야함
 public class CategoryController {
     private final CategoryService categoryService;
 

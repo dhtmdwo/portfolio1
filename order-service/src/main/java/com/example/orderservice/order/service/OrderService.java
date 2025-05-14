@@ -4,6 +4,11 @@ package com.example.orderservice.order.service;
 
 import com.example.common.CustomException;
 import com.example.common.ErrorCode;
+import com.example.common.dto.InventoryConsumeEvent;
+import com.example.orderservice.inventory.model.Inventory;
+import com.example.orderservice.inventory.model.StoreInventory;
+import com.example.orderservice.inventory.repository.InventoryRepository;
+import com.example.orderservice.inventory.repository.StoreInventoryRepository;
 import com.example.orderservice.menu_management.menu.model.Menu;
 import com.example.orderservice.menu_management.menu.model.Recipe;
 import com.example.orderservice.menu_management.menu.repository.MenuCountRepository;
@@ -14,21 +19,19 @@ import com.example.orderservice.menu_management.option.repository.OptionReposito
 import com.example.orderservice.order.model.Order;
 import com.example.orderservice.order.model.OrderMenu;
 import com.example.orderservice.order.model.OrderOption;
-import com.example.orderservice.order.model.dto.OrderDto;
+import com.example.orderservice.order.model.dto.*;
 import com.example.orderservice.order.repository.OrderMenuRepository;
 import com.example.orderservice.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
@@ -41,7 +44,11 @@ public class OrderService {
     private final OptionRepository optionRepository;
     private final OrderMenuRepository orderMenuRepository;
     private final MenuRepository menuRepository;
-    private final MenuCountRepository menuCountRepository;
+    private final InventoryRepository inventoryRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
+
+    private final KafkaTemplate<String, InventoryConsumeEvent> kafkaTemplate;
+    private final String INVENTORY_TOPIC = "inventory.consume";
 
     @Transactional
     public OrderDto.OrderCreateResponse createOrder(
@@ -100,7 +107,7 @@ public class OrderService {
 
             // 4-a) 레시피별 재고 차감량 누적
             for (Recipe recipe : menu.getRecipeList()) {
-                Long invId = recipe.getStoreInventoryId();
+                Long invId = recipe.getStoreInventory().getId();
                 BigDecimal deduct = recipe.getQuantity()
                         .multiply(BigDecimal.valueOf(menuReq.getQuantity()));
                 usedInventoryQty.merge(invId, deduct, BigDecimal::add);
@@ -121,7 +128,7 @@ public class OrderService {
 
                 // 옵션값 재고 차감
                 for (OptionValue ov : opt.getOptionValueList()) {
-                    Long invId = ov.getStoreInventoryId();
+                    Long invId = ov.getStoreInventory().getId();
                     BigDecimal deduct = ov.getQuantity()
                             .multiply(BigDecimal.valueOf(menuReq.getQuantity()));
                     usedInventoryQty.merge(invId, deduct, BigDecimal::add);
@@ -134,8 +141,16 @@ public class OrderService {
             menuCountMap.merge(menu.getId(), menuReq.getQuantity(), Integer::sum);
         }
 
+
         order.setTotalPrice(totalPrice);
-        orderRepository.save(order); // orderMenu, orderOption은 cascade로 저장
+        orderRepository.save(order);
+
+        InventoryConsumeEvent evt = new InventoryConsumeEvent(
+                storeId,
+                usedInventoryQty,
+                Instant.now().toString()
+        );
+        kafkaTemplate.send(INVENTORY_TOPIC, storeId.toString(), evt);
 
         return OrderDto.OrderCreateResponse.toOrderCreateResponse(order);
     }
@@ -194,7 +209,7 @@ public class OrderService {
         return orderRepository.findById(orderId).orElseThrow(()-> new RuntimeException("Order not found"));
     }
 
-    public OrderTodayDto.OrderTodayResponse getTodaySales(String storeId) {
+    public OrderTodayDto.OrderTodayResponse getTodaySales(Long storeId) {
         LocalDate today = LocalDate.now();
         LocalDate sevenDaysAgo = today.minusDays(7);
         List<Order> orderList = orderRepository.findTodayOrderByStoreIdx(storeId, today);
@@ -429,6 +444,83 @@ public class OrderService {
             throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
         return(saleDetailList);
+    }
+    @jakarta.transaction.Transactional
+    public List<String> validateOrder(Long storeId, InventoryValidateOrderDto dto) {
+        List<String> insufficientItems = new ArrayList<>();
+
+        // 1) 요청에서 메뉴 ID, 옵션 ID, 레시피 ID 수집
+        List<Long> menuIds   = dto.getOrderMenus().stream()
+                .map(InventoryValidateOrderDto.OrderMenuRequest::getMenuId)
+                .distinct().toList();
+
+        List<Long> optionIds = dto.getOrderMenus().stream()
+                .flatMap(m -> Optional.ofNullable(m.getOptionIds()).orElse(List.<Long>of()).stream())
+                .distinct().toList();
+
+        // 2) 배치 조회: 메뉴 → 레시피 → storeInventory
+        //    (레시피에 연관된 StoreInventory를 fetch join)
+        List<Menu> menus = menuRepository.load(menuIds);
+        Map<Long, Menu> menuMap = menus.stream()
+                .collect(Collectors.toMap(Menu::getId, Function.identity()));
+
+        // 3) 배치 조회: 옵션 → 옵션값 → storeInventory
+        List<Option> options = optionRepository.findAllByIdInFetchOptionValues(optionIds);
+        Map<Long, Option> optionMap = options.stream()
+                .collect(Collectors.toMap(Option::getId, Function.identity()));
+
+        // 4) storeInventory 전체 현황 조회 (필요하다면 storeId 조건 추가)
+        List<StoreInventory> allInventories = storeInventoryRepository.findByStoreId(storeId);
+        // Map<inventoryId, availableQuantity>
+        Map<Long, BigDecimal> inventoryAvailMap = allInventories.stream()
+                .collect(Collectors.toMap(
+                        StoreInventory::getId,
+                        StoreInventory::getQuantity,
+                        BigDecimal::add
+                ));
+
+        // 5) 각 OrderMenuRequest 별 검증
+        for (var menuReq : dto.getOrderMenus()) {
+            Menu menu = menuMap.get(menuReq.getMenuId());
+            if (menu == null) {
+                throw new CustomException(ErrorCode.MENU_NOT_FOUND);
+            }
+
+            BigDecimal multiplier = BigDecimal.valueOf(menuReq.getQuantity());
+
+            // ——— 레시피 기반 재고 확인 ———
+            for (Recipe recipe : menu.getRecipeList()) {
+                Long invId = recipe.getStoreInventory().getId();
+                BigDecimal required = recipe.getQuantity().multiply(multiplier);
+                BigDecimal available = inventoryAvailMap.getOrDefault(invId, BigDecimal.ZERO);
+
+                if (available.compareTo(required) < 0) {
+                    insufficientItems.add("[" + recipe.getStoreInventory().getName() + "]");
+                }
+            }
+
+            // ——— 옵션 기반 재고 확인 ———
+            if (menuReq.getOptionIds() != null) {
+                for (Long optId : menuReq.getOptionIds()) {
+                    Option option = optionMap.get(optId);
+                    if (option == null) {
+                        throw new CustomException(ErrorCode.OPTION_NOT_FOUND);
+                    }
+
+                    for (OptionValue ov : option.getOptionValueList()) {
+                        Long invId = ov.getStoreInventory().getId();
+                        BigDecimal required = ov.getQuantity().multiply(multiplier);
+                        BigDecimal available = inventoryAvailMap.getOrDefault(invId, BigDecimal.ZERO);
+
+                        if (available.compareTo(required) < 0) {
+                            insufficientItems.add("[" + option.getName() + "] 옵션 구성 재료가 부족할 수도 있습니다.");
+                        }
+                    }
+                }
+            }
+        }
+
+        return insufficientItems;
     }
 
 

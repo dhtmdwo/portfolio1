@@ -1,6 +1,6 @@
 package com.example.orderservice.menu_management.category.model;
 
-import com.example.orderservice.menu_management.category.model.Category;
+
 import com.example.orderservice.menu_management.option.model.Option;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
