@@ -91,6 +91,7 @@ public class StoreController {
                 .build();
         return BaseResponse.success(response);
     }
+
     private Long getStoreId(HttpServletRequest request) {
         String token = null;
         if (request.getCookies() != null) {
@@ -105,7 +106,6 @@ public class StoreController {
         Long storeId = Long.valueOf(claims.get("storeId", String.class));
         return  storeId;
     }
-
 
     @GetMapping("/getNearbyStores")
     private List<StoreDto.response> getNearbyStores(HttpServletRequest request) {
@@ -128,6 +128,7 @@ public class StoreController {
 
         List<StoreDto.response> result = storeList.stream()
                 .map(store -> StoreDto.response.builder()
+                        .storeId(store.getId())
                         .name(store.getName())
                         .address(store.getAddress())
                         .phoneNumber(store.getPhoneNumber())

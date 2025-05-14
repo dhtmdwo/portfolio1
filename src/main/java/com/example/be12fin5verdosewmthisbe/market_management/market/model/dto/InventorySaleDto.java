@@ -58,6 +58,19 @@ public class InventorySaleDto {
         private LocalDate createdDate;
         // 파는 가게명
         private String sellerStoreName;
+
+        public static InventorySaleListDto from(InventorySale inventorySale) {
+            return InventorySaleListDto.builder()
+                    .inventorySaleId(inventorySale.getId())
+                    .storeId(inventorySale.getStore().getId())
+                    .inventoryName(inventorySale.getInventoryName())
+                    .quantity(inventorySale.getQuantity().toString())
+                    .expirationDate(inventorySale.getExpiryDate())
+                    .price(inventorySale.getPrice())
+                    .createdDate(inventorySale.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .sellerStoreName(inventorySale.getSellerStoreName())
+                    .build();
+        }
     }
 
     @Data

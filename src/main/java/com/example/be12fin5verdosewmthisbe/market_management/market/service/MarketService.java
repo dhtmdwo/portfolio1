@@ -20,11 +20,13 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.Tr
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.ImagesRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventoryPurchaseRepository;
 import com.example.be12fin5verdosewmthisbe.market_management.market.repository.InventorySaleRepository;
+import com.example.be12fin5verdosewmthisbe.redis.InventorySaleRegisteredEvent;
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import com.example.be12fin5verdosewmthisbe.store.repository.StoreRepository;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,9 @@ public class MarketService {
     private final InventoryService inventoryService;
     private final UnitConvertService unitConvertService;
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    @Transactional
     public void saleRegister(InventorySaleDto.InventorySaleRequestDto dto, Long storeId, Inventory inventory) {
 
         StoreInventory storeInventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
@@ -92,6 +97,8 @@ public class MarketService {
         }
 
         inventorySaleRepository.save(inventorySale);
+
+        applicationEventPublisher.publishEvent(new InventorySaleRegisteredEvent(storeId, InventorySaleDto.InventorySaleListDto.from(inventorySale)));
     }
     public void purchaseRegister(InventoryPurchaseDto.InventoryPurchaseRequestDto dto,Long storeId) {
         InventorySale sale = inventorySaleRepository.findById(dto.getInventorySaleId())

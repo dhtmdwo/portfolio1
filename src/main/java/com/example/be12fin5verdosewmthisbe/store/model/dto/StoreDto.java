@@ -1,6 +1,7 @@
 package com.example.be12fin5verdosewmthisbe.store.model.dto;
 
 
+import com.example.be12fin5verdosewmthisbe.market_management.market.model.InventorySale;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import com.example.be12fin5verdosewmthisbe.user.model.User;
@@ -9,6 +10,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class StoreDto {
@@ -51,12 +53,25 @@ public class StoreDto {
     @NoArgsConstructor
     public static class response {
 
+        private Long storeId;
         private String name;
         private String address;
         private String phoneNumber;
         private Double latitude;
         private Double longitude;
         private List<InventorySaleDto.InventorySaleListDto> boardList;
+
+        public static response from(Store store, List<InventorySaleDto.InventorySaleListDto> sales) {
+            return response.builder()
+                    .storeId(store.getId())
+                    .name(store.getName())
+                    .address(store.getAddress())
+                    .phoneNumber(store.getPhoneNumber())
+                    .latitude(store.getLatitude())
+                    .longitude(store.getLongitude())
+                    .boardList(sales)
+                    .build();
+        }
     }
 }
         
