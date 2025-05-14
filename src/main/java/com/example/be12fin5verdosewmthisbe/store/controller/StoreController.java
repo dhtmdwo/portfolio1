@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,7 @@ public class StoreController {
     private final MenuService menuService;
     private final JwtTokenProvider jwtTokenProvider;
     private final MarketService marketService;
+    private final RedisTemplate<String, List<StoreDto.response>> redisTemplate;
 
     @PostMapping("/register")
     public BaseResponse<String> registerStore(HttpServletRequest request, HttpServletResponse response, @RequestBody StoreDto.RegistRequest dto) {
@@ -103,26 +105,43 @@ public class StoreController {
         Long storeId = Long.valueOf(claims.get("storeId", String.class));
         return  storeId;
     }
+
+
     @GetMapping("/getNearbyStores")
     private List<StoreDto.response> getNearbyStores(HttpServletRequest request) {
         Long storeId = getStoreId(request);
+        String cacheKey = "nearbyStores:" + storeId;
+
+        // 1. Redis 캐시에서 먼저 조회
+        List<StoreDto.response> cachedData = redisTemplate.opsForValue().get(cacheKey);
+        if (cachedData != null && !cachedData.isEmpty()) {
+            log.info("캐시에서 조회됨: key = {}, size = {}", cacheKey, cachedData.size());
+            return cachedData;
+        }
+
+        // 2. DB에서 조회
         List<Store> storeList = storeService.getNearbyStoreIds(storeId);
         List<Long> storeIds = storeList.stream().map(Store::getId).toList();
 
-        Map<Long, List<InventorySaleDto.InventorySaleListDto>> salesMap = marketService.getInventorySalesByStoreIds(storeIds);
+        Map<Long, List<InventorySaleDto.InventorySaleListDto>> salesMap =
+                marketService.getInventorySalesByStoreIds(storeIds);
 
-        return storeList.stream()
-                .map(store -> {
-                    return StoreDto.response.builder()
-                            .name(store.getName())
-                            .address(store.getAddress())
-                            .phoneNumber(store.getPhoneNumber())
-                            .latitude(store.getLatitude())
-                            .longitude(store.getLongitude())
-                            .boardList(salesMap.getOrDefault(store.getId(), new ArrayList<>()))
-                            .build();
-                })
+        List<StoreDto.response> result = storeList.stream()
+                .map(store -> StoreDto.response.builder()
+                        .name(store.getName())
+                        .address(store.getAddress())
+                        .phoneNumber(store.getPhoneNumber())
+                        .latitude(store.getLatitude())
+                        .longitude(store.getLongitude())
+                        .boardList(salesMap.getOrDefault(store.getId(), new ArrayList<>()))
+                        .build())
                 .toList();
+
+        // 3. Redis에 캐싱
+        redisTemplate.opsForValue().set(cacheKey, result, Duration.ofHours(5));
+        log.info("캐시 저장됨: key = {}, size = {}", cacheKey, result.size());
+
+        return result;
     }
 
     @GetMapping("/{storeId}/menus")

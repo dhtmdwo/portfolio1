@@ -138,6 +138,7 @@ public class MarketService {
                         sale -> sale.getStore().getId(),
                         Collectors.mapping(sale -> InventorySaleDto.InventorySaleListDto.builder()
                                 .inventorySaleId(sale.getId())
+                                .storeId(sale.getStore().getId())
                                 .expirationDate(sale.getExpiryDate())
                                 .createdDate(sale.getCreatedAt().toLocalDateTime().toLocalDate())
                                 .inventoryName(sale.getInventoryName())
@@ -295,6 +296,7 @@ public class MarketService {
                 .map(sale -> new InventorySaleDto.InventorySaleListDto(
 
                         sale.getId(),
+                        sale.getStore().getId(),
                         sale.getInventoryName(),
                         sale.getQuantity().toPlainString() + sale.getStoreInventory().getUnit(),  // BigDecimal → String
                         sale.getExpiryDate(),

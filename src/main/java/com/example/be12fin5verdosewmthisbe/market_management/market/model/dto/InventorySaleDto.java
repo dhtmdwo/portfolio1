@@ -44,6 +44,8 @@ public class InventorySaleDto {
 
         // 판매 물품 id
         private Long inventorySaleId;
+        // 판매 가게 id
+        private Long storeId;
         // 판매물품 이름
         private String inventoryName;
         // 수량
