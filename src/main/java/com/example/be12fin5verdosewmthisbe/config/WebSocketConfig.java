@@ -14,13 +14,16 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     private final CustomWebSocketHandler handler;
     private final AuthHandshakeInterceptor authHandshakeInterceptor;
+    private final String[] allowedOrigins;
 
-    @Value("${websocket.allowed-origins}")
-    private String[] allowedOrigins;
-
-    public WebSocketConfig(CustomWebSocketHandler handler, AuthHandshakeInterceptor authHandshakeInterceptor) {
+    public WebSocketConfig(
+            CustomWebSocketHandler handler,
+            AuthHandshakeInterceptor authHandshakeInterceptor,
+            @Value("${websocket.allowed-origins}") String[] allowedOrigins
+    ) {
         this.handler = handler;
         this.authHandshakeInterceptor = authHandshakeInterceptor;
+        this.allowedOrigins = allowedOrigins;
     }
 
     @Override
