@@ -1,4 +1,4 @@
-package com.example.common.config;
+package com.example.common.kafka.config;
 
 
 import io.swagger.v3.oas.models.OpenAPI;

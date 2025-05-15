@@ -52,7 +52,7 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
     List<StoreInventory> findAllWithInventories(@Param("storeId") Long storeId);
 
 
-    @Query("""
+    /*@Query("""
         SELECT DISTINCT si FROM StoreInventory si
         JOIN FETCH si.inventorySaleList is
         JOIN FETCH si.store s
@@ -64,9 +64,9 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
             @Param("storeId") Long storeId,
             @Param("start") Timestamp start,
             @Param("end") Timestamp end
-    );
+    );*/
 
-    @Query("""
+    /*@Query("""
     SELECT new com.example.inventoryservice.inventory.model.dto.InventoryMenuUsageDto(
         si.name,
         SUM(CAST(r.quantity * om.quantity AS BIGDECIMAL)),
@@ -87,7 +87,7 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
             @Param("storeId") Long storeId,
             @Param("start") Timestamp start,
             @Param("end") Timestamp end
-    );
+    );*/
 
     boolean existsByNameAndIdNot(@NotBlank(message = "재고명은 필수입니다.") String name, Long id);
 

@@ -1,7 +1,7 @@
 package com.example.inventoryservice.config;
 
 
-import com.example.common.config.SwaggerConfigInterface;
+import com.example.common.kafka.config.SwaggerConfigInterface;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

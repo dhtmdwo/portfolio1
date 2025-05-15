@@ -6,7 +6,7 @@ spring:
     gateway:
       routes:
         - id: order-service-route
-          uri: http://order-service.order.svc.cluster.local:8080
+          uri: http://order-service.orders.svc.cluster.local:8080
           predicates:
             - Path=/api/order/**,/api/menu/**,/api/category/**,/api/option/**
 
@@ -18,8 +18,8 @@ spring:
         - id: user-service-route
           uri: http://user-service.user.svc.cluster.local:8080
           predicates:
-            - Path=/api/user/**,/api/store/**
+            - Path=/api/user/**,/api/store/**,/api/email/**
 
 jwt:
-  secret: ${JWT_SECRET:defaultSecretKeyHere}
-  expiration: ${JWT_EXPIRATION:3600000}
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}

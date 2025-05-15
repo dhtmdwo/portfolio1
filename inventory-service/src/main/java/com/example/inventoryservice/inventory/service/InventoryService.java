@@ -1,7 +1,8 @@
 package com.example.inventoryservice.inventory.service;
 
-import com.example.common.CustomException;
-import com.example.common.ErrorCode;
+import com.example.common.common.CustomException;
+import com.example.common.common.ErrorCode;
+import com.example.common.kafka.dto.StoreInventoryEvent;
 import com.example.inventoryservice.inventory.model.Inventory;
 import com.example.inventoryservice.inventory.model.ModifyInventory;
 import com.example.inventoryservice.inventory.model.StoreInventory;
@@ -13,6 +14,7 @@ import com.example.inventoryservice.inventory.repository.StoreInventoryRepositor
 import com.example.inventoryservice.inventory.repository.UsedInventoryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
@@ -26,9 +28,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Function;
+
+import org.springframework.kafka.core.KafkaTemplate;
+
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InventoryService {
@@ -37,27 +42,39 @@ public class InventoryService {
     private final ModifyInventoryRepository modifyInventoryRepository;
     private final UsedInventoryRepository usedInventoryRepository;
 
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    private static final String TOPIC = "store-inventory-events";
+
     public StoreInventory registerStoreInventory(InventoryDetailRequestDto dto, Long storeId) {
 
         // 이름 중복 검사
-        if (storeInventoryRepository.existsByStoreIdAndName(storeId,dto.getName())) {
+        if (storeInventoryRepository.existsByStoreIdAndName(storeId, dto.getName())) {
             throw new CustomException(ErrorCode.INVENTORY_DUPLICATE_NAME);
         }
 
-        try {
-            StoreInventory newStoreInventory = StoreInventory.builder()
-                    .name(dto.getName())
-                    .minQuantity(dto.getMinQuantity())
-                    .unit(dto.getUnit())
-                    .storeId(storeId)
-                    .quantity(BigDecimal.ZERO)
-                    .expiryDate(dto.getExpiryDate())
-                    .build();
+        StoreInventory newStoreInventory = StoreInventory.builder()
+                .name(dto.getName())
+                .minQuantity(dto.getMinQuantity())
+                .unit(dto.getUnit())
+                .storeId(storeId)
+                .quantity(BigDecimal.ZERO)
+                .expiryDate(dto.getExpiryDate())
+                .build();
 
-            return storeInventoryRepository.save(newStoreInventory);
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.INVENTORY_REGISTER_FAIL);
-        }
+        StoreInventory saved = storeInventoryRepository.save(newStoreInventory);
+
+        StoreInventoryEvent event = new StoreInventoryEvent(
+                saved.getId(),
+                saved.getName(),
+                saved.getUnit(),
+                saved.getStoreId()
+        );
+        log.info("Store Inventory Event: {}", event);
+        kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
+
+        return saved;
+
     }
 
     public void registerInventory(InventoryDto.InventoryRegisterDto dto) {
@@ -97,14 +114,13 @@ public class InventoryService {
         LocalDate nowDate = LocalDate.now(); // 찐 유통기한
         LocalDate expriyDate;
         Integer expiryDateInt = dto.getExpiryDateInt();
-        if(dto.getExpiryDateInt() == -1){
+        if (dto.getExpiryDateInt() == -1) {
             expriyDate = nowDate.plusDays(storeInventory.getExpiryDate());
         } // DB에 저장된 유통기한과 같을 때
         else {
-            if(expiryDateInt == null){
+            if (expiryDateInt == null) {
                 throw new CustomException(ErrorCode.INVENTORY_REGISTER_FAIL);
-            }
-            else{
+            } else {
                 expriyDate = nowDate.plusDays(expiryDateInt);
             }
         } // DB에 저장된 유통기한과 다를 때
@@ -137,6 +153,7 @@ public class InventoryService {
                 })
                 .collect(Collectors.toList());
     }
+
     public void updateInventory(InventoryDetailRequestDto dto) {
         try {
             StoreInventory inventory = storeInventoryRepository.findById(dto.getStoreInventoryId())
@@ -158,7 +175,6 @@ public class InventoryService {
     }
 
 
-
     @Transactional
     public void deleteByIds(List<Long> inventoryIds) {
         try {
@@ -169,8 +185,9 @@ public class InventoryService {
             throw new CustomException(ErrorCode.CANNOT_DELETE_INVENTORY);
         }
     }
+
     public Page<StoreInventoryDto.responseDto> getAllStoreInventories(Long storeId, Pageable pageable, String keyword) {
-        return storeInventoryRepository.findByStoreAndNameContainingWithFetch(storeId,keyword, pageable)
+        return storeInventoryRepository.findByStoreAndNameContainingWithFetch(storeId, keyword, pageable)
                 .map(this::toDto);
     }
 
@@ -248,7 +265,7 @@ public class InventoryService {
     public List<TotalResponseDto.Response> getDetailedTotalInventoryList(Long storeId, Long storeInventoryId) {
         List<Inventory> inventoryList = inventoryRepository.findByStoreInventoryStoreIdANDStoreInAndInventoryId(storeId, storeInventoryId);
         List<TotalResponseDto.Response> responseTotalInventoryList = new ArrayList<>();
-        for(Inventory inventory : inventoryList) {
+        for (Inventory inventory : inventoryList) {
             LocalDate purhcaseDate = inventory.getPurchaseDate().toLocalDateTime().toLocalDate();
             TotalResponseDto.Response response = TotalResponseDto.Response.of(
                     purhcaseDate, inventory.getExpiryDate(),
@@ -400,7 +417,7 @@ public class InventoryService {
 
         BigDecimal changeQuantity = storeInventory.getQuantity().subtract(requestedQuantity);
 
-        if(changeQuantity.compareTo(BigDecimal.ZERO) < 0) {
+        if (changeQuantity.compareTo(BigDecimal.ZERO) < 0) {
             throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
         }
         storeInventory.setQuantity(changeQuantity);
@@ -429,6 +446,7 @@ public class InventoryService {
             throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
         }
     }
+
     // 전체를 유통기한 빠른 순으로
     public List<Inventory> getSortedInventoriesByExpiry(Long storeInventoryId) {
         return inventoryRepository.findByStoreInventory_IdOrderByExpiryDateAsc(storeInventoryId);
@@ -441,23 +459,22 @@ public class InventoryService {
     }
 
 
-
     @Transactional
     public InventoryCallDto.Response getInventoryCall(Long storeId) {
 
         List<StoreInventory> storeInventoryList = storeInventoryRepository.findAllWithInventories(storeId);
-        int expiringCount=0; // 만료 임박
-        int reorderRequiredCount=0; // 발주 필요
-        int receivedTodayCount=0;// 금일 입고
+        int expiringCount = 0; // 만료 임박
+        int reorderRequiredCount = 0; // 발주 필요
+        int receivedTodayCount = 0;// 금일 입고
         LocalDate today = LocalDate.now();
 
         for (StoreInventory storeInventory : storeInventoryList) {
             int expiryDate = Optional.ofNullable(storeInventory.getExpiryDate()).orElse(0);
-            if(expiryDate ==0){
+            if (expiryDate == 0) {
                 throw new CustomException(ErrorCode.STORE_INVENTORY_EXPIRY_NOT_FOUND);
             }
             List<Inventory> inventoryList = storeInventory.getInventoryList();
-            for(Inventory inventory : inventoryList){
+            for (Inventory inventory : inventoryList) {
                 LocalDate purchaseDate = inventory.getPurchaseDate().toLocalDateTime().toLocalDate(); //입고 날짜
                 LocalDate eachExpiryDate = inventory.getExpiryDate();
                 int daysBetween = (int) ChronoUnit.DAYS.between(today, eachExpiryDate);
@@ -466,7 +483,7 @@ public class InventoryService {
                 if (daysBetween >= 0 && daysBetween <= 2) {
                     expiringCount++;
                 }
-                if(daysTodayBetween ==0){
+                if (daysTodayBetween == 0) {
                     receivedTodayCount++;
                 }
             }
@@ -474,14 +491,14 @@ public class InventoryService {
             BigDecimal minQuantity = storeInventory.getMinQuantity();
             BigDecimal quantity = storeInventory.getQuantity();
 
-            if(minQuantity.compareTo(quantity) > 0){
-                reorderRequiredCount ++;
+            if (minQuantity.compareTo(quantity) > 0) {
+                reorderRequiredCount++;
             }
         }
 
         InventoryCallDto.Response response = InventoryCallDto.Response.of(expiringCount, reorderRequiredCount, receivedTodayCount);
 
-        return(response);
+        return (response);
     }
 
     @Transactional
@@ -490,7 +507,7 @@ public class InventoryService {
         LocalDate firstDayOfMonth = today.withDayOfMonth(1);
 
         Timestamp start = Timestamp.valueOf(firstDayOfMonth.atStartOfDay());
-        Timestamp end   = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp end = Timestamp.valueOf(LocalDateTime.now());
 
         // 1) 기간 내 수정 이력 개수
         int totalUpdateNumber = modifyInventoryRepository
@@ -522,8 +539,8 @@ public class InventoryService {
 
             for (Inventory inv : si.getInventoryList()) {
                 Timestamp purchaseTs = inv.getPurchaseDate();
-                LocalDate  purchaseDate = purchaseTs.toLocalDateTime().toLocalDate();
-                LocalDate  expiryDate   = inv.getExpiryDate();
+                LocalDate purchaseDate = purchaseTs.toLocalDateTime().toLocalDate();
+                LocalDate expiryDate = inv.getExpiryDate();
 
                 if (!purchaseDate.isBefore(start.toLocalDateTime().toLocalDate()) &&
                         !purchaseDate.isAfter(end.toLocalDateTime().toLocalDate())) {
@@ -635,7 +652,6 @@ public class InventoryService {
     }*/
 
 
-
     @Transactional
     public void updateInventory(InventoryDto.InventoryUpdateDto dto) {
         Inventory inventory = inventoryRepository.findById(dto.getInventoryId())
@@ -666,7 +682,7 @@ public class InventoryService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         storeInventory.setQuantity(totalQuantity);
-        storeInventoryRepository.save(storeInventory);
+        StoreInventory saved = storeInventoryRepository.save(storeInventory);
 
         BigDecimal modifyRate;
         if (beforeQuantity.compareTo(BigDecimal.ZERO) == 0) {
@@ -686,6 +702,20 @@ public class InventoryService {
                 .build();
 
         modifyInventoryRepository.save(modifyInventory);
+
+        StoreInventoryEvent event = new StoreInventoryEvent(
+                saved.getId(),
+                saved.getName(),
+                saved.getUnit(),
+                saved.getStoreId()
+        );
+
+        kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
     }
 
+
+    public void test() {
+        log.info("test kafka go!");
+        kafkaTemplate.send("store-inventory-test-events", "test");
+    }
 }

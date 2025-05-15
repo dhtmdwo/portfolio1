@@ -2,16 +2,11 @@ package com.example.orderservice.order.service;
 
 
 
-import com.example.common.CustomException;
-import com.example.common.ErrorCode;
-import com.example.common.dto.InventoryConsumeEvent;
-import com.example.orderservice.inventory.model.Inventory;
-import com.example.orderservice.inventory.model.StoreInventory;
-import com.example.orderservice.inventory.repository.InventoryRepository;
-import com.example.orderservice.inventory.repository.StoreInventoryRepository;
+import com.example.common.common.CustomException;
+import com.example.common.common.ErrorCode;
+import com.example.common.kafka.dto.InventoryConsumeEvent;
 import com.example.orderservice.menu_management.menu.model.Menu;
 import com.example.orderservice.menu_management.menu.model.Recipe;
-import com.example.orderservice.menu_management.menu.repository.MenuCountRepository;
 import com.example.orderservice.menu_management.menu.repository.MenuRepository;
 import com.example.orderservice.menu_management.option.model.Option;
 import com.example.orderservice.menu_management.option.model.OptionValue;
@@ -44,10 +39,8 @@ public class OrderService {
     private final OptionRepository optionRepository;
     private final OrderMenuRepository orderMenuRepository;
     private final MenuRepository menuRepository;
-    private final InventoryRepository inventoryRepository;
-    private final StoreInventoryRepository storeInventoryRepository;
 
-    private final KafkaTemplate<String, InventoryConsumeEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     private final String INVENTORY_TOPIC = "inventory.consume";
 
     @Transactional
@@ -153,46 +146,6 @@ public class OrderService {
         kafkaTemplate.send(INVENTORY_TOPIC, storeId.toString(), evt);
 
         return OrderDto.OrderCreateResponse.toOrderCreateResponse(order);
-    }
-
-
-    // 수정된 deductInventory
-    private BigDecimal deductInventory(StoreInventory storeInventory, BigDecimal requestedQuantity, Map<Inventory, BigDecimal> modifyInventoryMap) {
-        List<Inventory> inventories = inventoryRepository.findAllByStoreInventory(storeInventory);
-        inventories.sort(Comparator.comparing(Inventory::getExpiryDate));
-
-        BigDecimal remaining = requestedQuantity;
-        BigDecimal totalDeducted = BigDecimal.ZERO;
-        Inventory lastInventory = null;
-
-        for (Inventory inv : inventories) {
-            BigDecimal current = inv.getQuantity();
-
-            if (current.compareTo(remaining) < 0) {
-                inv.setQuantity(BigDecimal.ZERO);
-                remaining = remaining.subtract(current);
-                totalDeducted = totalDeducted.add(current);
-                lastInventory = inv;
-            } else {
-                inv.setQuantity(current.subtract(remaining));
-                totalDeducted = totalDeducted.add(remaining);
-                remaining = BigDecimal.ZERO;
-                lastInventory = inv;
-            }
-
-            inventoryRepository.save(inv);
-
-            if (remaining.compareTo(BigDecimal.ZERO) <= 0) break;
-        }
-
-        if (remaining.compareTo(BigDecimal.ZERO) > 0 && lastInventory != null) {
-            modifyInventoryMap.merge(lastInventory, remaining.negate(), BigDecimal::add);
-        }
-
-        storeInventory.setQuantity(storeInventory.getQuantity().subtract(totalDeducted));
-        storeInventoryRepository.save(storeInventory);
-
-        return requestedQuantity;
     }
 
     public List<OrderDto.AllOrderList> getOrdersByStoreId(Long storeId) {
@@ -445,7 +398,7 @@ public class OrderService {
         }
         return(saleDetailList);
     }
-    @jakarta.transaction.Transactional
+    /*@Transactional
     public List<String> validateOrder(Long storeId, InventoryValidateOrderDto dto) {
         List<String> insufficientItems = new ArrayList<>();
 
@@ -522,7 +475,7 @@ public class OrderService {
 
         return insufficientItems;
     }
-
+*/
 
 
 }

@@ -1,10 +1,9 @@
 package com.example.orderservice.menu_management.menu.controller;
 
-import com.example.common.BaseResponse;
+import com.example.common.common.BaseResponse;
 import com.example.orderservice.menu_management.menu.model.Menu;
 import com.example.orderservice.menu_management.menu.model.dto.*;
 import com.example.orderservice.menu_management.menu.service.MenuService;
-import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,8 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,8 +41,8 @@ public class MenuController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class, defaultValue = "{\"success\": false, \"message\": \"서버 오류가 발생했습니다.\", \"data\": null}")))
     })
     @PostMapping("/register")
-    public BaseResponse<String> createMenu(@RequestBody @Valid MenuRegisterDto.MenuCreateRequestDto requestDto, @RequestHeader("X-Store-Id") Long storeId) {
-        menuService.registerMenu(requestDto, storeId);
+    public BaseResponse<String> createMenu(@RequestBody @Valid MenuRegisterDto.MenuCreateRequestDto requestDto, @RequestHeader("X-Store-Id") String storeId) {
+        menuService.registerMenu(requestDto, Long.parseLong(storeId));
         return BaseResponse.success("Menu registered successfully");
     }
 
@@ -66,14 +63,14 @@ public class MenuController {
     public BaseResponse<String> updateMenu(
             @Parameter(description = "수정할 메뉴 ID와 정보", required = true,
                     schema = @Schema(implementation = MenuUpdateDto.RequestDto.class))
-            @RequestBody @Valid MenuUpdateDto.RequestDto updateDto, @RequestHeader("X-Store-Id") Long storeId) {
-        menuService.updateMenu(updateDto.getMenuId(), updateDto, storeId);
+            @RequestBody @Valid MenuUpdateDto.RequestDto updateDto, @RequestHeader("X-Store-Id") String storeId) {
+        menuService.updateMenu(updateDto.getMenuId(), updateDto, Long.parseLong(storeId));
         return BaseResponse.success("Menu updated successfully");
     }
 
     @GetMapping("/getPOSList")
-    public BaseResponse<List<MenuDto.POSMenuListResponseDto>> getAllMenus(@RequestHeader("X-Store-Id") Long storeId) {
-        List<MenuDto.POSMenuListResponseDto> menus = menuService.findAllPOSMenus(storeId);
+    public BaseResponse<List<MenuDto.POSMenuListResponseDto>> getAllMenus(@RequestHeader("X-Store-Id") String storeId) {
+        List<MenuDto.POSMenuListResponseDto> menus = menuService.findAllPOSMenus(Long.parseLong(storeId));
         return BaseResponse.success(menus);
     }
 
@@ -105,9 +102,9 @@ public class MenuController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String keyword,
-            @RequestHeader("X-Store-Id") Long storeId
+            @RequestHeader("X-Store-Id") String storeId
     ) {
-        Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(PageRequest.of(page,size),keyword,storeId);
+        Page<MenuDto.MenuListResponseDto> menuPage = menuService.findAllMenus(PageRequest.of(page,size),keyword,Long.parseLong(storeId));
         return BaseResponse.success(menuPage);
     }
 
@@ -131,16 +128,16 @@ public class MenuController {
     }
 
     @GetMapping("/menuList")
-    public BaseResponse<List<MenuInfoDto.MenuResponse>> getMenuList(@RequestHeader("X-Store-Id") Long storeId) {
+    public BaseResponse<List<MenuInfoDto.MenuResponse>> getMenuList(@RequestHeader("X-Store-Id") String storeId) {
 
-        List<MenuInfoDto.MenuResponse> menuList = menuService.getmenuList(storeId);
+        List<MenuInfoDto.MenuResponse> menuList = menuService.getmenuList(Long.parseLong(storeId));
         return BaseResponse.success(menuList);
     }
 
     @PostMapping("/menuSale")
-    public BaseResponse<List<MenuSaleDto.Response>> getSaleList(@RequestHeader("X-Store-Id") Long storeId, @RequestBody @Valid MenuSaleDto.DateRequest dto) {
+    public BaseResponse<List<MenuSaleDto.Response>> getSaleList(@RequestHeader("X-Store-Id") String storeId, @RequestBody @Valid MenuSaleDto.DateRequest dto) {
 
-        List<MenuSaleDto.Response> SaleList = menuService.getSaleList(storeId, dto);
+        List<MenuSaleDto.Response> SaleList = menuService.getSaleList(Long.parseLong(storeId), dto);
         return BaseResponse.success(SaleList);
     }
 

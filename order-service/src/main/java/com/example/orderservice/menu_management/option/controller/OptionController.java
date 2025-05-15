@@ -1,10 +1,9 @@
 package com.example.orderservice.menu_management.option.controller;
 
-import com.example.common.BaseResponse;
+import com.example.common.common.BaseResponse;
 import com.example.orderservice.menu_management.option.model.Option;
 import com.example.orderservice.menu_management.option.model.dto.OptionDto;
 import com.example.orderservice.menu_management.option.service.OptionService;
-import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,8 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

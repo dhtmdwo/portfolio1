@@ -1,7 +1,5 @@
-package com.example.common;
+package com.example.common.common;
 
-import com.example.common.BaseResponse;
-import com.example.common.CustomException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

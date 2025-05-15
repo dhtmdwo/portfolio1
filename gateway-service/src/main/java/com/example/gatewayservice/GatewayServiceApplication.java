@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(
 		scanBasePackages = {
 				"com.example.gatewayservice",
-				"com.example.common"
+				"com.example.common.common"
 		}
 )
 public class GatewayServiceApplication {

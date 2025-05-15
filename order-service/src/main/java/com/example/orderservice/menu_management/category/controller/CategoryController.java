@@ -1,7 +1,7 @@
 package com.example.orderservice.menu_management.category.controller;
 
-import com.example.common.BaseResponse;
-import com.example.common.ErrorCode;
+import com.example.common.common.BaseResponse;
+import com.example.common.common.ErrorCode;
 import com.example.orderservice.menu_management.category.model.Category;
 import com.example.orderservice.menu_management.category.model.dto.CategoryDto;
 import com.example.orderservice.menu_management.category.service.CategoryService;
@@ -33,8 +33,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/register")
-    public BaseResponse<String> registerCategory(@RequestBody @Valid CategoryDto.requestDto dto, @RequestHeader("X-Store-Id") Long storeId) {
-        categoryService.register(dto,storeId);
+    public BaseResponse<String> registerCategory(@RequestBody @Valid CategoryDto.requestDto dto, @RequestHeader("X-Store-Id") String storeId) {
+        categoryService.register(dto,Long.parseLong(storeId));
         return BaseResponse.success("Category registered successfully");
     }
 
@@ -45,8 +45,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PutMapping("/update")
-    public BaseResponse<String> updateCategory(@RequestBody  @Valid CategoryDto.updateDto dto, @RequestHeader("X-Store-Id") Long storeId) {
-        categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds(),storeId);
+    public BaseResponse<String> updateCategory(@RequestBody  @Valid CategoryDto.updateDto dto, @RequestHeader("X-Store-Id") String storeId) {
+        categoryService.update(dto.getId(), dto.getNewName(),dto.getOptionIds(),Long.parseLong(storeId));
         return BaseResponse.success("Category updated successfully");
     }
 
@@ -78,15 +78,15 @@ public class CategoryController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String keyword,
-            @RequestHeader("X-Store-Id") Long storeId
+            @RequestHeader("X-Store-Id") String storeId
     ) {
-        Page<CategoryDto.CategoryResponseDto> result = categoryService.getCategoryList(PageRequest.of(page, size), keyword, storeId);
+        Page<CategoryDto.CategoryResponseDto> result = categoryService.getCategoryList(PageRequest.of(page, size), keyword, Long.parseLong(storeId));
         return BaseResponse.success(result);
     }
 
     @GetMapping("getPOSCategoryList")
-    public BaseResponse<List<CategoryDto.CategoryResponseDto>> getCategoryList(@RequestHeader("X-Store-Id") Long storeId) {
-        List<CategoryDto.CategoryResponseDto> result = categoryService.getPOSCategoryList(storeId);
+    public BaseResponse<List<CategoryDto.CategoryResponseDto>> getCategoryList(@RequestHeader("X-Store-Id") String storeId) {
+        List<CategoryDto.CategoryResponseDto> result = categoryService.getPOSCategoryList(Long.parseLong(storeId));
         return BaseResponse.success(result);
     }
 

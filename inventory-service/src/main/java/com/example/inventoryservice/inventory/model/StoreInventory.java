@@ -64,6 +64,5 @@ public class StoreInventory {
     @JsonIgnore
     @Schema(description = "수정된 재고 목록")
     private List<ModifyInventory> modifyInventoryList;
-
 }
 

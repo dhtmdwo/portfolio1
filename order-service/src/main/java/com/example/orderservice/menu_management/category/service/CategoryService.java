@@ -1,7 +1,7 @@
 package com.example.orderservice.menu_management.category.service;
 
-import com.example.common.CustomException;
-import com.example.common.ErrorCode;
+import com.example.common.common.CustomException;
+import com.example.common.common.ErrorCode;
 import com.example.orderservice.menu_management.category.model.Category;
 import com.example.orderservice.menu_management.category.model.CategoryOption;
 import com.example.orderservice.menu_management.category.model.dto.CategoryDto;

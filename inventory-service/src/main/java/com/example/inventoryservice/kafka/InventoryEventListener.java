@@ -1,6 +1,6 @@
 package com.example.inventoryservice.kafka;
 
-import com.example.common.dto.InventoryConsumeEvent;
+import com.example.common.kafka.dto.InventoryConsumeEvent;
 import com.example.inventoryservice.inventory.service.InventoryService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;

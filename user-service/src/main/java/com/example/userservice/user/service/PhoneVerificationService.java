@@ -1,7 +1,7 @@
 package com.example.userservice.user.service;
 
-import com.example.common.CustomException;
-import com.example.common.ErrorCode;
+import com.example.common.common.CustomException;
+import com.example.common.common.ErrorCode;
 import com.example.userservice.common.SmsCertificationUtil;
 import com.example.userservice.user.model.PhoneVerification;
 import com.example.userservice.user.repository.PhoneVerificationRepository;
