@@ -84,4 +84,4 @@ management:
     ssl:
       enabled: false
 websocket:
-  allowed-origins: http://localhost:5173,https://www.wmthis.n-e.kr
+  allowed-origins: ${ALLOWED_ORIGINS}
