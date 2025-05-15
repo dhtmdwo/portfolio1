@@ -20,7 +20,6 @@ public class PurchaseNotification {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long sellerStoreId;
-    private Long purchaseStoreId;
     boolean isRead;
 
 }
