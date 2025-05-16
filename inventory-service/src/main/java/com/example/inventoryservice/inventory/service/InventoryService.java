@@ -1,8 +1,11 @@
 package com.example.inventoryservice.inventory.service;
 
-import com.example.common.common.CustomException;
-import com.example.common.common.ErrorCode;
+import com.example.common.common.config.CustomException;
+import com.example.common.common.config.ErrorCode;
+import com.example.common.kafka.dto.InventoryRegisteredEvent;
+import com.example.common.kafka.dto.StoreInventoryDeleteEvent;
 import com.example.common.kafka.dto.StoreInventoryEvent;
+import com.example.common.kafka.dto.StoreInventoryUpdatedEvent;
 import com.example.inventoryservice.inventory.model.Inventory;
 import com.example.inventoryservice.inventory.model.ModifyInventory;
 import com.example.inventoryservice.inventory.model.StoreInventory;
@@ -45,6 +48,10 @@ public class InventoryService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     private static final String TOPIC = "store-inventory-events";
+    private static final String DELETE_TOPIC = "store-inventory-delete-events";
+    private static final String UPDATED_TOPIC = "store-inventory-updated-events";
+
+    private static final String INVENTORY_TOPIC = "inventory-registered-events";
 
     public StoreInventory registerStoreInventory(InventoryDetailRequestDto dto, Long storeId) {
 
@@ -67,9 +74,13 @@ public class InventoryService {
         StoreInventoryEvent event = new StoreInventoryEvent(
                 saved.getId(),
                 saved.getName(),
+                saved.getQuantity(),
+                saved.getMinQuantity(),
+                saved.getExpiryDate(),
                 saved.getUnit(),
                 saved.getStoreId()
         );
+
         log.info("Store Inventory Event: {}", event);
         kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
 
@@ -99,11 +110,36 @@ public class InventoryService {
                 .storeInventory(storeInventory)
                 .build();
 
-        inventoryRepository.save(inventory);
+        Inventory savedInv = inventoryRepository.save(inventory);
+
+        InventoryRegisteredEvent invEvt = new InventoryRegisteredEvent(
+                savedInv.getPurchaseDate(),
+                savedInv.getStoreInventory().getId(),
+                savedInv.getQuantity(),
+                savedInv.getUnitPrice(),
+                savedInv.getExpiryDate()
+        );
+
+        kafkaTemplate.send(INVENTORY_TOPIC,
+                savedInv.getId().toString(),
+                invEvt
+        );
 
         storeInventory.setQuantity(storeInventory.getQuantity().add(dto.getQuantity()));
 
-        storeInventoryRepository.save(storeInventory);
+        StoreInventory saved = storeInventoryRepository.save(storeInventory);
+
+        StoreInventoryEvent event = new StoreInventoryEvent(
+                saved.getId(),
+                saved.getName(),
+                saved.getQuantity(),
+                saved.getMinQuantity(),
+                saved.getExpiryDate(),
+                saved.getUnit(),
+                saved.getStoreId()
+        );
+
+        kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
     }
 
 
@@ -133,7 +169,19 @@ public class InventoryService {
 
         // StoreInventory 객체 업데이트 (입고 후 재고 수량 업데이트)
         storeInventory.setQuantity(storeInventory.getQuantity().add(savedInventory.getQuantity()));
-        storeInventoryRepository.save(storeInventory);
+        StoreInventory saved = storeInventoryRepository.save(storeInventory);
+
+        StoreInventoryEvent event = new StoreInventoryEvent(
+                saved.getId(),
+                saved.getName(),
+                saved.getQuantity(),
+                saved.getMinQuantity(),
+                saved.getExpiryDate(),
+                saved.getUnit(),
+                saved.getStoreId()
+        );
+
+        kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
 
         return savedInventory;  // 등록된 Inventory 객체 반환
     }
@@ -167,7 +215,19 @@ public class InventoryService {
             inventory.setUnit(dto.getUnit());
             inventory.setExpiryDate(dto.getExpiryDate());
 
-            storeInventoryRepository.save(inventory);
+            StoreInventory saved = storeInventoryRepository.save(inventory);
+
+            StoreInventoryEvent event = new StoreInventoryEvent(
+                    saved.getId(),
+                    saved.getName(),
+                    saved.getQuantity(),
+                    saved.getMinQuantity(),
+                    saved.getExpiryDate(),
+                    saved.getUnit(),
+                    saved.getStoreId()
+            );
+
+            kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
 
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INVENTORY_UPDATE_FAIL);
@@ -184,6 +244,9 @@ public class InventoryService {
         } catch (DataIntegrityViolationException e) {
             throw new CustomException(ErrorCode.CANNOT_DELETE_INVENTORY);
         }
+        // 삭제 성공 후 이벤트 발행
+        StoreInventoryDeleteEvent deleteEvent = new StoreInventoryDeleteEvent(inventoryIds);
+        kafkaTemplate.send(DELETE_TOPIC, deleteEvent);
     }
 
     public Page<StoreInventoryDto.responseDto> getAllStoreInventories(Long storeId, Pageable pageable, String keyword) {
@@ -221,43 +284,6 @@ public class InventoryService {
 
     @Transactional
     public List<InventoryListDto> getInventoryList(Long storeId) {
-        // StoreInventory 리스트를 가져옵니다.
-        /*List<StoreInventory> inventoryList = storeInventoryRepository.findWithInventoryListByStore(storeId);
-        List<InventoryInfoDto.Response> inventoryResponseList = new ArrayList<>();
-
-        // inventoryList를 순회하며 Response 객체로 변환합니다.
-        for (StoreInventory inventory : inventoryList) {
-            String name = inventory.getName();
-            BigDecimal quantity = inventory.getQuantity();
-            String unit = inventory.getUnit();
-
-            // 남은 수량이 0보다 큰 입고 항목 중 가장 빠른 유통기한을 가진 항목 가져오기
-            Inventory firstInventory = inventoryRepository.findByStoreInventory_Id(inventory.getId()).stream()
-                    .filter(i -> i.getQuantity() != null && i.getQuantity().compareTo(BigDecimal.ZERO) > 0)
-                    .sorted(Comparator.comparing(Inventory::getExpiryDate))
-                    .findFirst()
-                    .orElse(null);
-
-            LocalDate expiryDate = null;
-            if (firstInventory != null) {
-                expiryDate = firstInventory.getExpiryDate();
-            }
-
-            // Response 객체 생성
-            InventoryInfoDto.Response inventoryResponse = InventoryInfoDto.Response.builder()
-                    .id(inventory.getId())
-                    .name(name)
-                    .quantity(quantity)
-                    .unit(unit)
-                    .expiryDate(expiryDate)
-                    .minQuantity(inventory.getMinQuantity())
-                    .build();
-
-            // 리스트에 추가
-            inventoryResponseList.add(inventoryResponse);
-        }
-
-        return inventoryResponseList;  // 변환된 리스트 반환*/
         return storeInventoryRepository.fetchInventoryInfoByStore(storeId);
     }
 
@@ -405,6 +431,12 @@ public class InventoryService {
         inventoryRepository.saveAll(inventoriesToSaveDetail);
         inventoryRepository.deleteAll(inventoriesToDelete);
         modifyInventoryRepository.saveAll(modifyInventoriesToSave);
+
+        for (StoreInventory si : inventoriesToSave) {
+            StoreInventoryUpdatedEvent evt =
+                    new StoreInventoryUpdatedEvent(si.getId(), si.getQuantity());
+            kafkaTemplate.send(UPDATED_TOPIC, si.getId().toString(), evt);
+        }
     }
 
     @Transactional
@@ -706,16 +738,13 @@ public class InventoryService {
         StoreInventoryEvent event = new StoreInventoryEvent(
                 saved.getId(),
                 saved.getName(),
+                saved.getQuantity(),
+                saved.getMinQuantity(),
+                saved.getExpiryDate(),
                 saved.getUnit(),
                 saved.getStoreId()
         );
 
         kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
-    }
-
-
-    public void test() {
-        log.info("test kafka go!");
-        kafkaTemplate.send("store-inventory-test-events", "test");
     }
 }

@@ -1,6 +1,6 @@
 package com.example.orderservice.menu_management.menu.controller;
 
-import com.example.common.common.BaseResponse;
+import com.example.common.common.config.BaseResponse;
 import com.example.orderservice.menu_management.menu.model.Menu;
 import com.example.orderservice.menu_management.menu.model.dto.*;
 import com.example.orderservice.menu_management.menu.service.MenuService;

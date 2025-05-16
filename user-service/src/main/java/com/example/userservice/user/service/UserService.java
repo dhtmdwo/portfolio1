@@ -1,7 +1,7 @@
 package com.example.userservice.user.service;
 
-import com.example.common.common.CustomException;
-import com.example.common.common.ErrorCode;
+import com.example.common.common.config.CustomException;
+import com.example.common.common.config.ErrorCode;
 import com.example.userservice.store.model.Store;
 import com.example.userservice.user.model.User;
 import com.example.userservice.user.model.dto.UserInfoDto;

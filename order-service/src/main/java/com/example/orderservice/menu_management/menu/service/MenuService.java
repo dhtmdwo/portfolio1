@@ -1,7 +1,7 @@
 package com.example.orderservice.menu_management.menu.service;
 
-import com.example.common.common.CustomException;
-import com.example.common.common.ErrorCode;
+import com.example.common.common.config.CustomException;
+import com.example.common.common.config.ErrorCode;
 import com.example.orderservice.inventory.model.StoreInventory;
 import com.example.orderservice.inventory.repository.StoreInventoryRepository;
 import com.example.orderservice.menu_management.category.model.Category;

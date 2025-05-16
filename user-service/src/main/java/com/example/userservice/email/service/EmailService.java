@@ -1,7 +1,7 @@
 package com.example.userservice.email.service;
 
-import com.example.common.common.CustomException;
-import com.example.common.common.ErrorCode;
+import com.example.common.common.config.CustomException;
+import com.example.common.common.config.ErrorCode;
 import com.example.userservice.email.model.Email;
 import com.example.userservice.email.model.dto.EmailDto;
 import com.example.userservice.email.repository.EmailRepository;

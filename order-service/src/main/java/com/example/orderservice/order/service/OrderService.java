@@ -2,9 +2,11 @@ package com.example.orderservice.order.service;
 
 
 
-import com.example.common.common.CustomException;
-import com.example.common.common.ErrorCode;
+import com.example.common.common.config.CustomException;
+import com.example.common.common.config.ErrorCode;
 import com.example.common.kafka.dto.InventoryConsumeEvent;
+import com.example.orderservice.inventory.model.StoreInventory;
+import com.example.orderservice.inventory.repository.StoreInventoryRepository;
 import com.example.orderservice.menu_management.menu.model.Menu;
 import com.example.orderservice.menu_management.menu.model.Recipe;
 import com.example.orderservice.menu_management.menu.repository.MenuRepository;
@@ -39,6 +41,7 @@ public class OrderService {
     private final OptionRepository optionRepository;
     private final OrderMenuRepository orderMenuRepository;
     private final MenuRepository menuRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final String INVENTORY_TOPIC = "inventory.consume";
@@ -398,7 +401,7 @@ public class OrderService {
         }
         return(saleDetailList);
     }
-    /*@Transactional
+    @Transactional
     public List<String> validateOrder(Long storeId, InventoryValidateOrderDto dto) {
         List<String> insufficientItems = new ArrayList<>();
 
@@ -475,7 +478,7 @@ public class OrderService {
 
         return insufficientItems;
     }
-*/
+
 
 
 }

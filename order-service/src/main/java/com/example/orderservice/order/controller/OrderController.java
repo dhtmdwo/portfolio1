@@ -1,7 +1,7 @@
 package com.example.orderservice.order.controller;
 
 import com.example.orderservice.order.model.dto.*;
-import com.example.common.common.BaseResponse;
+import com.example.common.common.config.BaseResponse;
 import com.example.orderservice.order.model.Order;
 import com.example.orderservice.order.service.OrderService;
 import jakarta.validation.Valid;

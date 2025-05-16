@@ -1,7 +1,7 @@
 package com.example.userservice.store.controller;
 
-import com.example.common.common.BaseResponse;
-import com.example.common.common.JwtTokenProvider;
+import com.example.common.common.config.BaseResponse;
+import com.example.common.common.Jwt.JwtTokenProvider;
 import com.example.userservice.store.model.Store;
 import com.example.userservice.store.model.dto.StoreDto;
 import com.example.userservice.store.service.StoreService;

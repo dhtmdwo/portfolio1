@@ -1,7 +1,7 @@
 package com.example.orderservice.menu_management.category.controller;
 
-import com.example.common.common.BaseResponse;
-import com.example.common.common.ErrorCode;
+import com.example.common.common.config.BaseResponse;
+import com.example.common.common.config.ErrorCode;
 import com.example.orderservice.menu_management.category.model.Category;
 import com.example.orderservice.menu_management.category.model.dto.CategoryDto;
 import com.example.orderservice.menu_management.category.service.CategoryService;

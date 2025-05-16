@@ -3,7 +3,13 @@ package com.example.marketservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(
+        scanBasePackages = {
+                "com.example.marketservice",
+                "com.example.common.kafka",
+                "com.example.common.common.config"
+        }
+)
 public class MarketServiceApplication {
 
     public static void main(String[] args) {

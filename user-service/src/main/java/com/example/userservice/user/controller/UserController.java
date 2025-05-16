@@ -1,7 +1,7 @@
 package com.example.userservice.user.controller;
 
-import com.example.common.common.BaseResponse;
-import com.example.common.common.JwtTokenProvider;
+import com.example.common.common.config.BaseResponse;
+import com.example.common.common.Jwt.JwtTokenProvider;
 import com.example.userservice.store.model.Store;
 import com.example.userservice.user.model.User;
 import com.example.userservice.user.model.dto.PhoneVerificationDto;

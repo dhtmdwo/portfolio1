@@ -32,13 +32,9 @@ public class StoreInventory {
     @Schema(description = "이름", example = "마늘")
     private String name;
 
+    private BigDecimal quantity;
+
     private String unit;
-
-
-    @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    @Schema(description = "상세 재고 목록")
-    private List<Inventory> inventoryList = new ArrayList<>();
 
     @OneToMany(mappedBy = "storeInventory", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "옵션 재고 사용량 목록")

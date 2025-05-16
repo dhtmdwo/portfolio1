@@ -1,6 +1,6 @@
 package com.example.inventoryservice.inventory.controller;
 
-import com.example.common.common.BaseResponse;
+import com.example.common.common.config.BaseResponse;
 import com.example.inventoryservice.inventory.model.dto.*;
 import com.example.inventoryservice.inventory.service.InventoryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -134,12 +134,6 @@ public class InventoryController {
     public BaseResponse<String> deleteInventory(@RequestBody List<Long> inventoryid) {
         inventoryService.deleteById(inventoryid);
         return BaseResponse.success("선택한 재고가 성공적으로 삭제되었습니다.");
-    }
-
-    @GetMapping("/test")
-    public BaseResponse<String> test(@RequestHeader("X-Store-Id") String storeId) {
-        inventoryService.test();
-        return BaseResponse.success("test");
     }
 
 

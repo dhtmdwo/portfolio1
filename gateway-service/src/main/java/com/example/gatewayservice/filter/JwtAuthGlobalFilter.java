@@ -1,6 +1,6 @@
 package com.example.gatewayservice.filter;
 
-import com.example.common.common.JwtTokenProvider;
+import com.example.common.common.Jwt.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

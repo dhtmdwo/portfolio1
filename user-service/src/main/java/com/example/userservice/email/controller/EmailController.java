@@ -1,6 +1,6 @@
 package com.example.userservice.email.controller;
 
-import com.example.common.common.BaseResponse;
+import com.example.common.common.config.BaseResponse;
 import com.example.userservice.email.model.dto.EmailDto;
 import com.example.userservice.email.service.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
