@@ -68,37 +68,37 @@
 ### Backend
 
 
-<img src="https://img.shields.io/badge/SpringBatch-%236DB33F?style=&logo=spring">
-<img src="https://img.shields.io/badge/Java-%23ED8B00?logo=openjdk&logoColor=white">
-<img src="https://img.shields.io/badge/SpringBoot-%236DB33F?logo=springboot&logoColor=white">
-<img src="https://img.shields.io/badge/SpringSecurity-%236DB33F?logo=springsecurity&logoColor=white">
-<img src="https://img.shields.io/badge/Gradle-%2302306C?logo=gradle&logoColor=white">
-<img src="https://img.shields.io/badge/JWT-%23000000?logo=jsonwebtokens&logoColor=white">
+<img src="https://img.shields.io/badge/SpringBatch-%236DB33F?style=&logo=spring">&nbsp;
+<img src="https://img.shields.io/badge/Java-%23ED8B00?logo=openjdk&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/SpringBoot-%236DB33F?logo=springboot&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/SpringSecurity-%236DB33F?logo=springsecurity&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/Gradle-%2302306C?logo=gradle&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/JWT-%23000000?logo=jsonwebtokens&logoColor=white">&nbsp;
 
 
 ### DB
 
 
-<img src="https://img.shields.io/badge/Redis-%23DC382D?logo=redis&logoColor=white">
-<img src="https://img.shields.io/badge/MariaDB-%23003545?logo=mariadb&logoColor=white">
+<img src="https://img.shields.io/badge/Redis-%23DC382D?logo=redis&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/MariaDB-%23003545?logo=mariadb&logoColor=white">&nbsp;
 
 ### Message Queue
 
-<img src="https://img.shields.io/badge/Kafka-%2300111C?logo=apachekafka&logoColor=white">
-<img src="https://img.shields.io/badge/ZooKeeper-%236C3A1D?logo=apache&logoColor=white">
+<img src="https://img.shields.io/badge/Kafka-%2300111C?logo=apachekafka&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/ZooKeeper-%236C3A1D?logo=apache&logoColor=white">&nbsp;
 
 ### DevOps
 
 
-<img src="https://img.shields.io/badge/Ansible-%23000000?logo=ansible&logoColor=white">
-<img src="https://img.shields.io/badge/Helm-%230074C1?logo=helm&logoColor=white">
+<img src="https://img.shields.io/badge/Ansible-%23000000?logo=ansible&logoColor=white">&nbsp;
+<img src="https://img.shields.io/badge/Helm-%230074C1?logo=helm&logoColor=white">&nbsp;
 
 ### CI/CD
 
-<img src="https://img.shields.io/badge/Kubernetes-%23326CE5?logo=kubernetes&logoColor=white">
+<img src="https://img.shields.io/badge/Kubernetes-%23326CE5?logo=kubernetes&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Docker-002260?style=flat&logo=docker&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Jenkins-CF4045?style=flat&logo=jenkins&logoColor=white">&nbsp;
-<img src="https://img.shields.io/badge/GitHub%20Webhook-%23181717?logo=github&logoColor=white">
+<img src="https://img.shields.io/badge/GitHub%20Webhook-%23181717?logo=github&logoColor=white">&nbsp;
 
 ### Monotoring
 
@@ -107,7 +107,7 @@
 
 ### Test&VCS
 
-<img src="https://img.shields.io/badge/Locust-%23000000?logo=python&logoColor=white">
+<img src="https://img.shields.io/badge/Locust-%23000000?logo=python&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white">&nbsp;
 
 ### Cooperation
