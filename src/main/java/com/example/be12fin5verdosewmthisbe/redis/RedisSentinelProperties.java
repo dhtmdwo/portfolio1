@@ -8,11 +8,17 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@ConfigurationProperties(prefix = "spring.redis.sentinel")
+@ConfigurationProperties(prefix = "spring.redis")
 @Getter
 @Setter
 public class RedisSentinelProperties {
-    private String master;
-    private List<String> nodes;
     private String password;
+    private Sentinel sentinel;
+
+    @Getter
+    @Setter
+    public static class Sentinel {
+        private String master;
+        private List<String> nodes;
+    }
 }
