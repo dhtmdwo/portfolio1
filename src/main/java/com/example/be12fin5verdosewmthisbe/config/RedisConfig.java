@@ -33,13 +33,15 @@ public class RedisConfig {
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisSentinelConfiguration config = new RedisSentinelConfiguration();
-        config.master(sentinelProps.getMaster());
+        config.master(sentinelProps.getSentinel().getMaster());
 
-        for (String node : sentinelProps.getNodes()) {
+        for (String node : sentinelProps.getSentinel().getNodes()) {
             String[] parts = node.split(":");
             config.sentinel(parts[0], Integer.parseInt(parts[1]));
         }
+
         config.setPassword(RedisPassword.of(sentinelProps.getPassword()));
+
         return new LettuceConnectionFactory(config);
     }
 
