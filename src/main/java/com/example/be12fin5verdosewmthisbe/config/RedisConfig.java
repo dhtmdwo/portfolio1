@@ -39,9 +39,6 @@ public class RedisConfig {
             String[] parts = node.split(":");
             config.sentinel(parts[0], Integer.parseInt(parts[1]));
         }
-
-        config.setPassword(RedisPassword.of(sentinelProps.getPassword()));
-
         return new LettuceConnectionFactory(config);
     }
 
