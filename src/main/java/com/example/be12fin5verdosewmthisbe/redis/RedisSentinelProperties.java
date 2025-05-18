@@ -12,7 +12,6 @@ import java.util.List;
 @Getter
 @Setter
 public class RedisSentinelProperties {
-    private String password;
     private Sentinel sentinel;
 
     @Getter
