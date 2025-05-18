@@ -1,5 +1,6 @@
 package com.example.be12fin5verdosewmthisbe.config;
 
+import com.example.be12fin5verdosewmthisbe.redis.RedisSentinelProperties;
 import com.example.be12fin5verdosewmthisbe.store.model.dto.StoreDto;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
@@ -7,10 +8,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisPassword;
+import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,22 +25,21 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class RedisConfig {
 
-    @Value("${spring.redis.host}")
-    private String redisHost;
-
-    @Value("${spring.redis.port}")
-    private int redisPort;
+    private final RedisSentinelProperties sentinelProps;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName(redisHost);
-        config.setPort(redisPort);
-        // 비밀번호가 있으면 아래 추가
-        // config.setPassword(RedisPassword.of("비밀번호"));
+        RedisSentinelConfiguration config = new RedisSentinelConfiguration();
+        config.master(sentinelProps.getMaster());
 
+        for (String node : sentinelProps.getNodes()) {
+            String[] parts = node.split(":");
+            config.sentinel(parts[0], Integer.parseInt(parts[1]));
+        }
+        config.setPassword(RedisPassword.of(sentinelProps.getPassword()));
         return new LettuceConnectionFactory(config);
     }
 
