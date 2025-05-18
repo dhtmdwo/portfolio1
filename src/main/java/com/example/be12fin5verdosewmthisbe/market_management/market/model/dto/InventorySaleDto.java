@@ -44,6 +44,8 @@ public class InventorySaleDto {
 
         // 판매 물품 id
         private Long inventorySaleId;
+        // 판매 가게 id
+        private Long storeId;
         // 판매물품 이름
         private String inventoryName;
         // 수량
@@ -56,6 +58,19 @@ public class InventorySaleDto {
         private LocalDate createdDate;
         // 파는 가게명
         private String sellerStoreName;
+
+        public static InventorySaleListDto from(InventorySale inventorySale) {
+            return InventorySaleListDto.builder()
+                    .inventorySaleId(inventorySale.getId())
+                    .storeId(inventorySale.getStore().getId())
+                    .inventoryName(inventorySale.getInventoryName())
+                    .quantity(inventorySale.getQuantity().toString())
+                    .expirationDate(inventorySale.getExpiryDate())
+                    .price(inventorySale.getPrice())
+                    .createdDate(inventorySale.getCreatedAt().toLocalDateTime().toLocalDate())
+                    .sellerStoreName(inventorySale.getSellerStoreName())
+                    .build();
+        }
     }
 
     @Data
