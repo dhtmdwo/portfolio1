@@ -587,6 +587,7 @@ public class InventoryService {
                     }
                 }
             }
+            String totalModifiedQuantityStr = totalModifiedQuantity.stripTrailingZeros().toPlainString() + si.getUnit();
 
             if (totalStockedQuantity.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal ratio = totalModifiedQuantity
@@ -594,7 +595,7 @@ public class InventoryService {
                 if (ratio.compareTo(BigDecimal.valueOf(0.1)) >= 0) {
                     highModifyItems.add(InventoryUpdateDto.ItemQuantityDto.builder()
                             .itemName(si.getName())
-                            .totalQuantity(totalModifiedQuantity)
+                            .totalQuantity(totalModifiedQuantityStr)
                             .build());
                 }
             }
