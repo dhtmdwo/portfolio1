@@ -25,6 +25,6 @@ public class InventoryUpdateDto {
     @NoArgsConstructor
     public static class ItemQuantityDto {
         private String itemName;
-        private BigDecimal totalQuantity;
+        private String totalQuantity;
     }
 }

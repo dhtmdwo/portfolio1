@@ -10,6 +10,7 @@ import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.In
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.InventorySaleDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.model.dto.TransactionDto;
 import com.example.be12fin5verdosewmthisbe.market_management.market.service.MarketService;
+import com.example.be12fin5verdosewmthisbe.notification.service.NotificationService;
 import com.example.be12fin5verdosewmthisbe.security.JwtTokenProvider;
 import com.example.be12fin5verdosewmthisbe.store.model.Store;
 import com.example.be12fin5verdosewmthisbe.store.service.StoreService;
@@ -38,6 +39,7 @@ public class MarketController {
     private final JwtTokenProvider jwtTokenProvider;
     private final StoreService storeService;
     private final InventoryService inventoryService;
+    private final NotificationService notificationService;
 
     @PostMapping("/registerSale")
     public BaseResponse<String> registerInventorySale(@RequestBody @Valid InventorySaleDto.InventorySaleRequestDto dto, HttpServletRequest request) {
@@ -53,6 +55,8 @@ public class MarketController {
     @PostMapping("/registerPurchase")
     public BaseResponse<String> registerInventoryPurchase(@RequestBody @Valid InventoryPurchaseDto.InventoryPurchaseRequestDto dto, HttpServletRequest request) {
         marketService.purchaseRegister(dto, getStoreId(request));
+        String receiverIdStr = getStoreId(request).toString();
+        notificationService.sendNotification(dto);
         return BaseResponse.success("ok");
     }
 
@@ -147,5 +151,7 @@ public class MarketController {
         Long storeId = Long.valueOf(claims.get("storeId", String.class));
         return  storeId;
     }
+
+
 
 }
