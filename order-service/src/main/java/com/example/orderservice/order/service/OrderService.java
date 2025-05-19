@@ -4,6 +4,7 @@ package com.example.orderservice.order.service;
 
 import com.example.common.common.config.CustomException;
 import com.example.common.common.config.ErrorCode;
+import com.example.common.common.config.KafkaTopic;
 import com.example.common.kafka.dto.InventoryConsumeEvent;
 import com.example.orderservice.inventory.model.StoreInventory;
 import com.example.orderservice.inventory.repository.StoreInventoryRepository;
@@ -44,7 +45,6 @@ public class OrderService {
     private final StoreInventoryRepository storeInventoryRepository;
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final String INVENTORY_TOPIC = "inventory.consume";
 
     @Transactional
     public OrderDto.OrderCreateResponse createOrder(
@@ -146,7 +146,7 @@ public class OrderService {
                 usedInventoryQty,
                 Instant.now().toString()
         );
-        kafkaTemplate.send(INVENTORY_TOPIC, storeId.toString(), evt);
+        kafkaTemplate.send(KafkaTopic.INVENTORY_LIST_CONSUME_TOPIC, storeId.toString(), evt);
 
         return OrderDto.OrderCreateResponse.toOrderCreateResponse(order);
     }

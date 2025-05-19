@@ -2,10 +2,8 @@ package com.example.inventoryservice.inventory.service;
 
 import com.example.common.common.config.CustomException;
 import com.example.common.common.config.ErrorCode;
-import com.example.common.kafka.dto.InventoryRegisteredEvent;
-import com.example.common.kafka.dto.StoreInventoryDeleteEvent;
-import com.example.common.kafka.dto.StoreInventoryEvent;
-import com.example.common.kafka.dto.StoreInventoryUpdatedEvent;
+import com.example.common.common.config.KafkaTopic;
+import com.example.common.kafka.dto.*;
 import com.example.inventoryservice.inventory.model.Inventory;
 import com.example.inventoryservice.inventory.model.ModifyInventory;
 import com.example.inventoryservice.inventory.model.StoreInventory;
@@ -18,10 +16,12 @@ import com.example.inventoryservice.inventory.repository.UsedInventoryRepository
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.Store;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -46,12 +46,6 @@ public class InventoryService {
     private final UsedInventoryRepository usedInventoryRepository;
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
-
-    private static final String TOPIC = "store-inventory-events";
-    private static final String DELETE_TOPIC = "store-inventory-delete-events";
-    private static final String UPDATED_TOPIC = "store-inventory-updated-events";
-
-    private static final String INVENTORY_TOPIC = "inventory-registered-events";
 
     public StoreInventory registerStoreInventory(InventoryDetailRequestDto dto, Long storeId) {
 
@@ -82,8 +76,7 @@ public class InventoryService {
         );
 
         log.info("Store Inventory Event: {}", event);
-        kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
-
+        kafkaTemplate.send(KafkaTopic.STORE_INVENTORY_CREATE_TOPIC , String.valueOf(saved.getId()), event);
         return saved;
 
     }
@@ -113,6 +106,7 @@ public class InventoryService {
         Inventory savedInv = inventoryRepository.save(inventory);
 
         InventoryRegisteredEvent invEvt = new InventoryRegisteredEvent(
+                savedInv.getId(),
                 savedInv.getPurchaseDate(),
                 savedInv.getStoreInventory().getId(),
                 savedInv.getQuantity(),
@@ -120,26 +114,20 @@ public class InventoryService {
                 savedInv.getExpiryDate()
         );
 
-        kafkaTemplate.send(INVENTORY_TOPIC,
-                savedInv.getId().toString(),
-                invEvt
-        );
 
         storeInventory.setQuantity(storeInventory.getQuantity().add(dto.getQuantity()));
 
         StoreInventory saved = storeInventoryRepository.save(storeInventory);
 
-        StoreInventoryEvent event = new StoreInventoryEvent(
+        StoreInventoryUpdatedEvent updatedEvt = new StoreInventoryUpdatedEvent(
                 saved.getId(),
-                saved.getName(),
-                saved.getQuantity(),
-                saved.getMinQuantity(),
-                saved.getExpiryDate(),
-                saved.getUnit(),
-                saved.getStoreId()
+                saved.getQuantity()
         );
-
-        kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
+        kafkaTemplate.send(KafkaTopic.STORE_INVENTORY_UPDATE_TOPIC, saved.getId().toString(), updatedEvt);
+        kafkaTemplate.send(KafkaTopic.INVENTORY_CREATE_TOPIC ,
+                savedInv.getId().toString(),
+                invEvt
+        );
     }
 
 
@@ -167,6 +155,20 @@ public class InventoryService {
         // Inventory 엔티티 저장
         Inventory savedInventory = inventoryRepository.save(inventory);
 
+        InventoryRegisteredEvent invEvt = new InventoryRegisteredEvent(
+                savedInventory.getId(),
+                savedInventory.getPurchaseDate(),
+                savedInventory.getStoreInventory().getId(),
+                savedInventory.getQuantity(),
+                savedInventory.getUnitPrice(),
+                savedInventory.getExpiryDate()
+        );
+
+        kafkaTemplate.send(KafkaTopic.INVENTORY_CREATE_TOPIC ,
+                savedInventory.getId().toString(),
+                invEvt
+        );
+
         // StoreInventory 객체 업데이트 (입고 후 재고 수량 업데이트)
         storeInventory.setQuantity(storeInventory.getQuantity().add(savedInventory.getQuantity()));
         StoreInventory saved = storeInventoryRepository.save(storeInventory);
@@ -181,7 +183,7 @@ public class InventoryService {
                 saved.getStoreId()
         );
 
-        kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
+        kafkaTemplate.send(KafkaTopic.STORE_INVENTORY_CREATE_TOPIC , String.valueOf(saved.getId()), event);
 
         return savedInventory;  // 등록된 Inventory 객체 반환
     }
@@ -227,7 +229,7 @@ public class InventoryService {
                     saved.getStoreId()
             );
 
-            kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
+            kafkaTemplate.send(KafkaTopic.STORE_INVENTORY_CREATE_TOPIC , String.valueOf(saved.getId()), event);
 
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INVENTORY_UPDATE_FAIL);
@@ -246,7 +248,7 @@ public class InventoryService {
         }
         // 삭제 성공 후 이벤트 발행
         StoreInventoryDeleteEvent deleteEvent = new StoreInventoryDeleteEvent(inventoryIds);
-        kafkaTemplate.send(DELETE_TOPIC, deleteEvent);
+        kafkaTemplate.send(KafkaTopic.STORE_INVENTORY_DELETE_TOPIC , deleteEvent);
     }
 
     public Page<StoreInventoryDto.responseDto> getAllStoreInventories(Long storeId, Pageable pageable, String keyword) {
@@ -435,8 +437,22 @@ public class InventoryService {
         for (StoreInventory si : inventoriesToSave) {
             StoreInventoryUpdatedEvent evt =
                     new StoreInventoryUpdatedEvent(si.getId(), si.getQuantity());
-            kafkaTemplate.send(UPDATED_TOPIC, si.getId().toString(), evt);
+            kafkaTemplate.send(KafkaTopic.STORE_INVENTORY_UPDATE_TOPIC , si.getId().toString(), evt);
         }
+
+        List<Long> inventoryIds = inventoriesToDelete.stream()
+                .map(Inventory::getId)
+                .collect(Collectors.toList());
+        InventoryDeleteEvent inventoryDeleteEvent = new InventoryDeleteEvent(inventoryIds);
+
+        for(Inventory inv : inventoriesToSaveDetail) {
+            InventoryUpdateEvent evt =
+                    new InventoryUpdateEvent(inv.getId(),inv.getExpiryDate(),inv.getQuantity());
+            kafkaTemplate.send(KafkaTopic.INVENTORY_UPDATE_TOPIC ,evt);
+
+        }
+
+        kafkaTemplate.send(KafkaTopic.INVENTORY_DELETE_TOPIC ,inventoryDeleteEvent);
     }
 
     @Transactional
@@ -453,10 +469,17 @@ public class InventoryService {
             throw new CustomException(ErrorCode.INSUFFICIENT_INVENTORY);
         }
         storeInventory.setQuantity(changeQuantity);
-        storeInventoryRepository.save(storeInventory);
+        StoreInventory saved = storeInventoryRepository.save(storeInventory);
+        StoreInventoryUpdatedEvent storeInventoryUpdatedEvent = new StoreInventoryUpdatedEvent(
+                saved.getId(),
+                saved.getQuantity()
+        );
+        kafkaTemplate.send(KafkaTopic.STORE_INVENTORY_UPDATE_TOPIC , saved.getId().toString(), storeInventoryUpdatedEvent);
+
 
         BigDecimal remaining = requestedQuantity;
-
+        List<Long> deleteInvList = new ArrayList<>();
+        Inventory saveInv = null;
         for (Inventory inventory : inventories) {
             if (remaining.compareTo(BigDecimal.ZERO) <= 0) break;
 
@@ -465,13 +488,23 @@ public class InventoryService {
             if (available.compareTo(remaining) <= 0) {
                 // 전부 쓰고 삭제
                 remaining = remaining.subtract(available);
+                deleteInvList.add(inventory.getId());
                 inventoryRepository.delete(inventory);
             } else {
                 // 일부만 사용
                 inventory.setQuantity(available.subtract(remaining));
-                inventoryRepository.save(inventory);
+                saveInv = inventoryRepository.save(inventory);
                 remaining = BigDecimal.ZERO;
             }
+        }
+        kafkaTemplate.send(KafkaTopic.INVENTORY_DELETE_TOPIC , deleteInvList);
+        if(saveInv != null) {
+            InventoryUpdateEvent invUpdateEvent = new InventoryUpdateEvent(
+                    saveInv.getId(),
+                    saveInv.getExpiryDate(),
+                    saveInv.getQuantity()
+            );
+            kafkaTemplate.send(KafkaTopic.INVENTORY_UPDATE_TOPIC ,invUpdateEvent);
         }
 
         if (remaining.compareTo(BigDecimal.ZERO) > 0) {
@@ -704,7 +737,15 @@ public class InventoryService {
         // 기존 재고 수정
         inventory.setExpiryDate(dto.getExpiryDate());
         inventory.setQuantity(afterQuantity);
-        inventoryRepository.save(inventory);
+        Inventory inv = inventoryRepository.save(inventory);
+
+        InventoryUpdateEvent evt = new InventoryUpdateEvent(
+                inv.getId(),
+                inv.getExpiryDate(),
+                inv.getQuantity()
+        );
+
+        kafkaTemplate.send(KafkaTopic.INVENTORY_UPDATE_TOPIC , String.valueOf(inv.getId()), evt);
 
 
         StoreInventory storeInventory = inventory.getStoreInventory();
@@ -745,6 +786,6 @@ public class InventoryService {
                 saved.getStoreId()
         );
 
-        kafkaTemplate.send(TOPIC, String.valueOf(saved.getId()), event);
+        kafkaTemplate.send(KafkaTopic.STORE_INVENTORY_CREATE_TOPIC , String.valueOf(saved.getId()), event);
     }
 }

@@ -3,15 +3,19 @@ package com.example.common.kafka.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Inventory 등록 완료 이벤트")
 public class InventoryRegisteredEvent {
+
+    private Long id;
 
     @Schema(description = "구매날짜", example = "2025-04-01T10:00:00Z")
     private Timestamp purchaseDate;

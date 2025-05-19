@@ -25,7 +25,6 @@ import java.util.List;
 public class StoreInventory {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "매장별재고 ID", example = "1")
     private Long id;
 

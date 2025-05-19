@@ -2,7 +2,9 @@ package com.example.marketservice.market.service;
 
 import com.example.common.common.config.CustomException;
 import com.example.common.common.config.ErrorCode;
+import com.example.common.common.config.KafkaTopic;
 import com.example.common.common.config.UnitConvertService;
+import com.example.common.kafka.dto.ConsumeEvent;
 import com.example.common.kafka.dto.InventoryRegisterEvent;
 import com.example.common.kafka.dto.StoreInventoryCreateEvent;
 import com.example.marketservice.market.model.*;
@@ -39,8 +41,6 @@ public class MarketService {
 
 
     private static final double RADIUS_KM = 3.0;
-    private static final String TOPIC = "inventory-register-events";
-
 
     public void saleRegister(InventorySaleDto.InventorySaleRequestDto dto, Long storeId, Inventory inventory) {
 
@@ -223,7 +223,11 @@ public class MarketService {
                     purchase.setStatus(InventoryPurchase.purchaseStatus.isPaymentInProgress);
                 }
                 // 재고 차감 로직 추가해야함 카프카로
-
+                ConsumeEvent consumeEvent = new ConsumeEvent(
+                        sale.getStoreInventory().getId(),
+                        sale.getQuantity()
+                );
+                kafkaTemplate.send(KafkaTopic.INVENTORY_CONSUME_TOPIC,consumeEvent);
 
                 sale.setInventoryPurchaseId(purchaseId);
                 inventorySaleRepository.save(sale);
@@ -311,10 +315,7 @@ public class MarketService {
     }
     public void addInventory(InventoryPurchase inventoryPurchase,StoreInventory storeInventory,InventorySale inventorySale) {
         InventoryRegisterEvent registerEvent = null;
-        Boolean e = unitConvertService.canConvert(inventoryPurchase.getUnit(),storeInventory.getUnit());
-        log.info(inventoryPurchase.getUnit());
-        log.info(storeInventory.getUnit());
-        log.info(String.valueOf(e));
+
         // 단위변환이 성공하면
         if(storeInventory != null && unitConvertService.canConvert(inventoryPurchase.getUnit(),storeInventory.getUnit())) {
             BigDecimal addition = unitConvertService.convert(inventoryPurchase.getQuantity(),inventoryPurchase.getUnit(),storeInventory.getUnit());
@@ -324,35 +325,23 @@ public class MarketService {
                     addition,
                     inventoryPurchase.getPrice()
                     );
+            publishRegisterEvent(registerEvent);
         } else { // 단위변환이 실패하면 그냥 새로 넣기
             StoreInventory storeInventory2 = inventorySale.getStoreInventory();
-            StoreInventory newStoreInventory = storeInventoryRepository.save(StoreInventory.builder()
-                    .store(inventoryPurchase.getStore())
-                    .unit(storeInventory2.getUnit())
-                    .name(storeInventory2.getName())
-                    .minQuantity(storeInventory2.getMinQuantity())
-                    .quantity(BigDecimal.ZERO)
-                    .expiryDate(storeInventory2.getExpiryDate())
-                    .build());
             StoreInventoryCreateEvent createEvt = new StoreInventoryCreateEvent(
                     inventoryPurchase.getStore().getId(),
                     storeInventory2.getUnit(),
                     storeInventory2.getName(),
                     storeInventory2.getMinQuantity(),
                     BigDecimal.ZERO,
-                    storeInventory2.getExpiryDate()
-            );
-            kafkaTemplate.send("inventory-create-events",
-                    inventoryPurchase.getStore().getId().toString(), createEvt
-            );
-
-            registerEvent = new InventoryRegisterEvent(
-                    newStoreInventory.getId(),
+                    storeInventory2.getExpiryDate(),
                     inventoryPurchase.getQuantity(),
                     inventoryPurchase.getPrice()
             );
+            kafkaTemplate.send(KafkaTopic.MARKET_STORE_INVENTORY_CREATE_TOPIC,
+                    inventoryPurchase.getStore().getId().toString(), createEvt
+            );
         }
-        publishRegisterEvent(registerEvent);
     }
 
 
@@ -362,7 +351,7 @@ public class MarketService {
                 registerEvent.getQuantity(),
                 registerEvent.getPrice()
         );
-        kafkaTemplate.send(TOPIC, registerEvent.getStoreInventoryId().toString(), event);
+        kafkaTemplate.send(KafkaTopic.MARKET_INVENTORY_CREATE_TOPIC, registerEvent.getStoreInventoryId().toString(), event);
         log.info("Published InventoryRegisterEvent: {}", event);
     }
 

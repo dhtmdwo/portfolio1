@@ -104,7 +104,7 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
         from StoreInventory si
         left join si.inventoryList i
         where si.storeId = :storeId
-          and i.quantity > 0
+          and i.quantity >= 0
         group by si.id, si.name, si.quantity, si.unit, si.minQuantity
     """)
     List<InventoryListDto> fetchInventoryInfoByStore(@Param("storeId") Long storeId);

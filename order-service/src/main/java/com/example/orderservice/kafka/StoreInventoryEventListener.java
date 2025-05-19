@@ -1,5 +1,6 @@
 package com.example.orderservice.kafka;
 
+import com.example.common.common.config.KafkaTopic;
 import com.example.common.kafka.dto.StoreInventoryDeleteEvent;
 import com.example.common.kafka.dto.StoreInventoryEvent;
 import com.example.common.kafka.dto.StoreInventoryUpdatedEvent;
@@ -17,34 +18,23 @@ public class StoreInventoryEventListener {
     private final StoreInventoryRepository repository;
 
     @KafkaListener(
-            topics = "store-inventory-events",
+            topics = KafkaTopic.STORE_INVENTORY_CREATE_TOPIC,
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void handleStoreInventoryEvent(StoreInventoryEvent event) {
         log.info("Received StoreInventoryEvent: {}", event);
-        StoreInventory lite = null;
-        if (repository.existsById(event.getId())) {
-            lite = StoreInventory.builder()
-                    .id(event.getId())
-                    .name(event.getName())
-                    .storeId(event.getStoreId())
-                    .quantity(event.getQuantity())
-                    .unit(event.getUnit())
-                    .build();
-        } else {
-            lite = StoreInventory.builder()
-                    .name(event.getName())
-                    .storeId(event.getStoreId())
-                    .quantity(event.getQuantity())
-                    .unit(event.getUnit())
-                    .build();
-        }
-
+        StoreInventory lite = StoreInventory.builder()
+                .id(event.getId())
+                .name(event.getName())
+                .storeId(event.getStoreId())
+                .quantity(event.getQuantity())
+                .unit(event.getUnit())
+                .build();
         repository.save(lite);
     }
     // 삭제 이벤트 처리
     @KafkaListener(
-            topics = "store-inventory-delete-events",
+            topics = KafkaTopic.STORE_INVENTORY_DELETE_TOPIC,
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void handleDeleteEvent(StoreInventoryDeleteEvent event) {
@@ -53,7 +43,7 @@ public class StoreInventoryEventListener {
     }
 
     @KafkaListener(
-            topics = "store-inventory-updated-events",
+            topics = KafkaTopic.STORE_INVENTORY_UPDATE_TOPIC,
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void handleUpdatedEvent(StoreInventoryUpdatedEvent event) {

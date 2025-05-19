@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(
         scanBasePackages = {
                 "com.example.userservice",
-                "com.example.common.common"
+                "com.example.common"
         }
 )
 public class UserServiceApplication {

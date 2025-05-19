@@ -75,10 +75,13 @@ public class OptionDto {
                     .id(option.getId())
                     .name(option.getName())
                     .price(option.getPrice())
+
                     .ingredients(option.getOptionValueList().stream()
                             .map(ov -> IngredientDto.builder()
                                     .storeInventoryId(ov.getStoreInventory().getId())
                                     .quantity(ov.getQuantity())
+                                    .name(ov.getStoreInventory().getName())
+                                    .unit(ov.getStoreInventory().getUnit())
                                     .build())
                             .collect(Collectors.toList()))
                     .build();

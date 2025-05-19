@@ -13,6 +13,9 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -46,6 +49,8 @@ public class StoreController {
                 .build();
         return BaseResponse.success(response);
     }
+
+
     public void setCookie(HttpServletResponse response, String name, String jwtToken, Duration maxAge) {
         ResponseCookie cookie = ResponseCookie
                 .from(name, jwtToken)

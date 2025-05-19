@@ -4,10 +4,12 @@ package com.example.common.kafka.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "재고 등록/추가 이벤트")
 public class InventoryRegisterEvent {

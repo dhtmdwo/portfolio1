@@ -8,6 +8,7 @@ import com.example.marketservice.market.model.InventorySale;
 import com.example.marketservice.market.model.Store;
 import com.example.marketservice.market.model.dto.InventoryPurchaseDto;
 import com.example.marketservice.market.model.dto.InventorySaleDto;
+import com.example.marketservice.market.model.dto.StoreDto;
 import com.example.marketservice.market.model.dto.TransactionDto;
 import com.example.marketservice.market.service.MarketService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,10 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/market")
@@ -114,6 +112,27 @@ public class MarketController {
             }
         }
         return BaseResponse.success(filePaths);
+    }
+
+    @GetMapping("/getNearbyStores")
+    private List<StoreDto.response> getNearbyStores(@RequestHeader("X-Store-Id") String storeId) {
+        List<Store> storeList = marketService.getNearbyStoreIds(Long.parseLong(storeId));
+        List<Long> storeIds = storeList.stream().map(Store::getId).toList();
+
+        Map<Long, List<InventorySaleDto.InventorySaleListDto>> salesMap = marketService.getInventorySalesByStoreIds(storeIds);
+
+        return storeList.stream()
+                .map(store -> {
+                    return StoreDto.response.builder()
+                            .name(store.getName())
+                            .address(store.getAddress())
+                            .phoneNumber(store.getPhoneNumber())
+                            .latitude(store.getLatitude())
+                            .longitude(store.getLongitude())
+                            .boardList(salesMap.getOrDefault(store.getId(), new ArrayList<>()))
+                            .build();
+                })
+                .toList();
     }
 
 

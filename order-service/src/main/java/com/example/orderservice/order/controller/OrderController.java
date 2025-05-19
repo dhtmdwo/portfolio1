@@ -1,5 +1,6 @@
 package com.example.orderservice.order.controller;
 
+import com.example.common.common.config.ErrorCode;
 import com.example.orderservice.order.model.dto.*;
 import com.example.common.common.config.BaseResponse;
 import com.example.orderservice.order.model.Order;
@@ -9,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +23,7 @@ public class OrderController {
     @PostMapping("/create")
     public BaseResponse<OrderDto.OrderCreateResponse> createOrder(@RequestBody OrderDto.OrderCreateRequest request, @RequestHeader("X-Store-Id") String storeId) {
 
-        OrderDto.OrderCreateResponse created = orderService.createOrder(request, request.getStoreId());
+        OrderDto.OrderCreateResponse created = orderService.createOrder(request, Long.parseLong(storeId));
         return BaseResponse.success(created);
     }
     @GetMapping("/getList")
@@ -62,7 +65,7 @@ public class OrderController {
         List<OrderSaleDetailDto.TotalResponse> detailSaleList = orderService.getSalesDetail(Long.parseLong(storeId), startDate, endDate);
         return BaseResponse.success(detailSaleList);
     }
-    /*@PostMapping("/validateOrder")
+    @PostMapping("/validateOrder")
     public BaseResponse<String> validateOrder(@RequestHeader("X-Store-Id") String storeId, @RequestBody InventoryValidateOrderDto dto) {
         List<String> insufficientItems = orderService.validateOrder(Long.parseLong(storeId), dto);
 
@@ -75,7 +78,7 @@ public class OrderController {
 
         // 부족한 재고가 없으면 정상 처리
         return BaseResponse.success("모든 재고가 충분합니다.");
-    }*/
+    }
 
 }
         

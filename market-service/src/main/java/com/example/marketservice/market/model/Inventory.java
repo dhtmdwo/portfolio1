@@ -21,7 +21,6 @@ import java.time.LocalDate;
 public class Inventory {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     @Schema(description = "재고 ID", example = "1")
     private Long id;

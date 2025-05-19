@@ -9,15 +9,20 @@ import com.example.userservice.user.model.dto.UserDto;
 import com.example.userservice.user.model.dto.UserInfoDto;
 import com.example.userservice.user.model.dto.UserRegisterDto;
 import com.example.userservice.user.service.PhoneVerificationService;
+import com.example.userservice.user.service.S3Service;
 import com.example.userservice.user.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/user")
@@ -26,6 +31,7 @@ public class UserController {
     private final String COOKIE_NAME = "ATOKEN";
     private final Duration MAX_AGE = Duration.ofHours(1L);
 
+    private final S3Service s3Service;
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final PhoneVerificationService phoneVerificationService;
@@ -95,6 +101,29 @@ public class UserController {
     public BaseResponse<String> verifyCode(@RequestBody @Valid PhoneVerificationDto.VerifyRequestDto dto) {
         phoneVerificationService.verifyCertificationCode(dto.getPhoneNum(), dto.getCode());
         return BaseResponse.success("인증 성공");
+    }
+
+
+    @PostMapping("/presign")
+    public BaseResponse<List<PresignResponse>> presign(@RequestBody List<PresignRequest> reqs) {
+        return BaseResponse.success(reqs.stream()
+                .map(r -> {
+                    String key = UUID.randomUUID() + "_" + r.getFilename();
+                    String url = s3Service.generatePresignedUrl(key, r.getContentType());
+                    return new PresignResponse(key, url);
+                })
+                .toList());
+    }
+
+    @Data
+    public static class PresignRequest {
+        private String filename;
+        private String contentType;
+    }
+    @Data @AllArgsConstructor
+    public static class PresignResponse {
+        private String key;
+        private String url;
     }
 
     public void removeCookie(HttpServletResponse response) {

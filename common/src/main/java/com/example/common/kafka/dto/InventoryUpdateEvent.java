@@ -6,15 +6,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "StoreInventory 업데이트 이벤트")
-public class StoreInventoryUpdatedEvent {
+public class InventoryUpdateEvent {
     @Schema(description = "재고 ID", example = "1")
     private Long id;
 
-    @Schema(description = "남은 총 수량", example = "12.5")
-    private BigDecimal remainingQuantity;
+    private LocalDate expiryDate;
+
+    private BigDecimal quantity;
 }
