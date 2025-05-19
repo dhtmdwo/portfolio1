@@ -1,122 +1,90 @@
+// ── 파일: Jenkinsfile (레포 루트에 위치) ──
+
+def modules = [
+  'gateway-service',
+  'inventory-service',
+  'market-service',
+  'order-service',
+  'user-service'
+]
+
 pipeline {
-    agent any
+  agent any
 
-    triggers {
-        githubPush()
+  triggers {
+    // GitHub에 푸시될 때마다
+    githubPush()
+  }
+
+  environment {
+    // Docker 레지스트리 주소 (본인 것이나 DockerHub ID)
+    REGISTRY = 'jkweil125'
+    // 이미지 태그로 빌드 번호 사용
+    TAG      = "${BUILD_NUMBER}"
+  }
+
+  stages {
+
+    stage('Git Checkout') {
+      steps {
+        // 멀티브랜치 파이프라인이라면 checkout scm
+        checkout scm
+        // diff 용도로 origin/main 기준 fetch
+        sh 'git fetch origin main'
+      }
     }
 
-    environment {
-        IMAGE_NAME = 'jkweil125/wmthis-back'
-        IMAGE_TAG = "${BUILD_NUMBER}"
+    stage('Build & Push Changed Modules') {
+      steps {
+        script {
+          modules.each { mod ->
+            // 이 모듈 디렉터리에 변경이 있는지 검사
+            def diff = sh(
+              script: "git diff --name-only origin/main..HEAD | grep '^${mod}/' || true",
+              returnStdout: true
+            ).trim()
+
+            if (diff) {
+              echo "▶︎ ${mod} 변경 감지됨, 이미지 빌드∙푸시 시작"
+              dir(mod) {
+                // Docker 빌드
+                sh "docker build -t ${REGISTRY}/${mod}:${TAG} ."
+                // 로그인 정보는 Jenkins에 'docker-creds'라는 ID로 등록했다고 가정
+                withDockerRegistry([ credentialsId: 'docker-creds' ]) {
+                  sh "docker push ${REGISTRY}/${mod}:${TAG}"
+                }
+              }
+            } else {
+              echo "✱ ${mod} 변경 없음, 스킵"
+            }
+          }
+        }
+      }
     }
 
+    stage('Deploy Changed Modules to Kubernetes') {
+      steps {
+        script {
+          modules.each { mod ->
+            // 아까와 동일한 방식으로 변경된 모듈만 다시 검사
+            def diff = sh(
+              script: "git diff --name-only origin/main..HEAD | grep '^${mod}/' || true",
+              returnStdout: true
+            ).trim()
 
-    stages {
-            stage('Branch Check') {
-                when {
-                    expression {
-                        // ain 브랜치가 아니면 빌드 중단
-                        echo "expression"
-                        echo env.GIT_BRANCH
-                        return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                    }
-                }
-                steps {
-                    echo "Branch is main — proceeding with build."
-                }
+            if (diff) {
+              echo "▶︎ ${mod} 배포 (kubectl set image)"
+              // 미리 Jenkins에 KUBECONFIG를 credentialsId 'kubeconfig-creds'로 등록
+              withCredentials([file(credentialsId: 'kubeconfig-creds', variable: 'KUBECONFIG')]) {
+                sh """
+                  kubectl set image deployment/${mod} \
+                    ${mod}=${REGISTRY}/${mod}:${TAG} --record
+                """
+              }
             }
-        stage('Git Clone') {
-            steps {
-                git branch: 'main', url: 'https://github.com/beyond-sw-camp/be12-fin-5verdose-WMTHIS-BE'
-            }
+          }
         }
-
-
-
-        stage('Build') {
-            when {
-                expression {
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
-            steps {
-                sh 'chmod +x gradlew'
-                sh './gradlew bootJar'
-            }
-        }
-
-        stage('Docker Build & Push') {
-            when {
-                expression {
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
-            steps {
-                script {
-                    docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                    withDockerRegistry([credentialsId: 'wmthis']) {
-                        docker.image("${IMAGE_NAME}:${IMAGE_TAG}").push()
-                    }
-                }
-            }
-        }
-        stage('Deploy to Kubernetes') {
-            when {
-                expression {
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
-            steps {
-                script {
-                    def deploymentYaml = """
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: wmthis-backend
-        spec:
-          revisionHistoryLimit: 4
-          replicas: 2
-          selector:
-            matchLabels:
-              app: wmthis-backend
-          template:
-            metadata:
-              labels:
-                app: wmthis-backend
-            spec:
-              containers:
-                - name: backend
-                  image: ${IMAGE_NAME}:${IMAGE_TAG}
-                  # 외부 application.yml 로드
-                  args:
-                    - "--spring.config.location=/config/application.yml"
-                  ports:
-                    - containerPort: 8080
-                  envFrom:
-                    - configMapRef:
-                        name: wmthis-config
-                    - secretRef:
-                        name: wmthis-secret
-                  volumeMounts:
-                    - name: config-volume
-                      mountPath: /config/application.yml
-                      subPath: application.yml
-              volumes:
-                - name: config-volume
-                  configMap:
-                    name: wmthis-yml     # application.yml 이 담긴 ConfigMap 이름
-                    items:
-                      - key: application.yml
-                        path: application.yml
-        """
-                    writeFile file: 'wmthis-deployment.yaml', text: deploymentYaml
-                    sh 'kubectl apply -f wmthis-deployment.yaml'
-                }
-            }
-
-
-        }
-
+      }
     }
+  }
 }
-//쿠버

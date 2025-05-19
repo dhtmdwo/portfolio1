@@ -1,0 +1,55 @@
+spring:
+  datasource:
+    url: ${USER_DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
+  jackson:
+    time-zone: Asia/Seoul
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        dialect: org.hibernate.dialect.MariaDBDialect
+  kafka:
+    producer:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP}
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP}
+      group-id: user-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.example.common.kafka.dto"
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GOOGLE_ID}
+    password: ${APP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+    test-connection: true
+
+coolsms:
+  apikey: ${api_key}
+  apisecret: ${api_secret}
+  fromnumber: ${phone_number}
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  expiration: 3600000
+aws:
+  region: ${AWS_REGION}
+  s3:
+    bucket: ${AWS_S3_BUCKET}

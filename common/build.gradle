@@ -1,0 +1,22 @@
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springCloudVersion', "2024.0.0")
+}
+
+dependencies {
+
+    implementation 'org.locationtech.proj4j:proj4j:1.1.0'
+
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+}
+
+
+dependencyManagement {
+
+}
