@@ -13,26 +13,7 @@
 </div>
 <br>
 
-
----
-
-## 📌 목차
-
-- [👥 팀원 구성](#-팀원-구성)
-- [🔧 기술 스택](#-기술-스택)
-- [🔮 프로젝트 소개](#-프로젝트-소개)
-    - [자동 재고 관리 시스템](#자동-재고-관리-시스템)
-    - [POS 기능으로 재고 자동화 관리](#pos-기능으로-재고-자동화-관리)
-    - [매장 관리 기능](#매장-관리-기능)
-    - [재료 공유 및 거래 시스템](#재료-공유-및-거래-시스템)
-- [⚠️ 서비스 이용 전 확인](#서비스-이용-전-반드시-확인해-주세요)
-- [🗂️ 프로젝트 기획](#-프로젝트-기획)
-- [📜 프로젝트 설계](#-프로젝트-설계)
-- [📚 기술 소개](#-기술-소개)
-
-
-
----
+ ---
 
 # <img src="https://i.namu.wiki/i/i4lq7xgSiZoHNJFK7Zcon9-4AJtQMNsCoezqrOcBIgoIst9dfGMn863K0Qmru8prJDtUvOLHky_uuVwGqkuE6MhHGBwrLeMP7cc72-XSaHUdmz8r11xhxCo-pKesnUfavCgH9etSvzhKezlFQ37MIg.svg" alt="logo" width="30"> 팀원 구성
 
@@ -197,3 +178,9 @@
 ### ▶ [**Wiki 바로가기**](https://github.com/beyond-sw-camp/be12-fin-5verdose-WMTHIS-BE/wiki)
 
 <br>
+
+# ReadMe 바로가기
+
+🔗 [Frontend](https://github.com/beyond-sw-camp/be12-fin-5verdose-WMTHIS-FE/blob/main/README.md) <br>
+🔗 [Backend](https://github.com/beyond-sw-camp/be12-fin-5verdose-WMTHIS-BE/blob/main/README.md) <br>
+🔗 [CI/CD](https://github.com/beyond-sw-camp/be12-fin-5verdose-WMTHIS-BE/tree/main/cicd/README.md) <br>
