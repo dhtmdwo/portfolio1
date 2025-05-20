@@ -248,7 +248,11 @@
 
 [**🎨 ERD**](https://www.erdcloud.com/d/gaWyQgoD7gXc2LNvG)
 
-[**📈 시스템 아키텍처**](https://www.erdcloud.com/d/gaWyQgoD7gXc2LNvG)
+[**📈 시스템 아키텍처**]
+![image](https://github.com/user-attachments/assets/d4070810-f5ea-48a7-a58e-ba47aa74d8de)
+
+
+
 
 [**📃 API 명세서**](http://www.cheeeze.kro.kr/swagger-ui/index.html)
 
