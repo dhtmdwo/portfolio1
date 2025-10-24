@@ -2,11 +2,6 @@
   <img src="./readme-images/icon.png" alt="logo" width="550">
 </div>
 
----
-
-<br>
-<br>
-
  ---
 
 # <img src="https://i.namu.wiki/i/i4lq7xgSiZoHNJFK7Zcon9-4AJtQMNsCoezqrOcBIgoIst9dfGMn863K0Qmru8prJDtUvOLHky_uuVwGqkuE6MhHGBwrLeMP7cc72-XSaHUdmz8r11xhxCo-pKesnUfavCgH9etSvzhKezlFQ37MIg.svg" alt="logo" width="30"> 팀원 구성
