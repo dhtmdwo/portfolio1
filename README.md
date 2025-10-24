@@ -153,8 +153,6 @@
 
 [**🎨 ERD**](https://www.erdcloud.com/d/gaWyQgoD7gXc2LNvG)
 
-[**📃 API 명세서**](https://www.wmthis.kro.kr/swagger-ui/index.html)
-
 
 <br>
 
