@@ -5,12 +5,6 @@
 ---
 
 <br>
-
-<div align="center">
-
-🏃🏻‍♀️ [WHTHIS 데모 사이트 바로가기](https://www.wmthis.kro.kr) 💨
-
-</div>
 <br>
 
  ---
