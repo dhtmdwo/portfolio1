@@ -148,8 +148,7 @@
 # 📜 프로젝트 설계
 
 ## **📈 시스템 아키텍처**
-![image](https://github.com/user-attachments/assets/d4070810-f5ea-48a7-a58e-ba47aa74d8de)
-
+![image](https://github.com/user-attachments/assets/d4f25b43-ef6c-43ae-8fba-e9f456297c58)
 
 [**🎨 ERD**](https://www.erdcloud.com/d/gaWyQgoD7gXc2LNvG)
 
